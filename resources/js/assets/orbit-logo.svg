@@ -1,0 +1,8 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular orbit path -->
+  <circle cx="20" cy="20" r="15" stroke="#4F46E5" stroke-width="2" fill="none"/>
+  <!-- Orbiting dot -->
+  <circle cx="32" cy="12" r="3" fill="#4F46E5"/>
+  <!-- Orbit text -->
+  <text x="45" y="28" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#1F2937">Orbit</text>
+</svg>

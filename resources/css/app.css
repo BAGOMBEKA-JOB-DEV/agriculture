@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Agrixchange Design System */
+    --color-agri-forest: #1b4332;
+    --color-agri-lush: #2d6a4f;
+    --color-agri-earth: #d4a373;
+    --color-agri-sand: #f4f1de;
+    --color-agri-clay: #e9edc9;
+
+    --color-primary: var(--color-agri-forest);
+    --color-secondary: var(--color-agri-lush);
+    --color-accent: var(--color-agri-earth);
+
+    --shadow-enterprise: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-enterprise-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+@layer base {
+    body {
+        @apply bg-gray-50 text-gray-900 antialiased;
+    }
+}
+
+@layer components {
+    .btn-enterprise {
+        @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-agri-forest hover:bg-agri-lush focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agri-forest transition-all duration-200;
+    }
+
+    .card-enterprise {
+        @apply bg-white overflow-hidden shadow-enterprise border border-gray-100 rounded-xl hover:shadow-enterprise-lg transition-shadow duration-300;
+    }
+}

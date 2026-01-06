@@ -1,0 +1,107 @@
+import { defineStore } from 'pinia';
+import axios from 'axios';
+
+export const useAuthStore = defineStore('auth', {
+    state: () => ({
+        user: null,
+        token: localStorage.getItem('token') || null,
+        initialized: false,
+    }),
+
+    getters: {
+        isAuthenticated: (state) => !!state.token && !!state.user,
+        isVendor: (state) => state.user?.role === 'vendor',
+        isAdmin: (state) => state.user?.role === 'admin',
+        isBuyer: (state) => state.user?.role === 'user',
+        hasActiveSubscription: (state) => {
+            if (!state.user) return false;
+            // Check if user has active subscription
+            return state.user.has_active_subscription || false;
+        },
+    },
+
+    actions: {
+        async checkAuth() {
+            if (!this.token) {
+                this.initialized = true;
+                return false;
+            }
+
+            try {
+                const response = await axios.get('/user');
+                this.user = response.data;
+                this.initialized = true;
+                return true;
+            } catch (error) {
+                this.logout();
+                this.initialized = true;
+                return false;
+            }
+        },
+
+        async login(credentials) {
+            try {
+                // Get CSRF cookie first
+                await axios.get('/sanctum/csrf-cookie');
+
+                const response = await axios.post('/login', credentials);
+                this.token = response.data.token;
+                this.user = response.data.user;
+                localStorage.setItem('token', this.token);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+                return { success: true };
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.response?.data?.message || 'Login failed'
+                };
+            }
+        },
+
+        async register(userData) {
+            try {
+                await axios.get('/sanctum/csrf-cookie');
+
+                const response = await axios.post('/register', userData);
+                this.token = response.data.token;
+                this.user = response.data.user;
+                localStorage.setItem('token', this.token);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+                return { success: true };
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.response?.data?.message || 'Registration failed',
+                    errors: error.response?.data?.errors || {}
+                };
+            }
+        },
+
+        async logout() {
+            try {
+                await axios.post('/logout');
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                this.user = null;
+                this.token = null;
+                localStorage.removeItem('token');
+                delete axios.defaults.headers.common['Authorization'];
+            }
+        },
+
+        async updateProfile(profileData) {
+            try {
+                const response = await axios.put('/user/profile', profileData);
+                this.user = response.data;
+                return { success: true };
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.response?.data?.message || 'Profile update failed',
+                    errors: error.response?.data?.errors || {}
+                };
+            }
+        },
+    },
+});
