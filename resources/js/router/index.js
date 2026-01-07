@@ -244,8 +244,17 @@ const router = createRouter({
   routes,
 });
 
+import { useAuthStore } from '../stores/auth';
+
 // Navigation guard
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+
+  // Restore session if token exists but user is missing (page refresh)
+  if (localStorage.getItem('token') && !authStore.user) {
+    await authStore.checkAuth();
+  }
+
   const token = localStorage.getItem('token');
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 

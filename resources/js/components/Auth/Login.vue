@@ -58,6 +58,7 @@
                 class="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-agri-forest/10 focus:border-agri-forest transition-all outline-none font-medium"
                 v-model="form.email"
                 required
+                autocomplete="username"
               >
               <p v-if="errors.email" class="mt-2 text-xs text-red-500 font-bold">{{ errors.email[0] }}</p>
             </div>
@@ -70,6 +71,7 @@
                 class="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-agri-forest/10 focus:border-agri-forest transition-all outline-none font-medium"
                 v-model="form.password"
                 required
+                autocomplete="current-password"
               >
               <p v-if="errors.password" class="mt-2 text-xs text-red-500 font-bold">{{ errors.password[0] }}</p>
             </div>

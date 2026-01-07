@@ -4,7 +4,7 @@ window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 // Set up axios defaults for API calls
-axios.defaults.baseURL = '/api';
+
 axios.defaults.headers.common['Accept'] = 'application/json';
 
 // Add request interceptor to include auth token
