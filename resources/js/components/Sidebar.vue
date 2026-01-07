@@ -223,6 +223,14 @@ const categorizedNavigation = computed(() => {
     ]
   })
 
+  // Communications (Common)
+  nav.push({
+    title: 'Communications',
+    items: [
+      { name: 'UserNotifications', path: '/notifications', label: 'Inbox', icon: icons.reports }, // Using reports icon for now or dashboard
+    ]
+  })
+
   if (role === 'admin') {
     nav.push({
       title: 'Regulator Suite',
@@ -239,6 +247,7 @@ const categorizedNavigation = computed(() => {
       items: [
         { name: 'SuperAdminDashboard', path: '/super-admin', label: 'Governance Nexus', icon: icons.dashboard },
         { name: 'SuperAdminCategories', path: '/super-admin/categories', label: 'Asset Classifications', icon: icons.rfqs },
+        { name: 'AdminNotifications', path: '/admin/notifications', label: 'Broadcast Center', icon: icons.reports },
         { name: 'AdminUsers', path: '/admin/users', label: 'Entity Registry', icon: icons.users },
       ]
     })

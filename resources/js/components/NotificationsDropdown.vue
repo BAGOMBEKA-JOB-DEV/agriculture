@@ -43,26 +43,22 @@
           v-for="notification in notifications"
           :key="notification.id"
           class="flex items-start space-x-3 p-3 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-b-0"
-          :class="{ 'bg-blue-50 border-l-4 border-blue-500': !notification.read }"
+          :class="{ 'bg-blue-50 border-l-4 border-blue-500': !notification.read_at }"
+          @click="markAsRead(notification)"
         >
           <div class="flex-shrink-0">
-            <div class="h-8 w-8 rounded-full flex items-center justify-center" :class="getIconBg(notification.type)">
-              <component :is="getIcon(notification.type)" class="h-4 w-4 text-white" />
+            <div class="h-8 w-8 rounded-full flex items-center justify-center" :class="getIconBg(notification.data.priority)">
+              <component :is="getIcon(notification.data.priority)" class="h-4 w-4 text-white" />
             </div>
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
-              <p class="text-xs font-medium text-gray-900">{{ notification.title }}</p>
-              <p class="text-xs text-gray-500">{{ notification.time }}</p>
+              <p class="text-xs font-medium text-gray-900">{{ notification.data.subject }}</p>
+              <p class="text-xs text-gray-500">{{ formatTime(notification.created_at) }}</p>
             </div>
-            <p class="text-xs text-gray-600 mt-1">{{ notification.message }}</p>
-            <div v-if="notification.action" class="mt-2">
-              <button class="text-xs text-indigo-600 hover:text-indigo-500 font-medium">
-                {{ notification.action }}
-              </button>
-            </div>
+            <p class="text-xs text-gray-600 mt-1">{{ notification.data.message }}</p>
           </div>
-          <div v-if="!notification.read" class="flex-shrink-0">
+          <div v-if="!notification.read_at" class="flex-shrink-0">
             <div class="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
           </div>
         </div>
@@ -80,12 +76,16 @@
       <!-- Footer -->
       <div class="border-t border-gray-200 p-3">
         <div class="flex items-center justify-between">
-          <button class="text-xs text-gray-600 hover:text-gray-800 font-medium">
+          <button @click="markAllAsRead" class="text-xs text-gray-600 hover:text-gray-800 font-medium">
             Mark all as read
           </button>
-          <button class="text-xs text-indigo-600 hover:text-indigo-500 font-medium">
+          <router-link 
+            to="/notifications" 
+            @click="closeDropdown" 
+            class="text-xs text-indigo-600 hover:text-indigo-500 font-medium"
+          >
             View All Notifications
-          </button>
+          </router-link>
         </div>
       </div>
     </div>
@@ -94,6 +94,8 @@
 
 <script setup lang="js">
 import { ref, onMounted, onUnmounted } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
 // Icons
 const CheckCircleIcon = {
@@ -108,25 +110,22 @@ const InformationCircleIcon = {
   template: '<svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>'
 }
 
-const UserIcon = {
-  template: '<svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>'
-}
-
 const props = defineProps({
+  notifications: {
+    type: Array,
+    default: () => []
+  },
   unreadNotificationCount: {
     type: Number,
     default: 0
-  },
-  hasNewNotifications: {
-    type: Boolean,
-    default: false
   }
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'refresh'])
+
+const router = useRouter()
 
 const isOpen = ref(false)
-const notifications = ref([])
 const isMobile = ref(false)
 
 const toggleDropdown = () => {
@@ -138,32 +137,67 @@ const closeDropdown = () => {
   emit('close')
 }
 
-const getIcon = (type) => {
-  switch (type) {
+const getIcon = (priority) => {
+  switch (priority) {
     case 'success':
       return CheckCircleIcon
-    case 'error':
+    case 'critical':
       return ExclamationCircleIcon
-    case 'warning':
+    case 'high':
       return ExclamationCircleIcon
-    case 'info':
+    case 'normal':
     default:
       return InformationCircleIcon
   }
 }
 
-const getIconBg = (type) => {
-  switch (type) {
+const getIconBg = (priority) => {
+  switch (priority) {
     case 'success':
       return 'bg-green-500'
-    case 'error':
+    case 'critical':
       return 'bg-red-500'
-    case 'warning':
-      return 'bg-yellow-500'
-    case 'info':
+    case 'high':
+      return 'bg-orange-500'
+    case 'normal':
     default:
       return 'bg-blue-500'
   }
+}
+
+const formatTime = (date) => {
+    if (!date) return ''
+    const d = new Date(date)
+    const now = new Date()
+    const diff = Math.floor((now - d) / 60000) // minutes
+    
+    if (diff < 60) return `${diff}m ago`
+    if (diff < 1440) return `${Math.floor(diff/60)}h ago`
+    return `${Math.floor(diff/1440)}d ago`
+}
+
+const markAsRead = async (notification) => {
+    if (!notification.read_at) {
+        try {
+            await axios.post(`/api/notifications/${notification.id}/read`);
+            emit('refresh');
+        } catch (error) {
+            console.error('Error marking as read:', error);
+        }
+    }
+    closeDropdown();
+    router.push(`/notifications/${notification.id}`);
+}
+
+
+
+const markAllAsRead = async () => {
+    try {
+        await axios.post('/api/notifications/read-all');
+        emit('refresh');
+    } catch (error) {
+        console.error('Error marking all as read:', error);
+    }
 }
 
 // Close dropdown when clicking outside
@@ -182,64 +216,10 @@ onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   window.addEventListener('resize', checkMobile)
   checkMobile()
-  loadNotifications()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   window.removeEventListener('resize', checkMobile)
 })
-
-// Dummy data
-const dummyNotifications = [
-  {
-    id: 1,
-    type: 'success',
-    title: 'Task Completed',
-    message: 'Your task "Implement user authentication" has been completed successfully.',
-    time: '5m ago',
-    read: false,
-    action: 'View Task'
-  },
-  {
-    id: 2,
-    type: 'info',
-    title: 'New Project Assigned',
-    message: 'You have been assigned to the "Mobile App Development" project.',
-    time: '1h ago',
-    read: false,
-    action: 'View Project'
-  },
-  {
-    id: 3,
-    type: 'warning',
-    title: 'Deadline Approaching',
-    message: 'The "Website Redesign" project deadline is approaching in 2 days.',
-    time: '2h ago',
-    read: true,
-    action: 'View Details'
-  },
-  {
-    id: 4,
-    type: 'error',
-    title: 'Build Failed',
-    message: 'The latest deployment failed due to a syntax error in the main component.',
-    time: '3h ago',
-    read: true,
-    action: 'View Logs'
-  },
-  {
-    id: 5,
-    type: 'info',
-    title: 'Team Member Added',
-    message: 'Sarah Johnson has been added to your team.',
-    time: '1d ago',
-    read: true,
-    action: 'View Profile'
-  }
-]
-
-const loadNotifications = () => {
-  notifications.value = dummyNotifications
-}
 </script>

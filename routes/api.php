@@ -44,7 +44,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/messages/{id}/read', [MessageController::class, 'markAsRead']);
     Route::post('/messages/{id}/forward', [MessageController::class, 'forward']);
     Route::delete('/messages/{id}', [MessageController::class, 'destroy']);
-    // Admin
+
+    // Notifications
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+    Route::get('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'show']);
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
+
+    // Admin Broadcast Center
+    Route::get('/admin/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index']);
+    Route::post('/admin/notifications/broadcast', [\App\Http\Controllers\Admin\NotificationController::class, 'store']);
+    Route::get('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'show']);
+    Route::put('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'update']);    // Admin
     Route::get('/admin/stats', [\App\Http\Controllers\AdminController::class, 'stats']);
     Route::get('/admin/products', [\App\Http\Controllers\AdminController::class, 'products']);
     Route::post('/admin/products/{id}/approve', [\App\Http\Controllers\AdminController::class, 'approveProduct']);

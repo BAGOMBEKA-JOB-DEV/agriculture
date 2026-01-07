@@ -102,6 +102,27 @@ const routes = [
       breadcrumb: { label: 'Membership Plan' }
     },
   },
+  {
+    path: '/notifications',
+    name: 'UserNotifications',
+    component: () => import('../pages/Notifications/Index.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Inbox' }
+    },
+  },
+  {
+    path: '/notifications/:id',
+    name: 'UserNotificationDetail',
+    component: () => import('../pages/Notifications/Show.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Inbox', path: '/notifications' },
+        { label: 'Message' }
+      ]
+    },
+  },
 
   // Vendor Specific Routes
   {
@@ -155,6 +176,39 @@ const routes = [
     meta: {
       requiresAuth: true,
       breadcrumb: { label: 'Identity Nexus' }
+    },
+  },
+  {
+    path: '/admin/notifications/create',
+    name: 'AdminCreateNotification',
+    component: () => import('../pages/admin/Notifications/Create.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Broadcast Center', path: '/admin/notifications' },
+        { label: 'New Alert' }
+      ]
+    },
+  },
+  {
+    path: '/admin/notifications',
+    name: 'AdminNotifications',
+    component: () => import('../pages/admin/Notifications/Index.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Broadcast Center' }
+    },
+  },
+  {
+    path: '/admin/notifications/:id/edit',
+    name: 'AdminEditNotification',
+    component: () => import('../pages/admin/Notifications/Edit.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Broadcast Center', path: '/admin/notifications' },
+        { label: 'Edit Alert' }
+      ]
     },
   },
 
