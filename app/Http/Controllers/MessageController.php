@@ -12,15 +12,25 @@ class MessageController extends Controller
     public function index()
     {
         $user = auth()->user();
+        
         // Get all unique conversations for the user
-        $conversations = \App\Models\Message::where('sender_id', $user->id)
+        $messages = \App\Models\Message::where('sender_id', $user->id)
             ->orWhere('receiver_id', $user->id)
             ->with(['sender', 'receiver'])
             ->orderBy('created_at', 'desc')
-            ->get()
-            ->groupBy(function($message) use ($user) {
-                return $message->sender_id === $user->id ? $message->receiver_id : $message->sender_id;
-            });
+            ->get();
+
+        $conversations = $messages->groupBy(function($message) use ($user) {
+            return $message->sender_id === $user->id ? $message->receiver_id : $message->sender_id;
+        })->map(function($convoMessages, $otherUserId) use ($user) {
+            $lastMessage = $convoMessages->first();
+            $otherUser = $lastMessage->sender_id === $user->id ? $lastMessage->receiver : $lastMessage->sender;
+            
+            return [
+                'user' => $otherUser,
+                'last_message' => $lastMessage
+            ];
+        })->values();
 
         return response()->json($conversations);
     }
@@ -55,5 +65,20 @@ class MessageController extends Controller
             ->get();
 
         return response()->json($messages);
+    }
+
+    public function markAsRead($senderId)
+    {
+        $user = auth()->user();
+        
+        \App\Models\Message::where('sender_id', $senderId)
+            ->where('receiver_id', $user->id)
+            ->whereNull('read_at')
+            ->update([
+                'read_at' => now(),
+                'is_read' => true
+            ]);
+
+        return response()->json(['success' => true]);
     }
 }

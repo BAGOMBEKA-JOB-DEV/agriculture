@@ -12,18 +12,27 @@ class Product extends Model
         'name',
         'description',
         'seller_id',
-        'category',
+        'product_category_id',
         'unit',
         'min_order',
         'price',
         'location',
         'status',
-        'image',
+        'images',
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ProductCategory::class, 'product_category_id');
     }
 }
 

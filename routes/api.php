@@ -5,8 +5,13 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RfqController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/categories', function() {
+    return (new CategoryController())->index();
+});
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -36,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages', [MessageController::class, 'index']);
     Route::post('/messages', [MessageController::class, 'store']);
     Route::get('/messages/{conversationId}', [MessageController::class, 'show']);
+    Route::post('/messages/{id}/read', [MessageController::class, 'markAsRead']);
     // Admin
     Route::get('/admin/stats', [\App\Http\Controllers\AdminController::class, 'stats']);
     Route::get('/admin/products', [\App\Http\Controllers\AdminController::class, 'products']);
@@ -43,4 +49,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/products/{id}/reject', [\App\Http\Controllers\AdminController::class, 'rejectProduct']);
     Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'users']);
     Route::post('/admin/users/{id}/verify', [\App\Http\Controllers\AdminController::class, 'verifyUser']);
+
+    // Super Admin Governance
+    Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
+        Route::get('/stats', [\App\Http\Controllers\SuperAdminController::class, 'stats']);
+        Route::get('/users', [\App\Http\Controllers\SuperAdminController::class, 'users']);
+        Route::post('/users/{id}/promote', [\App\Http\Controllers\SuperAdminController::class, 'promoteToSuperAdmin']);
+        
+        // Category Management
+        Route::apiResource('categories', CategoryController::class)->except(['index']);
+    });
 });

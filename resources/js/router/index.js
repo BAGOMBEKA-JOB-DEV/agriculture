@@ -21,6 +21,9 @@ import VendorProductEdit from '../pages/vendor/ProductEdit.vue';
 import AdminProducts from '../pages/admin/Products.vue';
 import AdminUsers from '../pages/admin/Users.vue';
 
+import SuperAdminDashboard from '../pages/super-admin/Dashboard.vue';
+import SuperAdminCategories from '../pages/super-admin/Categories.vue';
+
 const routes = [
   {
     path: '/login',
@@ -152,6 +155,26 @@ const routes = [
     meta: {
       requiresAuth: true,
       breadcrumb: { label: 'Identity Nexus' }
+    },
+  },
+
+  // Super Admin Specific Routes
+  {
+    path: '/super-admin',
+    name: 'SuperAdminDashboard',
+    component: SuperAdminDashboard,
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Governance Nexus' }
+    },
+  },
+  {
+    path: '/super-admin/categories',
+    name: 'SuperAdminCategories',
+    component: SuperAdminCategories,
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Asset Classifications' }
     },
   },
 

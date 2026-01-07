@@ -14,18 +14,18 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('product_category_id')->nullable()->constrained('product_categories')->onDelete('set null');
             $table->string('name');
-            $table->string('category')->nullable();
             $table->string('unit')->default('kg');
             $table->integer('min_order')->default(1);
             $table->decimal('price', 15, 2)->nullable();
             $table->string('location')->nullable();
             $table->text('description')->nullable();
-            $table->string('image')->nullable();
+            $table->json('images')->nullable();
             $table->enum('status', ['available', 'unavailable', 'pending', 'rejected'])->default('pending');
             $table->timestamps();
             
-            $table->index(['seller_id', 'category']);
+            $table->index(['seller_id', 'product_category_id']);
         });
     }
 

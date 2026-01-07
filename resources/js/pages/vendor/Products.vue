@@ -37,8 +37,11 @@
               <tr v-for="product in products" :key="product.id" class="group hover:bg-agri-sand/10 transition-colors duration-300">
                 <td class="px-8 py-6">
                   <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-xl bg-agri-sand flex items-center justify-center text-agri-forest font-black mr-4 group-hover:bg-agri-forest group-hover:text-white transition-all">
-                        {{ product.name?.charAt(0) || 'P' }}
+                    <div class="w-10 h-10 rounded-xl bg-agri-sand flex-shrink-0 overflow-hidden mr-4 group-hover:bg-agri-forest transition-all">
+                        <img v-if="product.images && product.images.length > 0" :src="product.images[0]" class="w-full h-full object-cover">
+                        <div v-else class="w-full h-full flex items-center justify-center text-agri-forest font-black group-hover:text-white">
+                            {{ product.name?.charAt(0) || 'P' }}
+                        </div>
                     </div>
                     <div>
                         <div class="text-sm font-black text-gray-900 group-hover:text-agri-forest transition-colors">{{ product.name }}</div>
@@ -48,7 +51,7 @@
                 </td>
                 <td class="px-8 py-6">
                   <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest">
-                    {{ product.category }}
+                    {{ product.category?.name || 'Trade Asset' }}
                   </span>
                 </td>
                 <td class="px-8 py-6 text-center">

@@ -39,9 +39,9 @@
 
                 <div class="group">
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 group-focus-within:text-agri-forest transition-colors">Category Classification</label>
-                    <select v-model="form.category" required class="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:ring-4 focus:ring-agri-forest/5 focus:border-agri-forest transition-all outline-none font-bold text-gray-900 appearance-none">
+                    <select v-model="form.product_category_id" required class="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:ring-4 focus:ring-agri-forest/5 focus:border-agri-forest transition-all outline-none font-bold text-gray-900 appearance-none">
                         <option value="" disabled>Select Sector</option>
-                        <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                        <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                     </select>
                 </div>
 
@@ -70,6 +70,69 @@
                 <div class="group">
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 group-focus-within:text-agri-forest transition-colors">Entry Price ($)</label>
                     <input v-model="form.price" type="number" step="0.01" required class="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:ring-4 focus:ring-agri-forest/5 focus:border-agri-forest transition-all outline-none font-bold text-gray-900" placeholder="Per Unit Cost">
+                </div>
+            </div>
+          </div>
+
+          <!-- Section: Media Portfolio -->
+          <div class="space-y-8">
+            <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-4">Asset Portfolio (Visual Documentation)</h2>
+            
+            <div class="space-y-6">
+                <div 
+                    @click="$refs.fileInput.click()"
+                    class="w-full h-48 bg-gray-50 border-2 border-dashed border-gray-200 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-agri-forest/5 hover:border-agri-forest transition-all group"
+                >
+                    <input 
+                        type="file" 
+                        ref="fileInput" 
+                        @change="handleImageUpload" 
+                        accept="image/*" 
+                        multiple
+                        class="hidden"
+                    >
+                    <div class="text-center p-8">
+                        <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 text-gray-300 group-hover:text-agri-forest transition-colors">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Deploy Comprehensive Visual Assets</p>
+                        <p class="text-[8px] text-gray-400 mt-1 uppercase font-bold tracking-tight">Select multiple images to provide exhaustive detail</p>
+                    </div>
+                </div>
+
+                <div v-if="imagesPreviews.length > 0" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <div 
+                        v-for="(preview, index) in imagesPreviews" 
+                        :key="index" 
+                        class="relative aspect-square group"
+                    >
+                        <img :src="preview" class="w-full h-full object-cover rounded-[1.5rem] shadow-sm border border-gray-100">
+                        <button 
+                            @click.stop="removeImage(index)" 
+                            type="button"
+                            class="absolute -top-2 -right-2 w-8 h-8 bg-white shadow-lg rounded-xl flex items-center justify-center text-red-500 hover:bg-red-50 transition-all border border-red-50 opacity-0 group-hover:opacity-100 z-10"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        <div v-if="index === 0" class="absolute bottom-2 left-2 px-2 py-0.5 bg-agri-forest/80 text-white text-[8px] font-black uppercase tracking-tighter rounded-md backdrop-blur-sm">
+                            Primary
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="imagesPreviews.length === 0" class="bg-agri-forest/5 rounded-[2rem] p-8 flex items-center space-x-6">
+                    <div class="w-12 h-12 rounded-full bg-agri-forest/10 flex items-center justify-center text-agri-forest">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-[11px] text-agri-forest/70 font-medium leading-relaxed">
+                        Exhaustive visual documentation increases buyer confidence and reduces trade friction. We recommend at least <span class="font-black text-agri-forest">3 distinct angles</span> of the commodity.
+                    </p>
                 </div>
             </div>
           </div>
@@ -105,25 +168,60 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
 const router = useRouter();
-const categories = ref(['Grains', 'Fruits', 'Vegetables', 'Livestock', 'Coffee', 'Spices', 'Nuts']);
+const categories = ref([]);
 const loading = ref(false);
 const error = ref('');
+const imagesPreviews = ref([]);
 
 const form = ref({
   name: '',
-  category: '',
+  product_category_id: '',
   unit: 'Tons',
   min_order: '',
   price: '',
   location: '',
   description: '',
+  images: [],
   status: 'available'
 });
+
+const handleImageUpload = (event) => {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+
+  files.forEach(file => {
+    if (file.size > 10 * 1024 * 1024) {
+      if (window.notify) window.notify.error('File Oversized', `Asset ${file.name} exceeds bandwidth limits.`);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imagesPreviews.value.push(e.target.result);
+      form.value.images.push(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+const removeImage = (index) => {
+  imagesPreviews.value.splice(index, 1);
+  form.value.images.splice(index, 1);
+};
+
+const fetchCategories = async () => {
+  try {
+    const response = await axios.get('/api/categories');
+    categories.value = response.data;
+  } catch (err) {
+    console.error('Error fetching categories:', err);
+  }
+};
 
 const handleSubmit = async () => {
   loading.value = true;
@@ -140,6 +238,10 @@ const handleSubmit = async () => {
     loading.value = false;
   }
 };
+
+onMounted(() => {
+  fetchCategories();
+});
 </script>
 
 <style scoped>

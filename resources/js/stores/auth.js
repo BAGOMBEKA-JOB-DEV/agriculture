@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
             }
 
             try {
-                const response = await axios.get('/user');
+                const response = await axios.get('/api/user');
                 this.user = response.data;
                 this.initialized = true;
                 return true;
@@ -41,10 +41,7 @@ export const useAuthStore = defineStore('auth', {
 
         async login(credentials) {
             try {
-                // Get CSRF cookie first
-                await axios.get('/sanctum/csrf-cookie');
-
-                const response = await axios.post('/login', credentials);
+                const response = await axios.post('/api/login', credentials);
                 this.token = response.data.token;
                 this.user = response.data.user;
                 localStorage.setItem('token', this.token);
@@ -53,16 +50,15 @@ export const useAuthStore = defineStore('auth', {
             } catch (error) {
                 return {
                     success: false,
-                    message: error.response?.data?.message || 'Login failed'
+                    message: error.response?.data?.message || 'Login failed',
+                    errors: error.response?.data?.errors || {}
                 };
             }
         },
 
         async register(userData) {
             try {
-                await axios.get('/sanctum/csrf-cookie');
-
-                const response = await axios.post('/register', userData);
+                const response = await axios.post('/api/register', userData);
                 this.token = response.data.token;
                 this.user = response.data.user;
                 localStorage.setItem('token', this.token);
@@ -79,7 +75,7 @@ export const useAuthStore = defineStore('auth', {
 
         async logout() {
             try {
-                await axios.post('/logout');
+                await axios.post('/api/logout');
             } catch (error) {
                 console.error('Logout error:', error);
             } finally {
@@ -92,7 +88,7 @@ export const useAuthStore = defineStore('auth', {
 
         async updateProfile(profileData) {
             try {
-                const response = await axios.put('/user/profile', profileData);
+                const response = await axios.put('/api/user/profile', profileData);
                 this.user = response.data;
                 return { success: true };
             } catch (error) {

@@ -18,30 +18,34 @@
             <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest">Active Channels</h2>
           </div>
           <div class="flex-1 overflow-y-auto">
-            <div v-for="(msgs, participantId) in conversations" 
-                 :key="participantId"
-                 @click="selectConversation(participantId)"
+            <div v-for="convo in conversations" 
+                 :key="convo.user.id"
+                 @click="selectConversation(convo.user.id)"
                  class="p-6 border-b border-gray-50 cursor-pointer hover:bg-white transition-all duration-300 relative group"
-                 :class="{ 'bg-white shadow-inner': selectedParticipantId === participantId }">
-              <div v-if="selectedParticipantId === participantId" class="absolute left-0 top-0 bottom-0 w-1.5 bg-agri-forest"></div>
+                 :class="{ 'bg-white shadow-inner': selectedParticipantId == convo.user.id }">
+              <div v-if="selectedParticipantId == convo.user.id" class="absolute left-0 top-0 bottom-0 w-1.5 bg-agri-forest"></div>
               
               <div class="flex items-center mb-3">
                 <div class="w-10 h-10 rounded-xl bg-agri-sand flex items-center justify-center text-agri-forest font-black mr-3">
-                    {{ getParticipantName(msgs[0], participantId).charAt(0) }}
+                    {{ convo.user.name.charAt(0) }}
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-center">
-                        <span class="font-black text-gray-900 truncate">{{ getParticipantName(msgs[0], participantId) }}</span>
-                        <span class="text-[10px] font-bold text-gray-400">{{ formatRecentDate(msgs[0].created_at) }}</span>
+                        <span class="font-black text-gray-900 truncate">{{ convo.user.name }}</span>
+                        <span class="text-[10px] font-bold text-gray-400">{{ formatRecentDate(convo.last_message.created_at) }}</span>
                     </div>
                 </div>
               </div>
               <p class="text-xs text-gray-500 font-medium truncate leading-relaxed">
-                {{ msgs[0].content }}
+                <span v-if="convo.last_message.sender_id === authStore.user?.id" class="text-agri-forest font-black">You:</span>
+                {{ convo.last_message.message || convo.last_message.content }}
               </p>
             </div>
             
-            <div v-if="Object.keys(conversations).length === 0" class="p-12 text-center text-gray-400">
+            <div v-if="conversations.length === 0" class="p-12 text-center text-gray-400">
+                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-100">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                </div>
                 <p class="text-xs font-black uppercase tracking-widest">No Active Channels</p>
             </div>
           </div>
@@ -70,11 +74,19 @@
                    :class="msg.sender_id === authStore.user?.id ? 'items-end' : 'items-start'">
                 <div class="max-w-[80%] rounded-3xl px-8 py-5 shadow-sm"
                      :class="msg.sender_id === authStore.user?.id ? 'bg-agri-forest text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'">
-                  <p class="text-sm font-medium leading-relaxed">{{ msg.content }}</p>
+                  <p class="text-sm font-medium leading-relaxed">{{ msg.message || msg.content }}</p>
                 </div>
-                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-2 px-2">
-                    {{ formatFullDate(msg.created_at) }}
-                </span>
+                <div class="flex items-center justify-end mt-1 space-x-1.5 px-2">
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                        {{ formatFullDate(msg.created_at) }}
+                    </span>
+                    <span v-if="msg.sender_id === authStore.user?.id">
+                        <!-- Read: Double Blue -->
+                        <svg v-if="msg.read_at" class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>
+                        <!-- Unread: Double Grey -->
+                        <svg v-else class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>
+                    </span>
+                </div>
               </div>
             </div>
 
@@ -96,12 +108,12 @@
             </div>
           </template>
           <div v-else class="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/30">
-            <div class="w-20 h-20 rounded-[2rem] bg-white shadow-sm flex items-center justify-center mb-6 text-gray-200">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-24 h-24 rounded-[3rem] bg-white shadow-sm flex items-center justify-center mb-8 text-gray-200">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                 </svg>
             </div>
-            <p class="font-black uppercase text-xs tracking-widest">Select channel to view transcripts</p>
+            <p class="font-black uppercase text-[10px] tracking-widest text-gray-400">Select Negotiation Node</p>
           </div>
         </div>
       </div>
@@ -110,14 +122,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 import axios from 'axios';
 
+const route = useRoute();
 const authStore = useAuthStore();
-const conversations = ref({});
+const conversations = ref([]);
 const activeMessages = ref([]);
 const selectedParticipantId = ref(null);
+const selectedParticipantName = ref('');
 const newMessage = ref('');
 const messagesContainer = ref(null);
 
@@ -125,47 +140,72 @@ const fetchConversations = async () => {
   try {
     const response = await axios.get('/api/messages');
     conversations.value = response.data;
-    
-    // Fallback Mock Data
-    if (Object.keys(conversations.value).length === 0) {
-        const mockUser1 = { id: 5, name: 'Nakuru Harvest' };
-        const mockUser2 = { id: 8, name: 'Coastal Traders' };
-        conversations.value = {
-            '5': [
-                { id: 1, sender_id: 5, receiver_id: authStore.user?.id, content: 'We have received your RFQ for 100 tons of white maize.', created_at: new Date().toISOString(), sender: mockUser1, receiver: authStore.user },
-                { id: 2, sender_id: authStore.user?.id, receiver_id: 5, content: 'Great. Can you confirm the moisture content?', created_at: new Date().toISOString(), sender: authStore.user, receiver: mockUser1 }
-            ],
-            '8': [
-                { id: 3, sender_id: 8, receiver_id: authStore.user?.id, content: 'The cashew nut shipment is ready for inspection.', created_at: new Date(Date.now() - 3600000).toISOString(), sender: mockUser2, receiver: authStore.user }
-            ]
-        };
-    }
   } catch (error) {
     console.error('Error fetching conversations:', error);
   }
 };
 
-const selectedParticipantName = computed(() => {
-    if (!selectedParticipantId.value || !conversations.value || !conversations.value[selectedParticipantId.value]) return 'Unknown Node';
-    const convo = conversations.value[selectedParticipantId.value];
-    if (!convo || !convo[0]) return 'Unknown Node';
-    const firstMsg = convo[0];
-    const isSentByMe = firstMsg.sender_id === authStore.user?.id;
-    return isSentByMe ? (firstMsg.receiver?.name || 'Receiver') : (firstMsg.sender?.name || 'Sender');
-});
+const pollingInterval = ref(null);
 
-const getParticipantName = (msg, id) => {
-    if (!msg) return 'Identity Undefined';
-    const isSentByMe = msg.sender_id === authStore.user?.id;
-    return isSentByMe ? (msg.receiver?.name || 'Trade Partner') : (msg.sender?.name || 'Partner');
+const fetchMessages = async (participantId, silent = false) => {
+  try {
+    const response = await axios.get(`/api/messages/${participantId}`);
+    // Check if new messages arrived to verify scroll position or minimal updates
+    // For now, replacing the array is safe as Vue handles DOM diffing efficiently
+    activeMessages.value = response.data;
+    if (!silent) {
+        scrollToBottom();
+    }
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    if (!silent) activeMessages.value = [];
+  }
+};
+
+const markAsRead = async (participantId) => {
+  try {
+    await axios.post(`/api/messages/${participantId}/read`);
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+  }
+};
+
+const startPolling = (participantId) => {
+  stopPolling();
+  pollingInterval.value = setInterval(() => {
+    fetchMessages(participantId, true);
+    // Mark as read while polling if we are "active"
+    markAsRead(participantId);
+    // Also update conversations list to see new notifications from others
+    fetchConversations();
+  }, 3000); // Poll every 3 seconds
+};
+
+const stopPolling = () => {
+  if (pollingInterval.value) {
+    clearInterval(pollingInterval.value);
+    pollingInterval.value = null;
+  }
 };
 
 const selectConversation = async (participantId) => {
-  if (!participantId || !conversations.value || !conversations.value[participantId]) return;
+  if (!participantId) return;
   selectedParticipantId.value = participantId;
-  const convo = conversations.value[participantId];
-  activeMessages.value = [...convo].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-  scrollToBottom();
+  
+  // Find name from conversations list
+  const convo = conversations.value.find(c => c.user.id == participantId);
+  if (convo) {
+    selectedParticipantName.value = convo.user.name;
+  } else {
+    selectedParticipantName.value = 'Trade Partner';
+  }
+
+  // Initial fetch
+  await fetchMessages(participantId);
+  await markAsRead(participantId);
+  
+  // Start swarming
+  startPolling(participantId);
 };
 
 const sendMessage = async () => {
@@ -196,20 +236,41 @@ const scrollToBottom = () => {
 };
 
 const formatRecentDate = (date) => {
-  return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
 const formatFullDate = (date) => {
+  if (!date) return '';
   return new Date(date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-onMounted(() => {
-  fetchConversations();
+onMounted(async () => {
+  await fetchConversations();
+  
+  if (route.query.userId) {
+    selectConversation(route.query.userId);
+  }
+});
+
+onUnmounted(() => {
+  stopPolling();
 });
 </script>
 
 <style scoped>
-.tracking-tighter {
-  letter-spacing: -2px;
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.05);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.1);
 }
 </style>

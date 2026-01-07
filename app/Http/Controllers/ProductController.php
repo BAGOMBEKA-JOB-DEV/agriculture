@@ -8,17 +8,28 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = Product::with(['seller']);
+        $query = Product::with(['seller', 'category']);
         
-        if (request()->has('own')) {
+        if ($request->has('category') && $request->category != '') {
+            $query->where('product_category_id', $request->category);
+        }
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->has('own')) {
             $query->where('seller_id', auth()->id());
         } else {
             $query->where('status', 'available');
         }
         
-        $products = $query->get();
+        $products = $query->orderBy('created_at', 'desc')->get();
         return response()->json($products);
     }
 
@@ -27,7 +38,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'nullable|string',
+            'product_category_id' => 'nullable|exists:product_categories,id',
             'unit' => 'nullable|string',
             'min_order' => 'nullable|numeric|min:0',
             'price' => 'nullable|numeric',
@@ -44,12 +55,12 @@ class ProductController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'seller_id' => auth()->id(),
-            'category' => $request->category,
+            'product_category_id' => $request->product_category_id,
             'unit' => $request->unit ?: 'kg',
             'min_order' => $request->min_order ?: 1,
             'price' => $request->price,
             'location' => $request->location,
-            'image' => $request->image,
+            'images' => $request->images,
             'status' => $request->status ?: 'pending',
         ]);
 
@@ -58,7 +69,7 @@ class ProductController extends Controller
 
     public function show(string $id)
     {
-        $product = Product::where('id', $id)->with('seller')->firstOrFail();
+        $product = Product::where('id', $id)->with(['seller', 'category'])->firstOrFail();
         return response()->json($product);
     }
 
@@ -69,7 +80,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'nullable|string',
+            'product_category_id' => 'nullable|exists:product_categories,id',
             'unit' => 'nullable|string',
             'min_order' => 'nullable|numeric|min:0',
             'price' => 'nullable|numeric',
@@ -82,7 +93,7 @@ class ProductController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $product->update($request->only(['name', 'description', 'category', 'unit', 'min_order', 'price', 'location', 'image', 'status']));
+        $product->update($request->only(['name', 'description', 'product_category_id', 'unit', 'min_order', 'price', 'location', 'images', 'status']));
 
         return response()->json($product);
     }

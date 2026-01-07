@@ -182,9 +182,10 @@ import Navigation from '../Navigation.vue'
 import agriTrade from 'assets/agri-trade.png'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useAuthStore } from '../../stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const form = ref({
   name: '',
   email: '',
@@ -198,19 +199,20 @@ const errors = ref({})
 const handleRegister = async () => {
   loading.value = true
   errors.value = {}
-  try {
-    await axios.post('/api/register', form.value)
+  
+  const result = await authStore.register(form.value)
+  
+  if (result.success) {
     if (window.notify) {
       window.notify.success('Access Request Received', 'Please await identity verification for your ' + form.value.role + ' account.')
     }
     router.push('/login')
-  } catch (err) {
-    if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors
+  } else {
+    if (result.errors) {
+      errors.value = result.errors
     } else if (window.notify) {
-      window.notify.error('Onboarding Failed', err.response?.data?.message || 'Verification Error')
+      window.notify.error('Onboarding Failed', result.message || 'Verification Error')
     }
-  } finally {
     loading.value = false
   }
 }

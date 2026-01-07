@@ -1,15 +1,21 @@
 <script setup lang="js">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from './stores/auth'
 import Sidebar from './components/Sidebar.vue'
 import TopNavbar from './components/TopNavbar.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
 import Notification from './components/Notification.vue'
 
 const route = useRoute()
+const authStore = useAuthStore()
 
 const isAuthenticatedRoute = computed(() => {
   return route.matched.some(record => record.meta.requiresAuth)
+})
+
+onMounted(() => {
+  authStore.checkAuth()
 })
 </script>
 

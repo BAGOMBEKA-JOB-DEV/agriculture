@@ -31,7 +31,7 @@
           <div class="flex-1 lg:pr-12">
             <div class="flex items-center space-x-3 mb-4">
               <span class="px-3 py-1 rounded-full bg-agri-sand text-agri-forest text-[10px] font-black uppercase tracking-widest">
-                {{ product.category }}
+                {{ product.category?.name || 'Trade Asset' }}
               </span>
               <span :class="getStatusClasses(product.status)" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest inline-block shadow-sm">
                 {{ product.status }}
@@ -39,9 +39,12 @@
             </div>
             
             <h3 class="text-3xl font-black text-gray-900 mb-2 tracking-tight group-hover:text-agri-forest transition-colors">{{ product.name }}</h3>
-            <div class="flex items-center text-gray-400 mb-6 space-x-2">
-                <div class="w-6 h-6 rounded-lg bg-gray-50 flex items-center justify-center text-xs font-black text-gray-400">
-                    {{ product.seller?.name?.charAt(0) }}
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden border border-gray-100">
+                    <img v-if="product.images && product.images.length > 0" :src="product.images[0]" class="w-full h-full object-cover">
+                    <div v-else class="w-full h-full flex items-center justify-center text-xs font-black text-gray-400">
+                        {{ product.seller?.name?.charAt(0) }}
+                    </div>
                 </div>
                 <span class="text-xs font-bold uppercase tracking-wide">Produced by: {{ product.seller?.name || 'Authorized Producer' }}</span>
             </div>

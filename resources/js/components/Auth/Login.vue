@@ -114,9 +114,10 @@ import Navigation from '../Navigation.vue'
 import heroAgri from 'assets/hero-agri.png'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useAuthStore } from '../../stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const form = ref({
   email: '',
   password: ''
@@ -127,18 +128,17 @@ const errors = ref({})
 const handleLogin = async () => {
   loading.value = true
   errors.value = {}
-  try {
-    const response = await axios.post('/api/login', form.value)
-    localStorage.setItem('token', response.data.token)
-    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+  
+  const result = await authStore.login(form.value)
+  
+  if (result.success) {
     router.push('/dashboard')
-  } catch (err) {
-    if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors
+  } else {
+    if (result.errors) {
+      errors.value = result.errors
     } else if (window.notify) {
-      window.notify.error('Auth Denied', err.response?.data?.message || 'Invalid Credentials')
+      window.notify.error('Auth Denied', result.message || 'Invalid Credentials')
     }
-  } finally {
     loading.value = false
   }
 }
