@@ -16,11 +16,13 @@ class Message extends Model
         'content',
         'is_read',
         'read_at',
+        'is_deleted',
     ];
 
     protected $casts = [
         'is_read' => 'boolean',
         'read_at' => 'datetime',
+        'is_deleted' => 'boolean',
     ];
 
     public function sender()
@@ -36,6 +38,11 @@ class Message extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(MessageAttachment::class);
     }
 
     public function scopeUnread($query)

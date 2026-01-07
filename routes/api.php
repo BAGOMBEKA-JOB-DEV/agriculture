@@ -42,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/messages', [MessageController::class, 'store']);
     Route::get('/messages/{conversationId}', [MessageController::class, 'show']);
     Route::post('/messages/{id}/read', [MessageController::class, 'markAsRead']);
+    Route::post('/messages/{id}/forward', [MessageController::class, 'forward']);
+    Route::delete('/messages/{id}', [MessageController::class, 'destroy']);
     // Admin
     Route::get('/admin/stats', [\App\Http\Controllers\AdminController::class, 'stats']);
     Route::get('/admin/products', [\App\Http\Controllers\AdminController::class, 'products']);
