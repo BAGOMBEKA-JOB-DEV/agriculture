@@ -121,7 +121,8 @@ const categories = ref([]);
 const loading = ref(true);
 const filters = ref({
   search: '',
-  category: ''
+  category: '',
+  own: 1
 });
 
 // Simple debounce implementation

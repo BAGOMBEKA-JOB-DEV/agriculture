@@ -24,6 +24,9 @@ import AdminUsers from '../pages/admin/Users.vue';
 import SuperAdminDashboard from '../pages/super-admin/Dashboard.vue';
 import SuperAdminCategories from '../pages/super-admin/Categories.vue';
 
+import Marketplace from '../pages/Marketplace.vue';
+import MarketplaceDetail from '../pages/MarketplaceDetail.vue';
+
 const routes = [
   {
     path: '/login',
@@ -34,6 +37,55 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: Register,
+  },
+  {
+    path: '/',
+    name: 'Home',
+    component: Home,
+  },
+  // Marketplace Routes (Public Discovery)
+  {
+    path: '/marketplace',
+    name: 'Marketplace',
+    component: Marketplace,
+    meta: {
+      requiresAuth: false,
+      breadcrumb: { label: 'Public Exchange' }
+    },
+  },
+  {
+    path: '/marketplace/:id',
+    name: 'MarketplaceDetail',
+    component: MarketplaceDetail,
+    meta: {
+      requiresAuth: false,
+      breadcrumb: [
+        { label: 'Public Exchange', path: '/marketplace' },
+        { label: 'Asset Details' }
+      ]
+    },
+  },
+  // Dashboard Products Management (Reserved for Authenticated Users)
+  {
+    path: '/products',
+    name: 'Products',
+    component: Products,
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'My Inventory' }
+    },
+  },
+  {
+    path: '/products/:id',
+    name: 'ProductDetail',
+    component: ProductDetail,
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'My Inventory', path: '/products' },
+        { label: 'Product Details' }
+      ]
+    },
   },
   {
     path: '/dashboard',
@@ -51,28 +103,6 @@ const routes = [
     meta: {
       requiresAuth: true,
       breadcrumb: { label: 'Profile' }
-    },
-  },
-  // Marketplace Routes
-  {
-    path: '/products',
-    name: 'Products',
-    component: Products,
-    meta: {
-      requiresAuth: true,
-      breadcrumb: { label: 'Marketplace' }
-    },
-  },
-  {
-    path: '/products/:id',
-    name: 'ProductDetail',
-    component: ProductDetail,
-    meta: {
-      requiresAuth: true,
-      breadcrumb: [
-        { label: 'Marketplace', path: '/products' },
-        { label: 'Product Details' }
-      ]
     },
   },
   {

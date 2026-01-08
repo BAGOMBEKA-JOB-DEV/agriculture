@@ -165,61 +165,13 @@
        </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-gray-950 text-white py-20 border-t border-white/5">
-      <div class="container mx-auto px-6">
-        <div class="grid md:grid-cols-4 gap-12 mb-16">
-          <div class="col-span-1 md:col-span-1">
-            <div class="flex items-center space-x-3 mb-6">
-               <div class="w-8 h-8 rounded-lg bg-agri-forest flex items-center justify-center text-agri-earth">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-               </div>
-               <span class="text-lg font-black tracking-tight uppercase">INTERNATIONAL AGRO MARKETPLACE (IAM)
-</span>
-            </div>
-            <p class="text-gray-500 font-medium leading-relaxed">The premier digital portal for international agricultural commodity trade and verified logistics management.</p>
-          </div>
-          <div>
-            <h4 class="font-black text-agri-earth uppercase tracking-widest text-xs mb-8">Marketplace</h4>
-            <ul class="space-y-4 text-gray-400 font-semibold text-sm">
-              <li><router-link to="/products" class="hover:text-white transition-colors">Global Inventory</router-link></li>
-              <li><router-link to="/rfqs" class="hover:text-white transition-colors">Procurement Portal</router-link></li>
-              <li><router-link to="/subscriptions" class="hover:text-white transition-colors">Tiered Memberships</router-link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="font-black text-agri-earth uppercase tracking-widest text-xs mb-8">Logistics</h4>
-            <ul class="space-y-4 text-gray-400 font-semibold text-sm">
-              <li><a href="#" class="hover:text-white transition-colors">Container Tracking</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Port Schedules</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Insurance Partners</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="font-black text-agri-earth uppercase tracking-widest text-xs mb-8">Headquarters</h4>
-            <p class="text-gray-400 font-semibold text-sm mb-4 leading-relaxed">IAM Trade Center, Floor 18<br>Business District, London EC2A</p>
-            <div class="flex space-x-4">
-               <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-agri-forest transition-colors"><span class="sr-only">LinkedIn</span></a>
-               <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-agri-forest transition-colors"><span class="sr-only">Twitter</span></a>
-            </div>
-          </div>
-        </div>
-        <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-xs font-bold text-gray-600 uppercase tracking-widest">
-           <p>&copy; 2026 International Agro Marketplace. Built for Integrity.</p>
-           <div class="flex space-x-8 mt-4 md:mt-0">
-              <a href="#" class="hover:text-white transition-colors">Privacy Charter</a>
-              <a href="#" class="hover:text-white transition-colors">Trade Ethics</a>
-           </div>
-        </div>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
 <script setup>
 import Navigation from '../components/Navigation.vue'
+import Footer from '../components/Footer.vue'
 import heroAgri from 'assets/hero-agri.png'
 import agriTrade from 'assets/agri-trade.png'
 </script>

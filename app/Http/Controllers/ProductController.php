@@ -12,10 +12,12 @@ class ProductController extends Controller
     {
         $query = Product::with(['seller', 'category']);
         
+        // Asset Classification Filtering
         if ($request->has('category') && $request->category != '') {
             $query->where('product_category_id', $request->category);
         }
 
+        // Search Protocol
         if ($request->has('search') && $request->search != '') {
             $query->where(function($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
@@ -23,13 +25,44 @@ class ProductController extends Controller
             });
         }
 
-        if ($request->has('own')) {
+        // Advanced Multi-Dimensional Filters (For Marketplace)
+        if ($request->has('min_price') && $request->min_price != '') {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price') && $request->max_price != '') {
+            $query->where('price', '<=', $request->max_price);
+        }
+        if ($request->has('location') && $request->location != '') {
+            $query->where('location', 'like', '%' . $request->location . '%');
+        }
+
+        // Ownership Logic vs Public Discovery
+        if ($request->has('own') && auth()->check()) {
             $query->where('seller_id', auth()->id());
         } else {
             $query->where('status', 'available');
         }
         
         $products = $query->orderBy('created_at', 'desc')->get();
+
+        // Paywall Logic for Public Discovery (Marketplace)
+        if (!$request->has('own')) {
+            $user = auth('sanctum')->user();
+            $hasActiveSubscription = $user ? $user->has_active_subscription : false;
+
+            $products->each(function ($product, $index) use ($hasActiveSubscription) {
+                // First 3 products are free for guests/non-subscribers
+                $product->requires_subscription = (!$hasActiveSubscription && $index >= 3);
+                
+                // If locked, mask sensitive vendor info
+                if ($product->requires_subscription) {
+                    $product->price = null;
+                    $product->location = 'Locked Content';
+                    $product->seller = null;
+                }
+            });
+        }
+
         return response()->json($products);
     }
 

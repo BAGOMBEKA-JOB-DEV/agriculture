@@ -13,6 +13,10 @@ Route::get('/categories', function() {
     return (new CategoryController())->index();
 });
 
+Route::get('/marketplace', [ProductController::class, 'index']);
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -28,7 +32,7 @@ Route::post('/user/change-password', [AuthController::class, 'changePassword'])-
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Products
-    Route::apiResource('products', ProductController::class);
+    Route::apiResource('products', ProductController::class)->except(['index', 'show']);
 
     // RFQs
     Route::apiResource('rfqs', RfqController::class);
