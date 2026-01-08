@@ -59,11 +59,8 @@ export const useAuthStore = defineStore('auth', {
         async register(userData) {
             try {
                 const response = await axios.post('/api/register', userData);
-                this.token = response.data.token;
-                this.user = response.data.user;
-                localStorage.setItem('token', this.token);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
-                return { success: true };
+                // We no longer log the user in automatically after registration
+                return { success: true, message: response.data.message };
             } catch (error) {
                 return {
                     success: false,

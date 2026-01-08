@@ -47,6 +47,17 @@
           <h2 class="text-3xl font-black text-agri-forest tracking-tight">System Login</h2>
           <p class="mt-2 text-sm text-gray-500 font-semibold tracking-wide uppercase">Identity Portal • IAM Hub</p>
         </div>
+
+        <!-- Auth Alert -->
+        <Alert 
+          v-if="authError" 
+          type="error" 
+          title="Access Denied" 
+          class="mb-8"
+          @close="authError = null"
+        >
+          {{ authError }}
+        </Alert>
         
         <form class="space-y-6" @submit.prevent="handleLogin">
           <div class="space-y-4">
@@ -65,14 +76,29 @@
 
             <div class="group">
               <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-agri-forest transition-colors">Credential Key</label>
-              <input 
-                type="password" 
-                placeholder="••••••••" 
-                class="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-agri-forest/10 focus:border-agri-forest transition-all outline-none font-medium"
-                v-model="form.password"
-                required
-                autocomplete="current-password"
-              >
+              <div class="relative">
+                <input 
+                  :type="showPassword ? 'text' : 'password'" 
+                  placeholder="••••••••" 
+                  class="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-agri-forest/10 focus:border-agri-forest transition-all outline-none font-medium pr-12"
+                  v-model="form.password"
+                  required
+                  autocomplete="current-password"
+                >
+                <button 
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-agri-forest transition-colors focus:outline-none p-1"
+                >
+                  <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88L1 1m11 11l9 9" />
+                  </svg>
+                </button>
+              </div>
               <p v-if="errors.password" class="mt-2 text-xs text-red-500 font-bold">{{ errors.password[0] }}</p>
             </div>
           </div>
@@ -113,6 +139,7 @@
 
 <script setup lang="js">
 import Navigation from '../Navigation.vue'
+import Alert from '../Form/Alert.vue'
 import heroAgri from 'assets/hero-agri.png'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -126,10 +153,13 @@ const form = ref({
 })
 const loading = ref(false)
 const errors = ref({})
+const authError = ref(null)
+const showPassword = ref(false)
 
 const handleLogin = async () => {
   loading.value = true
   errors.value = {}
+  authError.value = null
   
   const result = await authStore.login(form.value)
   
@@ -138,8 +168,10 @@ const handleLogin = async () => {
   } else {
     if (result.errors) {
       errors.value = result.errors
-    } else if (window.notify) {
-      window.notify.error('Auth Denied', result.message || 'Invalid Credentials')
+      authError.value = `Access attempt for '${form.value.email}' failed. Please check the required fields below.`
+    } else {
+      // Custom user-friendly message including the provided input
+      authError.value = `Identity '${form.value.email}' is not recognized in our registry, or the credential key is incorrect.`
     }
     loading.value = false
   }
