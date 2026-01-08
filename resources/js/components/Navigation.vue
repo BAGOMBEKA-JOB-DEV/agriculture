@@ -107,7 +107,7 @@ const mobileMenuOpen = ref(false)
 
 const navItems = [
   { name: 'Home', path: '/' },
-  { name: 'Marketplace', path: '/products' },
+  { name: 'Marketplace', path: '/marketplace' },
   { name: 'Trade Tiers', path: '/subscriptions' }
 ]
 </script>

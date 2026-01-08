@@ -24,15 +24,16 @@
         <!-- Messages Dropdown -->
         <MessagesDropdown
           :unread-message-count="unreadMessageCount"
-          :has-new-messages="hasNewMessages"
+          :messages="messages"
           @close="closeMessagesDropdown"
         />
 
         <!-- Notifications Dropdown -->
         <NotificationsDropdown
           :unread-notification-count="unreadNotificationCount"
-          :has-new-notifications="hasNewNotifications"
+          :notifications="notifications"
           @close="closeNotificationsDropdown"
+          @refresh="fetchNotifications"
         />
 
         <div class="h-6 w-px bg-gray-100 mx-2"></div>
@@ -111,19 +112,24 @@
 </template>
 
 <script setup lang="js">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+import axios from 'axios'
 import MessagesDropdown from './MessagesDropdown.vue'
 import NotificationsDropdown from './NotificationsDropdown.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const searchQuery = ref('')
 const showQuickActions = ref(false)
 const unreadMessageCount = ref(0)
 const unreadNotificationCount = ref(0)
-const hasNewMessages = ref(false)
+const messages = ref([])
+const notifications = ref([])
 const hasNewNotifications = ref(false)
+let pollingInterval = null
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
@@ -146,14 +152,46 @@ const closeQuickActions = () => {
   showQuickActions.value = false
 }
 
+const fetchMessages = async () => {
+    try {
+        const response = await axios.get('/api/messages');
+        messages.value = response.data;
+        
+        // Calculate unread count (conversations with unread last message from others)
+        const unreadConvos = messages.value.filter(convo => 
+            !convo.last_message.read_at && 
+            convo.last_message.sender_id !== authStore.user?.id
+        );
+        unreadMessageCount.value = unreadConvos.length;
+    } catch (error) {
+        console.error('Error fetching navbar messages:', error);
+    }
+}
+
+const fetchNotifications = async () => {
+    try {
+        const response = await axios.get('/api/notifications');
+        notifications.value = response.data;
+        unreadNotificationCount.value = notifications.value.filter(n => !n.read_at).length;
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+    }
+}
+
 const fetchNotificationCounts = async () => {
-  unreadMessageCount.value = 3
-  unreadNotificationCount.value = 5
-  hasNewMessages.value = unreadMessageCount.value > 0
-  hasNewNotifications.value = unreadNotificationCount.value > 0
+  await Promise.all([
+     fetchMessages(),
+     fetchNotifications()
+  ]);
 }
 
 onMounted(() => {
-  fetchNotificationCounts()
+  fetchNotificationCounts();
+  // Poll every 30 seconds
+  pollingInterval = setInterval(fetchNotificationCounts, 30000);
+})
+
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval);
 })
 </script>

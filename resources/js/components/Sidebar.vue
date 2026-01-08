@@ -40,7 +40,7 @@
                 :to="item.path"
                 :class="[
                   'group flex items-center px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200',
-                  $route.name === item.name || ($route.path.startsWith(item.path) && item.path !== '/dashboard')
+                  $route.name === item.name || $route.path === item.path || ($route.path.startsWith(item.path + '/') && item.path !== '/dashboard' && item.path !== '/super-admin')
                     ? 'bg-agri-earth text-agri-forest shadow-lg'
                     : 'text-gray-300 hover:bg-agri-lush hover:text-white'
                 ]"
@@ -49,7 +49,7 @@
                 <div 
                   :class="[
                     'mr-3 p-1 rounded-lg transition-colors',
-                    $route.name === item.name || ($route.path.startsWith(item.path) && item.path !== '/dashboard')
+                    $route.name === item.name || $route.path === item.path || ($route.path.startsWith(item.path + '/') && item.path !== '/dashboard' && item.path !== '/super-admin')
                       ? 'bg-agri-forest text-agri-earth'
                       : 'bg-agri-lush text-gray-400 group-hover:text-white'
                   ]"
@@ -223,12 +223,32 @@ const categorizedNavigation = computed(() => {
     ]
   })
 
+  // Communications (Common)
+  nav.push({
+    title: 'Communications',
+    items: [
+      { name: 'UserNotifications', path: '/notifications', label: 'Inbox', icon: icons.reports }, // Using reports icon for now or dashboard
+    ]
+  })
+
   if (role === 'admin') {
     nav.push({
       title: 'Regulator Suite',
       items: [
         { name: 'AdminProducts', path: '/admin/products', label: 'Asset Moderation', icon: icons.products },
         { name: 'AdminUsers', path: '/admin/users', label: 'Identity Nexus', icon: icons.users },
+      ]
+    })
+  }
+
+  if (role === 'super_admin') {
+    nav.push({
+      title: 'Global Governance',
+      items: [
+        { name: 'SuperAdminDashboard', path: '/super-admin', label: 'Governance Nexus', icon: icons.dashboard },
+        { name: 'SuperAdminCategories', path: '/super-admin/categories', label: 'Asset Classifications', icon: icons.rfqs },
+        { name: 'AdminNotifications', path: '/admin/notifications', label: 'Broadcast Center', icon: icons.reports },
+        { name: 'AdminUsers', path: '/admin/users', label: 'Entity Registry', icon: icons.users },
       ]
     })
   }

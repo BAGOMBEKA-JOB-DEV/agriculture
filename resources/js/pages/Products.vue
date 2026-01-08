@@ -68,7 +68,7 @@
           class="bg-white rounded-[2.5rem] shadow-xl shadow-agri-forest/5 border border-gray-100 overflow-hidden group hover:-translate-y-2 transition-all duration-500"
         >
           <div class="h-64 bg-gray-100 relative overflow-hidden">
-            <img v-if="product.image" :src="product.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+            <img v-if="product.images && product.images.length > 0" :src="product.images[0]" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
             <div v-else class="w-full h-full bg-agri-sand/30 flex items-center justify-center text-agri-forest text-4xl">
                  <svg class="w-16 h-16 opacity-20" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
@@ -121,7 +121,8 @@ const categories = ref([]);
 const loading = ref(true);
 const filters = ref({
   search: '',
-  category: ''
+  category: '',
+  own: 1
 });
 
 // Simple debounce implementation
@@ -148,16 +149,6 @@ const fetchProducts = async () => {
     const response = await axios.get('/api/products', { params: filters.value });
     // Robustly handle different response formats
     products.value = response.data.data || response.data || [];
-    
-    // Fallback Mock Data for demo
-    if (products.value.length === 0 && !filters.value.search) {
-        products.value = [
-            { id: 1, name: 'Premium White Maize', category: { name: 'Grains' }, location: 'Nakuru, Kenya', price: 450, unit: 'MT' },
-            { id: 2, name: 'Grade A Cashew Nuts', category: { name: 'Nuts' }, location: 'Mombasa, Kenya', price: 1200, unit: 'MT' },
-            { id: 3, name: 'Organic Arabica Coffee', category: { name: 'Coffee' }, location: 'Addis Ababa, Ethiopia', price: 3400, unit: 'MT' },
-            { id: 4, name: 'Sun-Dried Cocoa Beans', category: { name: 'Cocoa' }, location: 'Kumasi, Ghana', price: 2800, unit: 'MT' }
-        ];
-    }
   } catch (error) {
     console.error('Error fetching products:', error);
     products.value = [];

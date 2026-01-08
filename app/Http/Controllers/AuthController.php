@@ -30,11 +30,12 @@ class AuthController extends Controller
             'role' => $request->role ?: 'buyer',
         ]);
 
-        $token = $user->createToken('API Token')->plainTextToken;
+        // Dispatch Welcome Email Job
+        \App\Jobs\ProcessWelcomeRegistration::dispatch($user);
 
         return response()->json([
             'user' => $user,
-            'token' => $token,
+            'message' => 'Account created successfully. Please login to continue.'
         ], 201);
     }
 
@@ -54,6 +55,15 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        // Dispatch Security Alert Job
+        \App\Jobs\ProcessLoginSecurityAlert::dispatch(
+            $user, 
+            $request->ip(), 
+            $request->header('User-Agent'), 
+            now()->format('M d, Y H:i:s T')
+        );
+
         // Create token that expires in 1 hour (60 minutes)
         $token = $user->createToken('API Token', ['*'], now()->addMinutes(60))->plainTextToken;
 

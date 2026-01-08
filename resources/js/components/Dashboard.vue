@@ -37,7 +37,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
               </svg>
             </div>
-            <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">+42 new</span>
+            <span v-if="stats.new_products > 0" class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">+{{ stats.new_products }} new</span>
+            <span v-else class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">Steady State</span>
           </div>
           <div>
             <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Global Listings</p>
@@ -155,12 +156,15 @@
               <tr v-for="product in recentProducts" :key="product.id" class="group hover:bg-agri-sand/10 transition-colors duration-200">
                 <td class="px-8 py-5">
                   <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-xl bg-agri-sand/30 flex items-center justify-center text-agri-forest font-black mr-4 group-hover:bg-agri-forest group-hover:text-white transition-all duration-300">
-                      {{ product.name.charAt(0).toUpperCase() }}
+                    <div class="w-10 h-10 rounded-xl bg-agri-sand/30 flex-shrink-0 overflow-hidden mr-4 group-hover:bg-agri-forest transition-all duration-300">
+                        <img v-if="product.images && product.images.length > 0" :src="product.images[0]" class="w-full h-full object-cover">
+                        <div v-else class="w-full h-full flex items-center justify-center text-agri-forest font-black group-hover:text-white">
+                            {{ product.name.charAt(0).toUpperCase() }}
+                        </div>
                     </div>
                     <div>
                       <p class="text-sm font-bold text-gray-900 group-hover:text-agri-forest transition-colors">{{ product.name }}</p>
-                      <p class="text-xs text-gray-400 font-medium truncate max-w-[200px]">{{ product.category }}</p>
+                      <p class="text-xs text-gray-400 font-medium truncate max-w-[200px]">{{ product.category?.name || 'Trade Asset' }}</p>
                     </div>
                   </div>
                 </td>
@@ -207,6 +211,7 @@ const allProducts = ref([])
 const allRfqs = ref([])
 const stats = ref({
   products: 0,
+  new_products: 0,
   rfqs: 0,
   sellers: 0,
 })
@@ -227,6 +232,10 @@ const fetchDashboardData = async () => {
     recentProducts.value = allProducts.value.slice(0, 5)
     stats.value.products = allProducts.value.length
     stats.value.rfqs = allRfqs.value.length
+
+    // Calculate new products (last 24 hours)
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    stats.value.new_products = allProducts.value.filter(p => new Date(p.created_at) > twentyFourHoursAgo).length
     
     // Calculate unique sellers from products
     const uniqueSellers = new Set(allProducts.value.map(p => p.seller_id))
@@ -235,11 +244,12 @@ const fetchDashboardData = async () => {
     // Fill with sample data if empty to show UI and help user visualize
     if (allProducts.value.length === 0) {
         recentProducts.value = [
-          { id: 1, name: 'White Maize', category: 'Grains', min_order: 10, unit: 'Tons', price: 280, location: 'Nakuru, Kenya' },
-          { id: 2, name: 'Grade A Arabica', category: 'Coffee', min_order: 50, unit: 'Bags', price: 450, location: 'Sidamo, Ethiopia' },
-          { id: 3, name: 'Raw Cashew Nuts', category: 'Nuts', min_order: 5, unit: 'Tons', price: 1200, location: 'Mtwara, Tanzania' },
+          { id: 1, name: 'White Maize', category: { name: 'Grains' }, min_order: 10, unit: 'Tons', price: 280, location: 'Nakuru, Kenya' },
+          { id: 2, name: 'Grade A Arabica', category: { name: 'Coffee' }, min_order: 50, unit: 'Bags', price: 450, location: 'Sidamo, Ethiopia' },
+          { id: 3, name: 'Raw Cashew Nuts', category: { name: 'Nuts' }, min_order: 5, unit: 'Tons', price: 1200, location: 'Mtwara, Tanzania' },
         ]
         stats.value.products = 1240
+        stats.value.new_products = 42
         stats.value.rfqs = 86
         stats.value.sellers = 45
     }

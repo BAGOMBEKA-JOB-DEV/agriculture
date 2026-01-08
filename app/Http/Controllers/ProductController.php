@@ -8,17 +8,61 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = Product::with(['seller']);
+        $query = Product::with(['seller', 'category']);
         
-        if (request()->has('own')) {
+        // Asset Classification Filtering
+        if ($request->has('category') && $request->category != '') {
+            $query->where('product_category_id', $request->category);
+        }
+
+        // Search Protocol
+        if ($request->has('search') && $request->search != '') {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Advanced Multi-Dimensional Filters (For Marketplace)
+        if ($request->has('min_price') && $request->min_price != '') {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price') && $request->max_price != '') {
+            $query->where('price', '<=', $request->max_price);
+        }
+        if ($request->has('location') && $request->location != '') {
+            $query->where('location', 'like', '%' . $request->location . '%');
+        }
+
+        // Ownership Logic vs Public Discovery
+        if ($request->has('own') && auth()->check()) {
             $query->where('seller_id', auth()->id());
         } else {
             $query->where('status', 'available');
         }
         
-        $products = $query->get();
+        $products = $query->orderBy('created_at', 'desc')->get();
+
+        // Paywall Logic for Public Discovery (Marketplace)
+        if (!$request->has('own')) {
+            $user = auth('sanctum')->user();
+            $hasActiveSubscription = $user ? $user->has_active_subscription : false;
+
+            $products->each(function ($product, $index) use ($hasActiveSubscription) {
+                // First 3 products are free for guests/non-subscribers
+                $product->requires_subscription = (!$hasActiveSubscription && $index >= 3);
+                
+                // If locked, mask sensitive vendor info
+                if ($product->requires_subscription) {
+                    $product->price = null;
+                    $product->location = 'Locked Content';
+                    $product->seller = null;
+                }
+            });
+        }
+
         return response()->json($products);
     }
 
@@ -27,7 +71,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'nullable|string',
+            'product_category_id' => 'nullable|exists:product_categories,id',
             'unit' => 'nullable|string',
             'min_order' => 'nullable|numeric|min:0',
             'price' => 'nullable|numeric',
@@ -44,12 +88,12 @@ class ProductController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'seller_id' => auth()->id(),
-            'category' => $request->category,
+            'product_category_id' => $request->product_category_id,
             'unit' => $request->unit ?: 'kg',
             'min_order' => $request->min_order ?: 1,
             'price' => $request->price,
             'location' => $request->location,
-            'image' => $request->image,
+            'images' => $request->images,
             'status' => $request->status ?: 'pending',
         ]);
 
@@ -58,7 +102,7 @@ class ProductController extends Controller
 
     public function show(string $id)
     {
-        $product = Product::where('id', $id)->with('seller')->firstOrFail();
+        $product = Product::where('id', $id)->with(['seller', 'category'])->firstOrFail();
         return response()->json($product);
     }
 
@@ -69,7 +113,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'nullable|string',
+            'product_category_id' => 'nullable|exists:product_categories,id',
             'unit' => 'nullable|string',
             'min_order' => 'nullable|numeric|min:0',
             'price' => 'nullable|numeric',
@@ -82,7 +126,7 @@ class ProductController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $product->update($request->only(['name', 'description', 'category', 'unit', 'min_order', 'price', 'location', 'image', 'status']));
+        $product->update($request->only(['name', 'description', 'product_category_id', 'unit', 'min_order', 'price', 'location', 'images', 'status']));
 
         return response()->json($product);
     }
