@@ -60,9 +60,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/products', [\App\Http\Controllers\AdminController::class, 'products']);
     Route::post('/admin/products/{id}/approve', [\App\Http\Controllers\AdminController::class, 'approveProduct']);
     Route::post('/admin/products/{id}/reject', [\App\Http\Controllers\AdminController::class, 'rejectProduct']);
-    Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'users']);
-    Route::post('/admin/users/{id}/verify', [\App\Http\Controllers\AdminController::class, 'verifyUser']);
-
+    Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index']);
+    Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store']);
+    Route::post('/admin/users/bulk-action', [\App\Http\Controllers\Admin\UserController::class, 'bulkAction']);
+    Route::post('/admin/users/invite', [\App\Http\Controllers\Admin\UserController::class, 'invite']);
+    
+    Route::get('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'show']);
+    Route::put('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'update']);
+    Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy']);
+    
+    Route::post('/admin/users/{id}/suspend', [\App\Http\Controllers\Admin\UserController::class, 'suspend']);
+    Route::post('/admin/users/{id}/activate', [\App\Http\Controllers\Admin\UserController::class, 'activate']);
+    Route::post('/admin/users/{id}/impersonate', [\App\Http\Controllers\Admin\UserController::class, 'impersonate']);
+    Route::post('/admin/users/{id}/reset-password', [\App\Http\Controllers\Admin\UserController::class, 'resetPassword']);
+    Route::post('/admin/users/{id}/verify', [\App\Http\Controllers\Admin\UserController::class, 'verifyUser']);
+    
     // Super Admin Governance
     Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
         Route::get('/stats', [\App\Http\Controllers\SuperAdminController::class, 'stats']);
