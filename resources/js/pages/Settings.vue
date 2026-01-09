@@ -26,7 +26,7 @@
               <button 
                 v-for="tab in tabs" 
                 :key="tab.id"
-                @click="activeTab = tab.id"
+                @click="activeTab = tab.id; resetPasswordForm()"
                 :class="[
                   'w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 group',
                   activeTab === tab.id 
@@ -128,7 +128,7 @@
                     >
                       {{ loading ? 'Synchronizing...' : 'Update Identity' }}
                     </button>
-                    <button type="button" class="px-8 py-4 bg-gray-50 text-gray-500 rounded-2xl font-black text-sm hover:bg-gray-100 transition-all">
+                    <button @click="resetDefaults" type="button" class="px-8 py-4 bg-gray-50 text-gray-500 rounded-2xl font-black text-sm hover:bg-gray-100 transition-all">
                         Reset Defaults
                     </button>
                   </div>
@@ -153,31 +153,58 @@
                         <div class="grid gap-6">
                             <div class="space-y-2">
                                 <label class="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Current Protocol Password</label>
-                                <input 
-                                    v-model="passwordData.current_password"
-                                    type="password" 
-                                    class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-700"
-                                    placeholder="••••••••"
-                                >
+                                <div class="relative">
+                                  <input 
+                                      v-model="passwordData.current_password"
+                                      :type="showCurrent ? 'text' : 'password'" 
+                                      class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-700 pr-12"
+                                      placeholder="••••••••"
+                                  >
+                                  <button 
+                                    @click="showCurrent = !showCurrent" 
+                                    type="button" 
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-agri-forest transition-colors"
+                                  >
+                                    <component :is="showCurrent ? EyeSlashIcon : EyeIcon" class="w-5 h-5" />
+                                  </button>
+                                </div>
                             </div>
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-xs font-black text-gray-400 uppercase tracking-widest px-1">New Policy Password</label>
-                                    <input 
-                                        v-model="passwordData.password"
-                                        type="password" 
-                                        class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-700"
-                                        placeholder="••••••••"
-                                    >
+                                    <div class="relative">
+                                      <input 
+                                          v-model="passwordData.password"
+                                          :type="showNew ? 'text' : 'password'" 
+                                          class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-700 pr-12"
+                                          placeholder="••••••••"
+                                      >
+                                      <button 
+                                        @click="showNew = !showNew" 
+                                        type="button" 
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-agri-forest transition-colors"
+                                      >
+                                        <component :is="showNew ? EyeSlashIcon : EyeIcon" class="w-5 h-5" />
+                                      </button>
+                                    </div>
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Confirm New Policy</label>
-                                    <input 
-                                        v-model="passwordData.password_confirmation"
-                                        type="password" 
-                                        class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-700"
-                                        placeholder="••••••••"
-                                    >
+                                    <div class="relative">
+                                      <input 
+                                          v-model="passwordData.password_confirmation"
+                                          :type="showConfirm ? 'text' : 'password'" 
+                                          class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-700 pr-12"
+                                          placeholder="••••••••"
+                                      >
+                                      <button 
+                                        @click="showConfirm = !showConfirm" 
+                                        type="button" 
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-agri-forest transition-colors"
+                                      >
+                                        <component :is="showConfirm ? EyeSlashIcon : EyeIcon" class="w-5 h-5" />
+                                      </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -258,6 +285,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
 
@@ -280,10 +308,21 @@ const BoxIcon = {
 const AlertIcon = {
   template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>'
 }
+const EyeIcon = {
+  template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.036 12.322a1.012 1.012 0 010-.644C3.483 8.633 7.513 5 12 5c4.486 0 8.517 3.633 9.964 6.678.067.141.067.303 0 .444C20.517 15.367 16.487 19 12 19c-4.486 0-8.517-3.633-9.964-6.678z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>'
+}
+const EyeSlashIcon = {
+  template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>'
+}
 
 const authStore = useAuthStore()
+const router = useRouter()
 const activeTab = ref('profile')
 const loading = ref(false)
+
+const showCurrent = ref(false)
+const showNew = ref(false)
+const showConfirm = ref(false)
 
 const profileData = ref({
   name: '',
@@ -339,6 +378,17 @@ const fetchUser = async () => {
   }
 }
 
+const resetDefaults = () => {
+    fetchUser()
+    if (window.notify) {
+        window.notify.success('Protocol Reset', 'Identity parameters reverted to server state.')
+    }
+}
+
+const resetPasswordForm = () => {
+    passwordData.value = { current_password: '', password: '', password_confirmation: '' }
+}
+
 const saveProfile = async () => {
     loading.value = true
     try {
@@ -350,7 +400,14 @@ const saveProfile = async () => {
         authStore.user = response.data
     } catch (error) {
         if (window.notify) {
-            window.notify.error('Sync Error', error.response?.data?.message || 'Protocol failure during sync.')
+            const errors = error.response?.data?.errors;
+            if (errors) {
+                Object.keys(errors).forEach(key => {
+                    window.notify.error('Profile Error', errors[key][0]);
+                });
+            } else {
+                window.notify.error('Sync Error', error.response?.data?.message || 'Protocol failure during sync.')
+            }
         }
     } finally {
         loading.value = false
@@ -358,16 +415,41 @@ const saveProfile = async () => {
 }
 
 const savePassword = async () => {
+    // Frontend Parity Check
+    if (passwordData.value.password !== passwordData.value.password_confirmation) {
+        if (window.notify) {
+            window.notify.error('Access Failure', 'The new passwords do not match.')
+        }
+        return
+    }
+
+    if (passwordData.value.password.length < 8) {
+        if (window.notify) {
+            window.notify.error('Access Failure', 'The password must be at least 8 characters.')
+        }
+        return
+    }
+
     loading.value = true
     try {
         await axios.post('/api/user/change-password', passwordData.value)
         if (window.notify) {
-            window.notify.success('Protocol Secured', 'Your access credentials have been reset.')
+            window.notify.success('Protocol Secured', 'Your access credentials have been reset. Please login with your new credentials.')
         }
-        passwordData.value = { current_password: '', password: '', password_confirmation: '' }
+        
+        // Mandatory Logout and Redirect
+        await authStore.logout()
+        router.push('/login')
     } catch (error) {
         if (window.notify) {
-            window.notify.error('Access Failure', error.response?.data?.errors?.current_password?.[0] || 'Verification fail.')
+            const errors = error.response?.data?.errors;
+            if (errors) {
+                Object.keys(errors).forEach(key => {
+                    window.notify.error('Access Failure', errors[key][0]);
+                });
+            } else {
+                window.notify.error('Access Failure', error.response?.data?.message || 'Verification fail.')
+            }
         }
     } finally {
         loading.value = false
