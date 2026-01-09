@@ -14,10 +14,10 @@ Route::get('/categories', function() {
     return (new CategoryController())->index();
 });
 
-Route::get('/marketplace', [ProductController::class, 'index']);
-Route::get('/search', [SearchController::class, 'index']);
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
+Route::get('/marketplace', [ProductController::class, 'index'])->name('marketplace.index');
+Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -57,29 +57,36 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
 
-    // Admin Broadcast Center
-    Route::get('/admin/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index']);
-    Route::post('/admin/notifications/broadcast', [\App\Http\Controllers\Admin\NotificationController::class, 'store']);
-    Route::get('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'show']);
-    Route::put('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'update']);    // Admin
-    Route::get('/admin/stats', [\App\Http\Controllers\AdminController::class, 'stats']);
-    Route::get('/admin/products', [\App\Http\Controllers\AdminController::class, 'products']);
-    Route::post('/admin/products/{id}/approve', [\App\Http\Controllers\AdminController::class, 'approveProduct']);
-    Route::post('/admin/products/{id}/reject', [\App\Http\Controllers\AdminController::class, 'rejectProduct']);
-    Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index']);
-    Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store']);
-    Route::post('/admin/users/bulk-action', [\App\Http\Controllers\Admin\UserController::class, 'bulkAction']);
-    Route::post('/admin/users/invite', [\App\Http\Controllers\Admin\UserController::class, 'invite']);
-    
-    Route::get('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'show']);
-    Route::put('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'update']);
-    Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy']);
-    
-    Route::post('/admin/users/{id}/suspend', [\App\Http\Controllers\Admin\UserController::class, 'suspend']);
-    Route::post('/admin/users/{id}/activate', [\App\Http\Controllers\Admin\UserController::class, 'activate']);
-    Route::post('/admin/users/{id}/impersonate', [\App\Http\Controllers\Admin\UserController::class, 'impersonate']);
-    Route::post('/admin/users/{id}/reset-password', [\App\Http\Controllers\Admin\UserController::class, 'resetPassword']);
-    Route::post('/admin/users/{id}/verify', [\App\Http\Controllers\Admin\UserController::class, 'verifyUser']);
+    // Admin routes protected by role middleware
+    Route::middleware('role:admin')->group(function () {
+        // Admin Broadcast Center
+        Route::get('/admin/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index']);
+        Route::post('/admin/notifications/broadcast', [\App\Http\Controllers\Admin\NotificationController::class, 'store']);
+        Route::get('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'show']);
+        Route::put('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'update']);
+        
+        // Admin Dashboard & Product Moderation
+        Route::get('/admin/stats', [\App\Http\Controllers\AdminController::class, 'stats']);
+        Route::get('/admin/products', [\App\Http\Controllers\AdminController::class, 'products']);
+        Route::post('/admin/products/{id}/approve', [\App\Http\Controllers\AdminController::class, 'approveProduct']);
+        Route::post('/admin/products/{id}/reject', [\App\Http\Controllers\AdminController::class, 'rejectProduct']);
+        
+        // Admin User Management
+        Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index']);
+        Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store']);
+        Route::post('/admin/users/bulk-action', [\App\Http\Controllers\Admin\UserController::class, 'bulkAction']);
+        Route::post('/admin/users/invite', [\App\Http\Controllers\Admin\UserController::class, 'invite']);
+        
+        Route::get('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'show']);
+        Route::put('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'update']);
+        Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy']);
+        
+        Route::post('/admin/users/{id}/suspend', [\App\Http\Controllers\Admin\UserController::class, 'suspend']);
+        Route::post('/admin/users/{id}/activate', [\App\Http\Controllers\Admin\UserController::class, 'activate']);
+        Route::post('/admin/users/{id}/impersonate', [\App\Http\Controllers\Admin\UserController::class, 'impersonate']);
+        Route::post('/admin/users/{id}/reset-password', [\App\Http\Controllers\Admin\UserController::class, 'resetPassword']);
+        Route::post('/admin/users/{id}/verify', [\App\Http\Controllers\Admin\UserController::class, 'verifyUser']);
+    });
     
     // Super Admin Governance
     Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {

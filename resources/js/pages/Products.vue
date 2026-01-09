@@ -95,8 +95,8 @@
                 <div>
                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Market Value</p>
                    <p class="text-lg font-black text-agri-forest">
-                     <span v-if="product.price">${{ product.price }} <span class="text-xs text-gray-400 font-bold">/ {{ product.unit }}</span></span>
-                     <span v-else class="italic text-agri-earth">Contact Vendor</span>
+                      <span v-if="product.price">${{ product.price }} <span class="text-xs text-gray-400 font-bold">/ {{ product.unit }}</span></span>
+                      <span v-else class="italic text-agri-earth font-black uppercase text-[10px]">Negotiable</span>
                    </p>
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-agri-forest group-hover:bg-agri-forest group-hover:text-white transition-all shadow-sm">
@@ -122,7 +122,6 @@ const loading = ref(true);
 const filters = ref({
   search: '',
   category: '',
-  own: 1
 });
 
 // Simple debounce implementation

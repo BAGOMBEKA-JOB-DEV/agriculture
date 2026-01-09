@@ -36,19 +36,35 @@ class ProductController extends Controller
             $query->where('location', 'like', '%' . $request->location . '%');
         }
 
-        // Ownership Logic vs Public Discovery
-        if ($request->has('own') && auth()->check()) {
-            $query->where('seller_id', auth()->id());
+        // Ownership Logic vs Public Discovery (Sanctum aware)
+        $user = auth('sanctum')->user();
+        
+        if ($request->has('own') && $request->own == 1 && $user) {
+            // Private Inventory: Show only vendor's own products
+            $query->where('seller_id', $user->id);
         } else {
-            $query->where('status', 'available');
+            // Global Marketplace: Show all available products
+            $query->where(function ($q) use ($user) {
+                $q->where('status', 'available');
+                
+                // Vendors also see their own products (even if pending/rejected) in the global list
+                if ($user && $user->role === 'vendor') {
+                    $q->orWhere('seller_id', $user->id);
+                }
+            });
         }
         
         $products = $query->orderBy('created_at', 'desc')->get();
 
         // Paywall Logic for Public Discovery (Marketplace)
-        if (!$request->has('own')) {
+        if ($request->routeIs('marketplace.index')) {
             $user = auth('sanctum')->user();
             $hasActiveSubscription = $user ? $user->has_active_subscription : false;
+
+            if (!$hasActiveSubscription && $products->count() > 3) {
+                // Truncate to show only one locked product card after the 3 free ones
+                $products = $products->take(4);
+            }
 
             $products->each(function ($product, $index) use ($hasActiveSubscription) {
                 // First 3 products are free for guests/non-subscribers
@@ -62,6 +78,7 @@ class ProductController extends Controller
                 }
             });
         }
+
 
         return response()->json($products);
     }

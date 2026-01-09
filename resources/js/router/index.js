@@ -84,7 +84,7 @@ const routes = [
     component: Products,
     meta: {
       requiresAuth: true,
-      breadcrumb: { label: 'My Inventory' }
+      breadcrumb: { label: 'Global Exchange' }
     },
   },
   {
@@ -94,8 +94,8 @@ const routes = [
     meta: {
       requiresAuth: true,
       breadcrumb: [
-        { label: 'My Inventory', path: '/products' },
-        { label: 'Product Details' }
+        { label: 'Global Exchange', path: '/products' },
+        { label: 'Asset Details' }
       ]
     },
   },
