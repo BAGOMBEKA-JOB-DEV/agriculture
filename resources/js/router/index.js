@@ -3,7 +3,6 @@ import Home from '../Landing/Home.vue';
 import Login from '../components/Auth/Login.vue';
 import Register from '../components/Auth/Register.vue';
 import Dashboard from '../components/Dashboard.vue';
-import Profile from '../components/Profile.vue';
 
 // Agriculture Marketplace Components
 import Products from '../pages/Products.vue';
@@ -26,6 +25,7 @@ import SuperAdminCategories from '../pages/super-admin/Categories.vue';
 
 import Marketplace from '../pages/Marketplace.vue';
 import MarketplaceDetail from '../pages/MarketplaceDetail.vue';
+import Settings from '../pages/Settings.vue';
 
 const routes = [
   {
@@ -42,6 +42,18 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home,
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings,
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Dashboard', path: '/dashboard' },
+        { label: 'Personal Nexus' }
+      ]
+    },
   },
   // Marketplace Routes (Public Discovery)
   {
@@ -94,15 +106,6 @@ const routes = [
     meta: {
       requiresAuth: true,
       breadcrumb: { label: 'Dashboard' }
-    },
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
-    meta: {
-      requiresAuth: true,
-      breadcrumb: { label: 'Profile' }
     },
   },
   {

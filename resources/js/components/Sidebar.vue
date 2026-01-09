@@ -99,7 +99,7 @@
                 class="absolute bottom-full left-0 right-0 mb-2 py-1 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-20"
               >
                 <router-link
-                  to="/profile"
+                  to="/settings"
                   @click="closeDropdown"
                   class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-agri-sand/50 transition-colors"
                 >

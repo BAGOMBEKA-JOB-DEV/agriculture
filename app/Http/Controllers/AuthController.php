@@ -90,6 +90,9 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
+            'phone' => 'nullable|string|max:20',
+            'location' => 'nullable|string|max:255',
+            'notification_preferences' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -100,6 +103,9 @@ class AuthController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
+            'location' => $request->location,
+            'notification_preferences' => $request->notification_preferences,
         ]);
 
         return response()->json($user);
