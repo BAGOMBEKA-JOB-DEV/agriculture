@@ -6,6 +6,7 @@ use App\Http\Controllers\RfqController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,7 @@ Route::get('/categories', function() {
 });
 
 Route::get('/marketplace', [ProductController::class, 'index']);
+Route::get('/search', [SearchController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 
