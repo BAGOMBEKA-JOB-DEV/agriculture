@@ -21,9 +21,11 @@ class CheckRole
             return redirect()->route('login');
         }
 
-        if ($user->role !== $role) {
-            abort(403, 'Unauthorized access.');
+        if ($user->role === 'super_admin' || $user->role === $role) {
+            return $next($request);
         }
+
+        abort(403, 'Unauthorized access.');
 
         return $next($request);
     }
