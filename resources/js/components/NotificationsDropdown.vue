@@ -20,16 +20,18 @@
     <!-- Dropdown Menu -->
     <div
       v-if="isOpen"
-      class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50"
-      :class="{ 'left-0 right-auto': isMobile }"
+      class="fixed inset-x-0 top-[65px] sm:absolute sm:inset-auto sm:right-0 sm:mt-3 w-full sm:w-96 bg-white sm:rounded-2xl shadow-xl ring-1 ring-black ring-opacity-5 z-[70] overflow-hidden transition-all"
       @click.stop
     >
       <!-- Header -->
-      <div class="flex items-center justify-between p-4 border-b border-gray-200">
-        <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
+      <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-white">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-900 tracking-tight">System Alerts</h3>
+          <p class="text-[10px] font-medium text-gray-400 mt-0.5">Real-time marketplace intelligence</p>
+        </div>
         <button
           @click="closeDropdown"
-          class="text-gray-400 hover:text-gray-600 transition-colors"
+          class="p-2 text-gray-400 hover:text-agri-forest hover:bg-agri-sand/10 rounded-xl transition-all"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -38,55 +40,49 @@
       </div>
 
       <!-- Notifications List -->
-      <div class="max-h-96 overflow-y-auto">
+      <div class="max-h-[32rem] overflow-y-auto divide-y divide-gray-50">
         <div
           v-for="notification in notifications"
           :key="notification.id"
-          class="flex items-start space-x-3 p-3 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-b-0"
-          :class="{ 'bg-blue-50 border-l-4 border-blue-500': !notification.read_at }"
+          class="flex items-start space-x-4 p-4 hover:bg-gray-50/80 transition-colors cursor-pointer group relative"
+          :class="{ 'bg-agri-sand/5': !notification.read_at }"
           @click="markAsRead(notification)"
         >
           <div class="flex-shrink-0">
-            <div class="h-8 w-8 rounded-full flex items-center justify-center" :class="getIconBg(notification.data.priority)">
-              <component :is="getIcon(notification.data.priority)" class="h-4 w-4 text-white" />
+            <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform" :class="getIconBg(notification.data.priority)">
+              <component :is="getIcon(notification.data.priority)" class="h-5 w-5 text-white" />
             </div>
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
-              <p class="text-xs font-medium text-gray-900">{{ notification.data.subject }}</p>
-              <p class="text-xs text-gray-500">{{ formatTime(notification.created_at) }}</p>
+              <p class="text-xs font-semibold text-gray-900 tracking-tight">{{ notification.data.subject }}</p>
+              <p class="text-[10px] font-medium text-gray-400 ml-2 whitespace-nowrap">{{ formatTime(notification.created_at) }}</p>
             </div>
-            <p class="text-xs text-gray-600 mt-1">{{ notification.data.message }}</p>
+            <p class="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">{{ notification.data.message }}</p>
           </div>
-          <div v-if="!notification.read_at" class="flex-shrink-0">
-            <div class="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
-          </div>
+          <div v-if="!notification.read_at" class="absolute left-0 top-0 bottom-0 w-1 bg-agri-forest"></div>
         </div>
 
         <!-- Empty State -->
-        <div v-if="notifications.length === 0" class="text-center py-6">
-          <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM15 7v5H9v6H5V7h10z"></path>
-          </svg>
-          <h3 class="mt-2 text-xs font-medium text-gray-900">No notifications</h3>
-          <p class="mt-1 text-xs text-gray-500">You're all caught up!</p>
+        <div v-if="notifications.length === 0" class="text-center py-12 px-6">
+            <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM15 7v5H9v6H5V7h10z"></path>
+                </svg>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-900">All caught up</h3>
+            <p class="mt-1 text-xs text-gray-500 leading-relaxed">No new alerts found. Your nexus is fully synchronized.</p>
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="border-t border-gray-200 p-3">
-        <div class="flex items-center justify-between">
-          <button @click="markAllAsRead" class="text-xs text-gray-600 hover:text-gray-800 font-medium">
-            Mark all as read
-          </button>
-          <router-link 
-            to="/notifications" 
-            @click="closeDropdown" 
-            class="text-xs text-indigo-600 hover:text-indigo-500 font-medium"
-          >
-            View All Notifications
-          </router-link>
-        </div>
+      <div class="bg-gray-50/50 p-4 border-t border-gray-100 flex items-center justify-between">
+        <button @click="markAllAsRead" class="text-[10px] font-semibold text-gray-500 hover:text-gray-900 transition-colors">
+          Mark all as read
+        </button>
+        <router-link to="/notifications" @click="closeDropdown" class="text-[10px] font-semibold text-agri-forest hover:text-agri-lush transition-colors">
+          Audit trail
+        </router-link>
       </div>
     </div>
   </div>
@@ -126,7 +122,6 @@ const emit = defineEmits(['close', 'refresh'])
 const router = useRouter()
 
 const isOpen = ref(false)
-const isMobile = ref(false)
 
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value
@@ -189,8 +184,6 @@ const markAsRead = async (notification) => {
     router.push(`/notifications/${notification.id}`);
 }
 
-
-
 const markAllAsRead = async () => {
     try {
         await axios.post('/api/notifications/read-all');
@@ -200,26 +193,18 @@ const markAllAsRead = async () => {
     }
 }
 
-// Close dropdown when clicking outside
+// Click outside handling
 const handleClickOutside = (event) => {
-  const dropdown = event.target.closest('.relative')
-  if (!dropdown) {
+  if (isOpen.value && !event.target.closest('.relative')) {
     closeDropdown()
   }
 }
 
-const checkMobile = () => {
-  isMobile.value = window.innerWidth < 640 // sm breakpoint
-}
-
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  window.addEventListener('resize', checkMobile)
-  checkMobile()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
-  window.removeEventListener('resize', checkMobile)
 })
 </script>

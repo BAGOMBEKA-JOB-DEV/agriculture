@@ -14,7 +14,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                 </svg>
             </div>
-            <span class="text-xl font-black tracking-tighter uppercase leading-none">AgriXchange <br><span class="text-[#D4A373] text-[10px] tracking-[0.3em] font-bold">Global Trade Hub</span></span>
+            <span class="text-xl font-black tracking-tighter uppercase leading-none">IAM <br><span class="text-[#D4A373] text-[10px] tracking-[0.3em] font-bold">Global Trade Hub</span></span>
           </router-link>
           <p class="text-gray-500 font-medium leading-relaxed mb-10 text-sm max-w-sm italic">
             "Empowering the world's agricultural producers through a high-integrity, transparency-driven digital trade protocol."
@@ -63,7 +63,7 @@
               <h4 class="font-black text-[#D4A373] uppercase tracking-[0.2em] text-[10px] mb-8">Contact</h4>
               <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">Trade HQ, Floor 24</p>
               <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mb-8 leading-loose">Business Bay, DXB<br>United Arab Emirates</p>
-              <a href="mailto:trade@agrixchange.com" class="text-white font-black text-xs underline underline-offset-8 hover:text-[#D4A373] transition-colors">trade@agrixchange.com</a>
+              <a href="mailto:trade@iam.com" class="text-white font-black text-xs underline underline-offset-8 hover:text-[#D4A373] transition-colors">trade@iam.com</a>
             </div>
           </div>
         </div>
@@ -73,7 +73,7 @@
       <div class="border-t border-white/5 pt-12 flex flex-col md:flex-row justify-between items-center gap-8">
         <div class="flex flex-col md:flex-row items-center gap-8">
             <p class="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">
-              &copy; 2026 AgriXchange Systems. Managed by International Agro Registry.
+              &copy; 2026 IAM Systems. Managed by International Agro Registry.
             </p>
             <div class="flex items-center space-x-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">
                <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-green-500/40 mr-2 animate-pulse"></span> Network Status: Nominal</span>

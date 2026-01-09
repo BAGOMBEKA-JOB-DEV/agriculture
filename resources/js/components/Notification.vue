@@ -98,7 +98,7 @@ const getIconColor = (type) => {
   }
 }
 
-const addNotification = (type, title, message, duration = 5000) => {
+const addNotification = (type, title, message, duration = 120000) => {
   const id = ++notificationId
   notifications.value.push({
     id,
