@@ -3,7 +3,7 @@
     <!-- Breadcrumb Layer -->
     <div class="bg-white border-b border-gray-100">
       <div class="max-w-7xl mx-auto px-6 py-4 flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
-        <router-link to="/products" class="hover:text-agri-forest transition">Market Discovery</router-link>
+        <router-link to="/products" class="hover:text-agri-forest transition">Global Exchange</router-link>
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         <span class="text-agri-forest">{{ product?.category?.name }}</span>
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>

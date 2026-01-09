@@ -36,32 +36,26 @@ class ProductController extends Controller
             $query->where('location', 'like', '%' . $request->location . '%');
         }
 
-        // Ownership Logic vs Public Discovery
-        if ($request->has('own') && auth()->check()) {
-            $query->where('seller_id', auth()->id());
+        // Ownership Logic vs Public Discovery (Sanctum aware)
+        $user = auth('sanctum')->user();
+        
+        if ($request->has('own') && $request->own == 1 && $user) {
+            // Private Inventory: Show only vendor's own products
+            $query->where('seller_id', $user->id);
         } else {
-            $query->where('status', 'available');
+            // Global Marketplace: Show all available products
+            $query->where(function ($q) use ($user) {
+                $q->where('status', 'available');
+                
+                // Vendors also see their own products (even if pending/rejected) in the global list
+                if ($user && $user->role === 'vendor') {
+                    $q->orWhere('seller_id', $user->id);
+                }
+            });
         }
         
         $products = $query->orderBy('created_at', 'desc')->get();
 
-        // Paywall Logic for Public Discovery (Marketplace)
-        if (!$request->has('own')) {
-            $user = auth('sanctum')->user();
-            $hasActiveSubscription = $user ? $user->has_active_subscription : false;
-
-            $products->each(function ($product, $index) use ($hasActiveSubscription) {
-                // First 3 products are free for guests/non-subscribers
-                $product->requires_subscription = (!$hasActiveSubscription && $index >= 3);
-                
-                // If locked, mask sensitive vendor info
-                if ($product->requires_subscription) {
-                    $product->price = null;
-                    $product->location = 'Locked Content';
-                    $product->seller = null;
-                }
-            });
-        }
 
         return response()->json($products);
     }

@@ -21,8 +21,15 @@ class SearchController extends Controller
         $loweredQuery = strtolower($query);
 
         // Optimized Global Product Search (Case-Insensitive)
+        $user = auth('sanctum')->user();
         $products = Product::query()
             ->with(['category:id,name'])
+            ->where(function (Builder $q) use ($user) {
+                $q->where('status', 'available');
+                if ($user && $user->role === 'vendor') {
+                    $q->orWhere('seller_id', $user->id);
+                }
+            })
             ->where(function (Builder $q) use ($loweredQuery) {
                 $q->whereRaw('LOWER(name) LIKE ?', ["%{$loweredQuery}%"])
                   ->orWhereRaw('LOWER(description) LIKE ?', ["%{$loweredQuery}%"])
@@ -31,7 +38,7 @@ class SearchController extends Controller
                   });
             })
             ->limit(10)
-            ->get(['id', 'name', 'price', 'product_category_id', 'description']); // Corrected category_id to product_category_id
+            ->get(['id', 'name', 'price', 'product_category_id', 'description', 'status']);
 
         return response()->json([
             'products' => $products
