@@ -141,9 +141,22 @@
               :key="product.id"
               class="relative group"
             >
+                <!-- Locked Paywall Overlay -->
+                <div v-if="product.requires_subscription" class="absolute inset-0 z-40 backdrop-blur-md bg-white/20 rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-[#D4A373]/30">
+                    <div class="w-16 h-16 bg-[#1A4D2E] rounded-full flex items-center justify-center mb-6 shadow-2xl">
+                        <svg class="w-8 h-8 text-[#D4A373]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-black text-[#1A4D2E] mb-2 leading-tight">Identity Verification Required</h4>
+                    <p class="text-xs font-bold text-gray-500 mb-8 max-w-[180px]">Upgrade to a <span class="text-[#D4A373]">Trading Member</span> account to unlock full inventory details.</p>
+                    <router-link to="/subscriptions" class="bg-[#1A4D2E] text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-xl">Activate Membership</router-link>
+                </div>
+
                 <router-link 
-                  :to="`/marketplace/${product.id}`"
+                  :to="product.requires_subscription ? '/subscriptions' : `/marketplace/${product.id}`"
                   class="block bg-white rounded-[2.5rem] border border-gray-100 transition-all duration-700 h-full flex flex-col hover:shadow-2xl hover:shadow-[#1A4D2E]/5"
+                  :class="{ 'opacity-50 grayscale pointer-events-none': product.requires_subscription }"
                 >
                     <div class="h-64 bg-gray-100 rounded-t-[2.5rem] relative overflow-hidden">
                         <img 
@@ -173,7 +186,7 @@
                                 <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1.5 opacity-60">Listing Price</p>
                                 <div class="text-2xl font-black text-[#1A4D2E] flex items-end">
                                     <span v-if="product.price">${{ product.price }}</span>
-                                    <span v-else class="text-[#D4A373] text-sm uppercase font-black">Negotiable</span>
+                                    <span v-else class="text-[#D4A373] text-sm uppercase">Locked</span>
                                     <span class="text-[10px] text-gray-400 ml-1.5 font-bold mb-1 opacity-50">/ {{ product.unit || 'MT' }}</span>
                                 </div>
                             </div>

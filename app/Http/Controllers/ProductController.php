@@ -56,6 +56,29 @@ class ProductController extends Controller
         
         $products = $query->orderBy('created_at', 'desc')->get();
 
+        // Paywall Logic for Public Discovery (Marketplace)
+        if ($request->routeIs('marketplace.index')) {
+            $user = auth('sanctum')->user();
+            $hasActiveSubscription = $user ? $user->has_active_subscription : false;
+
+            if (!$hasActiveSubscription && $products->count() > 3) {
+                // Truncate to show only one locked product card after the 3 free ones
+                $products = $products->take(4);
+            }
+
+            $products->each(function ($product, $index) use ($hasActiveSubscription) {
+                // First 3 products are free for guests/non-subscribers
+                $product->requires_subscription = (!$hasActiveSubscription && $index >= 3);
+                
+                // If locked, mask sensitive vendor info
+                if ($product->requires_subscription) {
+                    $product->price = null;
+                    $product->location = 'Locked Content';
+                    $product->seller = null;
+                }
+            });
+        }
+
 
         return response()->json($products);
     }
