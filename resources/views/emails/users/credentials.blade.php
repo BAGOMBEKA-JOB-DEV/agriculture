@@ -11,7 +11,10 @@
         <p><strong>Role:</strong> {{ ucfirst($user->role) }}</p>
         
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; border-left: 4px solid #2e7d32; margin: 20px 0;">
-            <p style="margin: 0; font-size: 14px; color: #555;">Temporary Password:</p>
+            <p style="margin: 0; font-size: 14px; color: #555;">Login Email:</p>
+            <p style="margin: 5px 0 10px; font-size: 16px; font-weight: bold; color: #333;">{{ $user->email }}</p>
+            
+            <p style="margin: 10px 0 0; font-size: 14px; color: #555;">Temporary Password:</p>
             <p style="margin: 5px 0 0; font-size: 18px; font-weight: bold; color: #333;">{{ $password }}</p>
         </div>
 
