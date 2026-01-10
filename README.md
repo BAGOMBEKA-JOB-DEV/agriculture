@@ -1,44 +1,49 @@
-# Project Management System
+# Agricultural Marketplace Management System
 
-A comprehensive project management application built with Laravel 12 and Vue.js 3, featuring Kanban boards, task management, and team collaboration tools.
+A comprehensive agricultural marketplace platform built with Laravel 11 and Vue.js 3, featuring dynamic role-based access control (RBAC), product management, RFQ system, and enterprise-grade governance tools.
 
 ## 🚀 Features
 
 ### Core Functionality
+- **Dynamic Role-Based Access Control (RBAC)**: Granular permission system with roles, permissions, and user management
 - **User Authentication**: Secure registration, login, and profile management with Laravel Sanctum
-- **Project Management**: Create, edit, and manage projects with detailed information
-- **Task Management**: Comprehensive task tracking with priorities, statuses, assignments, and due dates
-- **Kanban Boards**: Visual board management with drag-and-drop functionality and position tracking
-- **Dashboard**: Overview with statistics, charts, and recent project activities
+- **Product Marketplace**: Browse, search, and manage agricultural products with categories
+- **RFQ System**: Request for Quotation management for buyers and vendors
+- **Subscription Management**: Tiered subscription plans for marketplace access
+- **Messaging System**: Communication between buyers and vendors
+- **Notification System**: Real-time notifications and broadcast announcements
 
-### Advanced Features
-- **Role-Based Access Control (RBAC)**: Comprehensive permission system with companies, departments, teams, roles, and permissions
-- **Charts & Analytics**: Visual representations of project status, task distribution, and progress tracking
-- **Responsive Design**: Mobile-friendly interface built with Tailwind CSS
-- **Real-time Notifications**: Toast notifications for all CRUD operations
-- **Form Validation**: Client-side validation with error display
-- **Breadcrumb Navigation**: Dynamic navigation breadcrumbs for better UX
+### Admin Features
+- **Super Admin Dashboard**: Comprehensive governance nexus with user statistics and analytics
+- **Role Management**: Create, edit, and manage custom roles with granular permissions
+- **User Management**: Manage user accounts, roles, and access control
+- **Product Moderation**: Approve, reject, and moderate vendor product listings
+- **Category Management**: Organize products with hierarchical categories
+- **Broadcast Center**: Send system-wide notifications to users
 
-### Technical Features
-- **RESTful API**: Well-structured API endpoints for all resources
-- **Vue Router**: Client-side routing with authentication guards
-- **Component Architecture**: Modular Vue components for maintainability
-- **Database Migrations**: Structured database schema with relationships
-- **Seeders**: Pre-populated data for permissions and roles
+### Vendor Features
+- **Inventory Management**: Add, edit, and manage product listings
+- **RFQ Responses**: Respond to buyer requests for quotations
+- **Sales Dashboard**: Track sales and product performance
+
+### Buyer Features
+- **Product Discovery**: Browse and search agricultural products
+- **RFQ Creation**: Submit requests for quotations to vendors
+- **Order Management**: Track and manage orders
 
 ## 🛠️ Technology Stack
 
 ### Backend
-- **Laravel 12**: PHP web framework
-- **PHP 8.2**: Server-side scripting
+- **Laravel 11**: PHP web framework
+- **PHP 8.2+**: Server-side scripting
 - **Laravel Sanctum**: API authentication
-- **MySQL/SQLite**: Database (configurable)
+- **PostgreSQL/MySQL**: Database (configurable)
 
 ### Frontend
-- **Vue.js 3**: Progressive JavaScript framework
-- **Vue Router 4**: Official router for Vue.js
-- **Tailwind CSS 4**: Utility-first CSS framework
-- **Chart.js**: Simple yet flexible JavaScript charting library
+- **Vue.js 3**: Progressive JavaScript framework with Composition API
+- **Vue Router 4**: Client-side routing with authentication guards
+- **Pinia**: State management for Vue.js
+- **Tailwind CSS**: Utility-first CSS framework
 - **Axios**: HTTP client for API requests
 
 ### Development Tools
@@ -46,160 +51,286 @@ A comprehensive project management application built with Laravel 12 and Vue.js 
 - **Composer**: PHP dependency manager
 - **NPM**: JavaScript package manager
 - **Laravel Pint**: Code style fixer
-- **PHPUnit**: Testing framework
 
 ## 📋 Prerequisites
 
 - PHP 8.2 or higher
-- Composer
+- Composer 2.x
 - Node.js 18+ and NPM
-- MySQL or SQLite database
+- PostgreSQL 14+ or MySQL 8.0+
+- Git
 
-## 🚀 Installation
+## 🚀 Installation & Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd management
-   ```
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd management
+```
 
-2. **Install PHP dependencies**
-   ```bash
-   composer install
-   ```
+### 2. Install Dependencies
+```bash
+# Install PHP dependencies
+composer install
 
-3. **Install Node.js dependencies**
-   ```bash
-   npm install
-   ```
+# Install Node.js dependencies
+npm install
+```
 
-4. **Environment Setup**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
+### 3. Environment Configuration
+```bash
+# Copy environment file
+cp .env.example .env
 
-5. **Database Setup**
-   ```bash
-   # Configure your database in .env file
-   php artisan migrate
-   php artisan db:seed
-   ```
+# Generate application key
+php artisan key:generate
+```
 
-6. **Build Assets**
-   ```bash
-   npm run build
-   ```
+### 4. Configure Database
+Edit `.env` file and set your database credentials:
+```env
+DB_CONNECTION=pgsql  # or mysql
+DB_HOST=127.0.0.1
+DB_PORT=5432         # 3306 for MySQL
+DB_DATABASE=your_database_name
+DB_USERNAME=your_database_user
+DB_PASSWORD=your_database_password
+```
 
-7. **Start the Development Server**
-   ```bash
-   # Start Laravel server
-   php artisan serve
+### 5. Run Migrations
+```bash
+php artisan migrate
+```
 
-   # In another terminal, start Vite dev server
-   npm run dev
-   ```
+### 6. Seed Dynamic Roles & Permissions (CRITICAL)
 
-   Or use the convenient setup script:
-   ```bash
-   composer run setup
-   ```
+The application uses a **dynamic role-based permission system**. You MUST run the following seeders in order:
 
-## 🏗️ Project Structure
+#### Option A: Run All Seeders (Recommended for Development)
+```bash
+# This runs RBACSeeder, SuperAdminSeeder, and sample data
+php artisan db:seed
+```
+
+#### Option B: Run Specific Seeders (Production)
+```bash
+# 1. Create roles and permissions (REQUIRED)
+php artisan db:seed --class=RBACSeeder
+
+# 2. Create super admin user (REQUIRED)
+php artisan db:seed --class=SuperAdminSeeder
+
+# 3. Optional: Create product categories
+php artisan db:seed --class=ProductCategorySeeder
+
+# 4. Optional: Create subscription plans
+php artisan db:seed --class=SubscriptionPlanSeeder
+
+# 5. Optional: Create sample products (development only)
+php artisan db:seed --class=ProductSeeder
+```
+
+#### Seeder Details
+
+**RBACSeeder** (REQUIRED)
+- Creates all system roles: `super_admin`, `admin`, `vendor`, `user`, `buyer`, `trader`
+- Creates all permissions: `access_super_admin`, `manage_users`, `moderate_products`, etc.
+- Links permissions to roles
+
+**SuperAdminSeeder** (REQUIRED)
+- Creates the initial super admin account
+- Email: `test@example.com`
+- Password: `password`
+- Assigns all permissions to super admin role
+- Links super admin user to super_admin role
+
+**ProductCategorySeeder** (Optional)
+- Creates sample product categories
+
+**SubscriptionPlanSeeder** (Optional)
+- Creates subscription tiers for marketplace access
+
+**ProductSeeder** (Optional)
+- Creates sample products for testing
+
+### 7. Build Frontend Assets
+```bash
+# Development build with hot reload
+npm run dev
+
+# Production build
+npm run build
+```
+
+### 8. Start Development Servers
+```bash
+# Terminal 1: Start Laravel server
+php artisan serve
+
+# Terminal 2: Start Vite dev server (if using npm run dev)
+npm run dev
+```
+
+The application will be available at `http://localhost:8000`
+
+## 🔐 Default Credentials
+
+After running the seeders, you can login with:
+
+**Super Admin Account**
+- Email: `test@example.com`
+- Password: `password`
+
+**Important**: Change these credentials immediately in production!
+
+## 🏗️ Dynamic Roles & Permissions System
+
+### System Roles
+
+The application includes the following pre-configured roles:
+
+| Role | Slug | Description |
+|------|------|-------------|
+| Super Admin | `super_admin` | Full system access, can manage everything |
+| Admin | `admin` | Can moderate products and manage users |
+| Vendor | `vendor` | Can manage inventory and respond to RFQs |
+| User/Buyer | `user` | Can browse products and create RFQs |
+
+### Key Permissions
+
+| Permission | Description |
+|------------|-------------|
+| `access_super_admin` | Access to Global Governance Nexus |
+| `access_admin` | Access to Regulator Suite |
+| `access_vendor` | Access to Sales Suite |
+| `manage_users` | Manage system users and roles |
+| `moderate_products` | Approve/reject product listings |
+| `manage_roles` | Create and edit custom roles |
+| `broadcast_notifications` | Send system-wide notifications |
+| `manage_categories` | Manage product categories |
+| `manage_warehouse` | Manage product inventory |
+
+### Creating Custom Roles
+
+1. Login as Super Admin
+2. Navigate to **Super Admin → Role Ecosystem**
+3. Click **Initialize Role**
+4. Enter role name, description, and select permissions
+5. Click **Initialize Role**
+
+Users assigned to custom roles will automatically inherit the selected permissions.
+
+## 📊 Project Structure
 
 ```
 ├── app/
-│   ├── Http/Controllers/     # API Controllers
-│   ├── Models/              # Eloquent Models
-│   └── Providers/           # Service Providers
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Api/              # API Controllers
+│   │   │   ├── Admin/            # Admin Controllers
+│   │   │   └── SuperAdminController.php
+│   │   └── Middleware/
+│   ├── Models/
+│   │   ├── User.php              # User model with HasRoles trait
+│   │   ├── Role.php              # Role model
+│   │   ├── Permission.php        # Permission model
+│   │   └── Product.php
+│   ├── Traits/
+│   │   └── HasRoles.php          # Dynamic role checking trait
+│   └── Mail/                     # Email notifications
 ├── database/
-│   ├── migrations/          # Database migrations
-│   └── seeders/            # Database seeders
-├── public/                  # Public assets
+│   ├── migrations/               # Database migrations
+│   └── seeders/
+│       ├── RBACSeeder.php        # Roles & permissions
+│       ├── SuperAdminSeeder.php  # Super admin user
+│       └── DatabaseSeeder.php    # Main seeder
 ├── resources/
-│   ├── css/                # Stylesheets
 │   ├── js/
-│   │   ├── components/     # Vue components
-│   │   ├── router/         # Vue Router configuration
-│   │   └── views/          # Vue views
-│   └── views/              # Blade templates
+│   │   ├── components/           # Vue components
+│   │   ├── pages/
+│   │   │   ├── super-admin/      # Super admin pages
+│   │   │   ├── admin/            # Admin pages
+│   │   │   └── vendor/           # Vendor pages
+│   │   ├── stores/
+│   │   │   └── auth.js           # Auth store with can() method
+│   │   └── router/
+│   │       └── index.js          # Route definitions
+│   └── views/
+│       └── emails/               # Email templates
 ├── routes/
-│   ├── api.php            # API routes
-│   └── web.php            # Web routes
-├── storage/                # File storage
-├── tests/                  # Test files
-└── vite.config.js         # Vite configuration
+│   ├── api.php                   # API routes
+│   └── web.php                   # Web routes
+└── public/                       # Public assets
 ```
 
-## 📊 Database Schema
-
-### Core Tables
-- **users**: User accounts and authentication
-- **projects**: Project information and metadata
-- **tasks**: Task details with assignments and status
-- **boards**: Kanban boards with position tracking
-
-
-
-## 🔗 API Endpoints
+## 🔗 Key API Endpoints
 
 ### Authentication
 - `POST /api/register` - User registration
 - `POST /api/login` - User login
 - `POST /api/logout` - User logout
-- `GET /api/user` - Get authenticated user
-- `PUT /api/user/profile` - Update user profile
-- `POST /api/user/change-password` - Change password
+- `GET /api/user` - Get authenticated user with roles
 
-### Projects
-- `GET /api/projects` - List all projects
-- `POST /api/projects` - Create new project
-- `GET /api/projects/{id}` - Get specific project
-- `PUT /api/projects/{id}` - Update project
-- `DELETE /api/projects/{id}` - Delete project
+### Super Admin
+- `GET /api/super-admin/stats` - Dashboard statistics
+- `GET /api/super-admin/users` - List all users
+- `GET /api/super-admin/roles` - List roles and permissions
+- `POST /api/super-admin/roles` - Create new role
+- `PUT /api/super-admin/roles/{id}` - Update role
+- `DELETE /api/super-admin/roles/{id}` - Delete role
 
-### Tasks
-- `GET /api/tasks` - List all tasks
-- `POST /api/tasks` - Create new task
-- `GET /api/tasks/{id}` - Get specific task
-- `PUT /api/tasks/{id}` - Update task
-- `DELETE /api/tasks/{id}` - Delete task
+### Admin
+- `GET /api/admin/users` - List users
+- `GET /api/admin/roles` - List assignable roles
+- `POST /api/admin/users` - Create user
+- `PUT /api/admin/users/{id}` - Update user
+- `GET /api/admin/products` - List products for moderation
+- `POST /api/admin/products/{id}/approve` - Approve product
+- `POST /api/admin/products/{id}/reject` - Reject product
 
-### Boards
-- `GET /api/boards` - List all boards
-- `POST /api/boards` - Create new board
-- `GET /api/boards/{id}` - Get specific board
-- `PUT /api/boards/{id}` - Update board
-- `DELETE /api/boards/{id}` - Delete board
-- `PATCH /api/boards/{id}/position` - Update board position
+### Products
+- `GET /api/products` - List marketplace products
+- `POST /api/products` - Create product (vendors)
+- `PUT /api/products/{id}` - Update product
+- `DELETE /api/products/{id}` - Delete product
 
-## 🎨 Frontend Components
+### RFQs
+- `GET /api/rfqs` - List RFQs
+- `POST /api/rfqs` - Create RFQ
+- `PUT /api/rfqs/{id}` - Update RFQ status
 
-### Layout Components
-- **App.vue**: Main application component
-- **Sidebar.vue**: Navigation sidebar
-- **Breadcrumbs.vue**: Dynamic breadcrumb navigation
-- **Notification.vue**: Toast notifications
+## 🎨 Frontend Architecture
 
-### Feature Components
-- **Dashboard.vue**: Main dashboard with charts
-- **Projects/**: Project CRUD components
-- **Tasks/**: Task management components
-- **Boards/**: Board management components
-- **Auth/**: Authentication components
+### State Management (Pinia)
 
-### Form Components
-- **FormField.vue**: Reusable form field wrapper
-- **InputText.vue**: Text input component
-- **InputTextarea.vue**: Textarea input
-- **InputSelect.vue**: Select dropdown
-- **InputDate.vue**: Date picker
-- **FormActions.vue**: Form action buttons
+**Auth Store** (`stores/auth.js`)
+```javascript
+// Check if user has a specific permission
+authStore.can('manage_users')
 
-### Chart Components
-- **ProjectStatusChart.vue**: Project status visualization
-- **TaskStatusChart.vue**: Task status distribution
-- **ProjectProgressChart.vue**: Project progress tracking
+// Check if user has a specific role
+authStore.user.roles.some(r => r.slug === 'admin')
+
+// Legacy getters (backward compatible)
+authStore.isVendor
+authStore.isAdmin
+authStore.isSuperAdmin
+```
+
+### Route Guards
+
+Routes are protected based on permissions:
+```javascript
+{
+  path: '/super-admin',
+  component: SuperAdminDashboard,
+  meta: { requiresAuth: true, permission: 'access_super_admin' }
+}
+```
+
+### Dynamic Sidebar
+
+The sidebar automatically shows/hides menu items based on user permissions using the `can()` helper.
 
 ## 🧪 Testing
 
@@ -208,17 +339,45 @@ Run the test suite:
 php artisan test
 ```
 
-## 📜 Scripts
+## 📜 Available Scripts
 
-Available Composer scripts:
-- `composer run setup` - Complete project setup
-- `composer run dev` - Start development servers
-- `composer run test` - Run test suite
+### Composer Scripts
+```bash
+composer run setup      # Complete project setup
+composer run dev        # Start development servers
+composer run test       # Run test suite
+```
 
-Available NPM scripts:
-- `npm run dev` - Start Vite development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
+### NPM Scripts
+```bash
+npm run dev            # Start Vite dev server with HMR
+npm run build          # Build for production
+npm run preview        # Preview production build
+```
+
+## 🔧 Troubleshooting
+
+### Roles/Permissions Not Working
+```bash
+# Re-run RBAC seeder
+php artisan db:seed --class=RBACSeeder
+
+# Clear cache
+php artisan cache:clear
+php artisan config:clear
+```
+
+### User Can't Access Features
+1. Check if user has the correct role assigned in database (`role_user` table)
+2. Verify role has the required permissions (`permission_role` table)
+3. Check browser console for permission errors
+
+### Frontend Not Loading
+```bash
+# Clear Vite cache
+rm -rf node_modules/.vite
+npm run dev
+```
 
 ## 🤝 Contributing
 
@@ -230,16 +389,16 @@ Available NPM scripts:
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
 - Laravel Framework
 - Vue.js
 - Tailwind CSS
-- Chart.js
+- Pinia
 - Laravel Sanctum
 
 ## 📞 Support
 
-For support, please contact the development team or create an issue in the repository.
+For support, please create an issue in the repository or contact the development team.

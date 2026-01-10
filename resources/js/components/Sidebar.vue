@@ -256,30 +256,52 @@ const userInitial = computed(() => {
   return user.value?.name?.charAt(0)?.toUpperCase() || 'U'
 })
 
-const categorizedNavigation = computed(() => {
-  const role = user.value?.role || 'user'
-  
-  const nav = [
-    {
-      title: 'Overview',
-      items: [
-        { name: 'Dashboard', path: '/dashboard', label: 'Dashboard', icon: icons.dashboard },
-      ]
-    }
-  ]
-
-  // Marketplace Section (Primary for all users)
-  nav.push({
-    title: 'Marketplace',
-    items: [
-      { name: 'Products', path: '/products', label: 'Browse Products', icon: icons.products },
-      { name: 'RFQs', path: '/rfqs', label: 'Trade Requests', icon: icons.rfqs },
-      { name: 'Messages', path: '/messages', label: 'Conversations', icon: icons.boards },
-    ]
+const userPermissions = computed(() => {
+  const perms = new Set()
+  user.value?.roles?.forEach(role => {
+    role.permissions?.forEach(p => perms.add(p.slug))
   })
+  return perms
+})
 
-  // Role-specific sections
-  if (role === 'vendor') {
+const can = (permission) => {
+  return userPermissions.value.has(permission)
+}
+
+const categorizedNavigation = computed(() => {
+  const nav = []
+
+  // Overview
+  if (can('view_dashboard')) {
+      nav.push({
+        title: 'Overview',
+        items: [
+          { name: 'Dashboard', path: '/dashboard', label: 'Dashboard', icon: icons.dashboard },
+        ]
+      })
+  }
+
+  // Marketplace Section
+  const marketplaceItems = []
+  if (can('view_marketplace_products')) {
+      marketplaceItems.push({ name: 'Products', path: '/products', label: 'Browse Products', icon: icons.products })
+  }
+  if (can('view_rfqs')) {
+      marketplaceItems.push({ name: 'RFQs', path: '/rfqs', label: 'Trade Requests', icon: icons.rfqs })
+  }
+  if (can('access_conversations')) {
+      marketplaceItems.push({ name: 'Messages', path: '/messages', label: 'Conversations', icon: icons.boards })
+  }
+  
+  if (marketplaceItems.length > 0) {
+      nav.push({
+        title: 'Marketplace',
+        items: marketplaceItems
+      })
+  }
+
+  // Sales Suite
+  if (can('access_vendor') && can('manage_warehouse')) {
     nav.push({
       title: 'Sales Suite',
       items: [
@@ -288,44 +310,78 @@ const categorizedNavigation = computed(() => {
     })
   }
 
-  // Common Business logic
-  nav.push({
-    title: 'Trade Tiers',
-    items: [
-      { name: 'Subscriptions', path: '/subscriptions', label: 'Upgrade Access', icon: icons.reports },
-    ]
-  })
-
-  // Communications (Common)
-  nav.push({
-    title: 'Communications',
-    items: [
-      { name: 'UserNotifications', path: '/notifications', label: 'Inbox', icon: icons.reports }, // Using reports icon for now or dashboard
-    ]
-  })
-
-  if (role === 'admin') {
-    nav.push({
-      title: 'Regulator Suite',
-      items: [
-        { name: 'AdminProducts', path: '/admin/products', label: 'Asset Moderation', icon: icons.products },
-        { name: 'MyProducts', path: '/vendor/products', label: 'Inventory Control', icon: icons.products },
-        { name: 'AdminUsers', path: '/admin/users', label: 'Identity Nexus', icon: icons.users },
-      ]
-    })
+  // Trade Tiers
+  if (can('view_subscriptions')) {
+      nav.push({
+        title: 'Trade Tiers',
+        items: [
+          { name: 'Subscriptions', path: '/subscriptions', label: 'Upgrade Access', icon: icons.reports },
+        ]
+      })
   }
 
-  if (role === 'super_admin') {
+  // Communications
+  if (can('access_inbox')) {
+      nav.push({
+        title: 'Communications',
+        items: [
+          { name: 'UserNotifications', path: '/notifications', label: 'Inbox', icon: icons.reports },
+        ]
+      })
+  }
+
+  // Dynamic: Regulator Suite (Admin Access)
+  if (can('access_admin')) {
+    const adminItems = []
+    
+    if (can('moderate_products')) {
+        adminItems.push({ name: 'AdminProducts', path: '/admin/products', label: 'Asset Moderation', icon: icons.products })
+    }
+    
+    // Admin also typically manages users, check permission
+    if (can('manage_users')) {
+        adminItems.push({ name: 'AdminUsers', path: '/admin/users', label: 'Identity Nexus', icon: icons.users })
+    }
+
+    if (adminItems.length > 0) {
+        nav.push({
+            title: 'Regulator Suite',
+            items: adminItems
+        })
+    }
+  }
+
+  // Dynamic: Global Governance (Super Admin Access)
+  if (can('access_super_admin')) {
+    const governanceItems = [
+      { name: 'SuperAdminDashboard', path: '/super-admin', label: 'Governance Nexus', icon: icons.dashboard },
+    ]
+
+    if (can('moderate_products')) {
+      // governanceItems.push({ name: 'AdminProducts', path: '/admin/products', label: 'Global Product Oversight', icon: icons.products })
+      // Custom MyProducts link for super admin convenience if they act as vendor too, or checking inventory
+      // governanceItems.push({ name: 'MyProducts', path: '/vendor/products', label: 'Inventory Control', icon: icons.products })
+    }
+
+    if (can('manage_categories')) {
+      governanceItems.push({ name: 'SuperAdminCategories', path: '/super-admin/categories', label: 'Asset Classifications', icon: icons.rfqs })
+    }
+
+    if (can('broadcast_notifications')) {
+      governanceItems.push({ name: 'AdminNotifications', path: '/admin/notifications', label: 'Broadcast Center', icon: icons.reports })
+    }
+
+    if (can('manage_users')) {
+      // governanceItems.push({ name: 'AdminUsers', path: '/admin/users', label: 'Entity Registry', icon: icons.users })
+    }
+
+    if (can('manage_roles')) {
+      governanceItems.push({ name: 'RoleManagement', path: '/super-admin/roles', label: 'Role Ecosystem', icon: icons.tasks })
+    }
+
     nav.push({
       title: 'Global Governance',
-      items: [
-        { name: 'SuperAdminDashboard', path: '/super-admin', label: 'Governance Nexus', icon: icons.dashboard },
-        { name: 'AdminProducts', path: '/admin/products', label: 'Global Product Oversight', icon: icons.products },
-        { name: 'MyProducts', path: '/vendor/products', label: 'Inventory Control', icon: icons.products },
-        { name: 'SuperAdminCategories', path: '/super-admin/categories', label: 'Asset Classifications', icon: icons.rfqs },
-        { name: 'AdminNotifications', path: '/admin/notifications', label: 'Broadcast Center', icon: icons.reports },
-        { name: 'AdminUsers', path: '/admin/users', label: 'Entity Registry', icon: icons.users },
-      ]
+      items: governanceItems
     })
   }
 

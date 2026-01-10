@@ -14,6 +14,8 @@ Route::get('/categories', function() {
     return (new CategoryController())->index();
 });
 
+require __DIR__ . '/debug_roles.php';
+
 Route::get('/marketplace', [ProductController::class, 'index'])->name('marketplace.index');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
@@ -72,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/products/{id}/reject', [\App\Http\Controllers\AdminController::class, 'rejectProduct']);
         
         // Admin User Management
+        Route::get('/admin/roles', [\App\Http\Controllers\Admin\UserController::class, 'getRoles']);
         Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index']);
         Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store']);
         Route::post('/admin/users/bulk-action', [\App\Http\Controllers\Admin\UserController::class, 'bulkAction']);
@@ -99,5 +102,8 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Category Management
         Route::apiResource('categories', CategoryController::class)->except(['index']);
+
+        // Role Management
+        Route::apiResource('roles', \App\Http\Controllers\Api\RoleController::class);
     });
 });

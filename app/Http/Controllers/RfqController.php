@@ -12,10 +12,10 @@ class RfqController extends Controller
     public function index()
     {
         $user = auth()->user();
-        if ($user->role === 'vendor') {
+        if ($user->hasRole('vendor')) {
             $rfqs = $user->rfqs()->with(['buyer', 'product'])->get();
         } else {
-            $rfqs = $user->buyerProfile()->exists() || $user->role === 'buyer' 
+            $rfqs = $user->buyerProfile()->exists() || $user->hasRole('buyer') 
                 ? \App\Models\Rfq::where('buyer_id', $user->id)->with(['seller', 'product'])->get()
                 : \App\Models\Rfq::with(['buyer', 'seller', 'product'])->get();
         }
@@ -52,7 +52,7 @@ class RfqController extends Controller
         $rfq = \App\Models\Rfq::with(['buyer', 'seller', 'product'])->findOrFail($id);
         
         // Authorization check
-        if (auth()->id() !== $rfq->buyer_id && auth()->id() !== $rfq->seller_id && auth()->user()->role !== 'admin') {
+        if (auth()->id() !== $rfq->buyer_id && auth()->id() !== $rfq->seller_id && !auth()->user()->hasRole('admin')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -89,7 +89,7 @@ class RfqController extends Controller
     public function destroy($id)
     {
         $rfq = \App\Models\Rfq::findOrFail($id);
-        if (auth()->id() !== $rfq->buyer_id && auth()->user()->role !== 'admin') {
+        if (auth()->id() !== $rfq->buyer_id && !auth()->user()->hasRole('admin')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
         $rfq->delete();

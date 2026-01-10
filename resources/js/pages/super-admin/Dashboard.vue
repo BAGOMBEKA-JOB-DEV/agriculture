@@ -9,6 +9,7 @@ const notificationRef = ref(null);
 const loading = ref(true);
 const stats = ref({});
 const users = ref([]);
+const roles = ref([]);
 const stats_cards = ref([]);
 const isDrawerOpen = ref(false);
 const inspectedUser = ref(null);
@@ -62,12 +63,14 @@ const roleClass = (role) => {
 const fetchData = async () => {
   loading.value = true;
   try {
-    const [statsRes, usersRes] = await Promise.all([
+    const [statsRes, usersRes, rolesRes] = await Promise.all([
       axios.get('/api/super-admin/stats'),
-      axios.get('/api/super-admin/users', { params: filters })
+      axios.get('/api/super-admin/users', { params: filters }),
+      axios.get('/api/super-admin/roles')
     ]);
     stats.value = statsRes.data;
     users.value = usersRes.data;
+    roles.value = rolesRes.data.roles || rolesRes.data;
 
     stats_cards.value = [
       { label: 'Total Participants', value: stats.value.total_users, icon: 'UsersIcon' },
@@ -100,8 +103,16 @@ watch(() => filters.q, () => debouncedFetch());
 watch(() => filters.location, () => debouncedFetch());
 watch(() => [filters.role, filters.status, filters.verified], () => fetchData());
 
-const toggleDropdown = (id) => {
-  activeDropdownId.value = activeDropdownId.value === id ? null : id;
+import { useAuthStore } from '../../stores/auth'; // Import Store
+const authStore = useAuthStore(); // Init Store
+
+// ... (existing code)
+
+
+
+// Start of template changes for dynamic role checking
+const isSuperAdmin = (user) => {
+    return user?.roles?.some(r => r.slug === 'super_admin') || user?.role === 'super_admin';
 };
 
 const closeDropdowns = (e) => {
@@ -307,10 +318,9 @@ onUnmounted(() => {
                     <div class="relative min-w-[160px]">
                         <select v-model="filters.role" class="w-full pl-11 pr-8 py-3.5 bg-gray-50/50 border border-gray-100 rounded-2xl text-[11px] font-black text-gray-600 appearance-none focus:ring-4 focus:ring-agri-forest/5 focus:border-agri-forest/30 focus:bg-white transition-all duration-300 cursor-pointer uppercase tracking-widest">
                             <option value="">All Authorities</option>
-                            <option value="vendor">Vendor</option>
-                            <option value="buyer">Buyer</option>
-                            <option value="trader">Trader</option>
-                            <option value="admin">Admin</option>
+                            <option v-for="role in roles" :key="role.slug" :value="role.slug">
+                                {{ role.name }}
+                            </option>
                         </select>
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -531,7 +541,7 @@ onUnmounted(() => {
 
                           <!-- Authority Elevation -->
                           <button 
-                            v-if="user.role !== 'super_admin'"
+                            v-if="!isSuperAdmin(user) && authStore.can('manage_users')"
                             @click="openPromoteModal(user.id); activeDropdownId = null"
                             class="w-full flex items-center px-5 py-3.5 text-xs font-bold text-agri-earth hover:bg-agri-earth/5 transition-colors space-x-3 group/item"
                           >
@@ -544,7 +554,7 @@ onUnmounted(() => {
 
                           <!-- Access Revocation -->
                           <button 
-                            v-if="user.role !== 'super_admin' && user.status !== 'suspended'"
+                            v-if="!isSuperAdmin(user) && user.status !== 'suspended' && authStore.can('manage_users')"
                             @click="openSuspendModal(user); activeDropdownId = null"
                             class="w-full flex items-center px-5 py-3.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors space-x-3 group/item"
                           >
@@ -690,7 +700,7 @@ onUnmounted(() => {
                   <button 
                     v-else
                     @click="openSuspendModal(inspectedUser)"
-                    :disabled="inspectedUser?.role === 'super_admin'"
+                    :disabled="isSuperAdmin(inspectedUser) || !authStore.can('manage_users')"
                     class="flex-1 bg-red-50 text-red-600 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-red-100 transition-all border border-red-100 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Revoke Access
@@ -704,7 +714,7 @@ onUnmounted(() => {
                   {{ inspectedUser?.status === 'active' || !!inspectedUser?.email_verified_at ? 'Identity Authorized' : 'Authorize Identity Node' }}
                 </button>
                 <button 
-                  v-if="inspectedUser?.role !== 'super_admin'"
+                  v-if="!isSuperAdmin(inspectedUser) && authStore.can('manage_users')"
                   @click="openPromoteModal(inspectedUser?.id)"
                   class="w-full py-4 bg-gray-50 text-gray-600 hover:bg-agri-earth hover:text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all"
                 >

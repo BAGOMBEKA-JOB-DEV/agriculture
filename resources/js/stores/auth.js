@@ -10,12 +10,32 @@ export const useAuthStore = defineStore('auth', {
 
     getters: {
         isAuthenticated: (state) => !!state.token && !!state.user,
-        isVendor: (state) => state.user?.role === 'vendor',
-        isAdmin: (state) => state.user?.role === 'admin',
-        isBuyer: (state) => state.user?.role === 'user',
+        permissions: (state) => {
+            const perms = new Set();
+            state.user?.roles?.forEach(role => {
+                role.permissions?.forEach(p => perms.add(p.slug));
+            });
+            return perms;
+        },
+        // Legacy getters now using Dynamic Permissions
+        isVendor: (state) => {
+            // Check if user has vendor permission OR legacy role string as fallback (during transition)
+            const perms = new Set();
+            state.user?.roles?.forEach(role => {
+                role.permissions?.forEach(p => perms.add(p.slug));
+            });
+            return perms.has('access_vendor') || state.user?.role === 'vendor';
+        },
+        isAdmin: (state) => {
+            const perms = new Set();
+            state.user?.roles?.forEach(role => {
+                role.permissions?.forEach(p => perms.add(p.slug));
+            });
+            return perms.has('access_admin') || state.user?.role === 'admin';
+        },
+        isBuyer: (state) => state.user?.role === 'user', // Basic user role usually doesn't have special permissions yet
         hasActiveSubscription: (state) => {
             if (!state.user) return false;
-            // Check if user has active subscription
             return state.user.has_active_subscription || false;
         },
     },
@@ -96,5 +116,9 @@ export const useAuthStore = defineStore('auth', {
                 };
             }
         },
+
+        can(permission) {
+            return this.permissions.has(permission);
+        }
     },
 });

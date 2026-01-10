@@ -30,6 +30,13 @@ class AuthController extends Controller
             'role' => $request->role ?: 'buyer',
         ]);
 
+        // Attach Dynamic Role
+        $roleSlug = $request->role ?: 'buyer';
+        $role = \App\Models\Role::where('slug', $roleSlug)->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
+
         // Dispatch Welcome Email Job
         \App\Jobs\ProcessWelcomeRegistration::dispatch($user);
 
@@ -90,7 +97,7 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($request->user()->load('roles.permissions'));
     }
 
     public function updateProfile(Request $request)
