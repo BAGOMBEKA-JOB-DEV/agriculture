@@ -26,7 +26,7 @@ class SearchController extends Controller
             ->with(['category:id,name'])
             ->where(function (Builder $q) use ($user) {
                 $q->where('status', 'available');
-                if ($user && $user->role === 'vendor') {
+                if ($user && ($user->role === 'vendor' || $user->role === 'admin' || $user->role === 'super_admin')) {
                     $q->orWhere('seller_id', $user->id);
                 }
             })

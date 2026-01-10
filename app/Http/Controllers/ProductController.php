@@ -47,10 +47,10 @@ class ProductController extends Controller
             $query->where(function ($q) use ($user) {
                 $q->where('status', 'available');
                 
-                // Vendors also see their own products (even if pending/rejected) in the global list
-                if ($user && $user->role === 'vendor') {
-                    $q->orWhere('seller_id', $user->id);
-                }
+            // Owners also see their own products (even if pending/rejected) in the global list
+            if ($user && ($user->role === 'vendor' || $user->role === 'admin' || $user->role === 'super_admin')) {
+                $q->orWhere('seller_id', $user->id);
+            }
             });
         }
         

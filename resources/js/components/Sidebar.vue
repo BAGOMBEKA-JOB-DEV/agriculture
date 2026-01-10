@@ -236,6 +236,7 @@ const categorizedNavigation = computed(() => {
       title: 'Regulator Suite',
       items: [
         { name: 'AdminProducts', path: '/admin/products', label: 'Asset Moderation', icon: icons.products },
+        { name: 'MyProducts', path: '/vendor/products', label: 'Inventory Control', icon: icons.products },
         { name: 'AdminUsers', path: '/admin/users', label: 'Identity Nexus', icon: icons.users },
       ]
     })
@@ -246,6 +247,7 @@ const categorizedNavigation = computed(() => {
       title: 'Global Governance',
       items: [
         { name: 'SuperAdminDashboard', path: '/super-admin', label: 'Governance Nexus', icon: icons.dashboard },
+        { name: 'MyProducts', path: '/vendor/products', label: 'Inventory Control', icon: icons.products },
         { name: 'SuperAdminCategories', path: '/super-admin/categories', label: 'Asset Classifications', icon: icons.rfqs },
         { name: 'AdminNotifications', path: '/admin/notifications', label: 'Broadcast Center', icon: icons.reports },
         { name: 'AdminUsers', path: '/admin/users', label: 'Entity Registry', icon: icons.users },
