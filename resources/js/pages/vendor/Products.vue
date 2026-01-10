@@ -76,7 +76,7 @@
                             </svg>
                         </router-link>
                         <button 
-                            @click="confirmDelete(product)" 
+                            @click="openDeleteModal(product)" 
                             class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,14 +103,31 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <Modal
+      :is-open="isDeleteModalOpen"
+      title="Confirm Asset Purge"
+      :message="`Are you sure you want to permanently remove ${productToDelete?.name} from the global marketplace? This action cannot be undone.`"
+      confirm-text="Confirm Purge"
+      cancel-text="Abort"
+      type="danger"
+      :loading="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="isDeleteModalOpen = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import Modal from '@/components/Modal.vue';
 
 const products = ref([]);
+const isDeleteModalOpen = ref(false);
+const productToDelete = ref(null);
+const isDeleting = ref(false);
 
 const fetchProducts = async () => {
   try {
@@ -121,16 +138,26 @@ const fetchProducts = async () => {
   }
 };
 
-const confirmDelete = async (product) => {
-  if (confirm(`Are you sure you want to permanently remove ${product.name} from the global marketplace?`)) {
-    try {
-      await axios.delete(`/api/products/${product.id}`);
-      products.value = products.value.filter(p => p.id !== product.id);
-      if (window.notify) window.notify.success('Asset Removed', `${product.name} has been purged from the ledger.`);
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      if (window.notify) window.notify.error('Purge Failed', 'Connectivity interference or authorization error.');
-    }
+const openDeleteModal = (product) => {
+  productToDelete.value = product;
+  isDeleteModalOpen.value = true;
+};
+
+const confirmDelete = async () => {
+  if (!productToDelete.value) return;
+  
+  isDeleting.value = true;
+  try {
+    await axios.delete(`/api/products/${productToDelete.value.id}`);
+    products.value = products.value.filter(p => p.id !== productToDelete.value.id);
+    if (window.notify) window.notify.success('Asset Removed', `${productToDelete.value.name} has been purged from the ledger.`);
+    isDeleteModalOpen.value = false;
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    if (window.notify) window.notify.error('Purge Failed', 'Connectivity interference or authorization error.');
+  } finally {
+    isDeleting.value = false;
+    productToDelete.value = null;
   }
 };
 

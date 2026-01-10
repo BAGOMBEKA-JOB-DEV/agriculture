@@ -1,0 +1,195 @@
+<script setup>
+import { ref, reactive, onMounted, watch } from 'vue';
+import axios from 'axios';
+import { debounce } from 'lodash-es';
+
+// UI State
+const loading = ref(true);
+const stats = ref({});
+const users = ref([]);
+const stats_cards = ref([]);
+const isDrawerOpen = ref(false);
+const inspectedUser = ref(null);
+const activeDropdownId = ref(null);
+
+// Discovery Suite State
+const showAdvancedFilters = ref(false);
+const filters = reactive({
+  q: '',
+  role: '',
+  status: '',
+  location: '',
+  verified: ''
+});
+
+const resetFilters = () => {
+  filters.q = '';
+  filters.role = '';
+  filters.status = '';
+  filters.location = '';
+  filters.verified = '';
+  fetchData();
+};
+
+// Modal State
+const isModalOpen = ref(false);
+const isProcessing = ref(false);
+const modalConfig = ref({
+  title: '',
+  message: '',
+  confirmText: '',
+  type: 'primary',
+  action: null,
+  data: null,
+  userId: null,
+  user: null
+});
+
+// Helper: Role Aesthetics
+const roleClass = (role) => {
+  const mapping = {
+    super_admin: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+    admin: 'bg-blue-50 text-blue-700 border-blue-100',
+    vendor: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    buyer: 'bg-amber-50 text-amber-700 border-amber-100',
+    trader: 'bg-purple-50 text-purple-700 border-purple-100'
+  };
+  return mapping[role] || 'bg-gray-50 text-gray-700 border-gray-100';
+};
+
+const fetchData = async () => {
+  loading.value = true;
+  try {
+    const [statsRes, usersRes] = await Promise.all([
+      axios.get('/api/super-admin/stats'),
+      axios.get('/api/super-admin/users', { params: filters })
+    ]);
+    stats.value = statsRes.data;
+    users.value = usersRes.data;
+
+    stats_cards.value = [
+      { label: 'Total Participants', value: stats.value.total_users, icon: 'UsersIcon' },
+      { label: 'Market Vendors', value: stats.value.total_vendors, icon: 'StoreIcon' },
+      { label: 'Global Buyers', value: stats.value.total_buyers, icon: 'ShoppingBagIcon' },
+      { label: 'Trade Volume', value: `$${(stats.value.total_revenue / 1000).toFixed(1)}k`, icon: 'CurrencyIcon' }
+    ];
+  } catch (err) {
+    console.error('Nexus Synchronization Failure:', err);
+    if (window.notify) window.notify.error('Data Error', 'Failed to load governance telemetry.');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const debouncedFetch = debounce(fetchData, 500);
+
+watch(() => filters.q, () => debouncedFetch());
+watch(() => filters.location, () => debouncedFetch());
+watch(() => [filters.role, filters.status, filters.verified], () => fetchData());
+
+const toggleDropdown = (id) => {
+  activeDropdownId.value = activeDropdownId.value === id ? null : id;
+};
+
+const openInspector = (user) => {
+  inspectedUser.value = user;
+  isDrawerOpen.value = true;
+  activeDropdownId.value = null;
+};
+
+const closeInspector = () => {
+  isDrawerOpen.value = false;
+  inspectedUser.value = null;
+};
+
+// Governance Actions
+const openPromoteModal = (user) => {
+  modalConfig.value = {
+    title: 'Authorize Super Admin Elevation',
+    message: `Are you sure you want to elevate ${user.name} to Super Admin? This grants system-wide sovereign access.`,
+    confirmText: 'Confirm Elevation',
+    type: 'success',
+    action: 'promote',
+    user: user
+  };
+  isModalOpen.value = true;
+  activeDropdownId.value = null;
+};
+
+const openSuspendModal = (user) => {
+  modalConfig.value = {
+    title: 'Confirm Node Suspension',
+    message: `Are you sure you want to suspend access for ${user.name}? This will revoke all marketplace privileges.`,
+    confirmText: 'Confirm Suspension',
+    type: 'danger',
+    action: 'suspend',
+    user: user
+  };
+  isModalOpen.value = true;
+  activeDropdownId.value = null;
+};
+
+const openVerifyModal = (user) => {
+  modalConfig.value = {
+    title: 'Confirm Identity Verification',
+    message: `Authorize identity verification for ${user.name}. This marks their node as verified in the registry.`,
+    confirmText: 'Verify Identity',
+    type: 'success',
+    action: 'verify',
+    user: user
+  };
+  isModalOpen.value = true;
+  activeDropdownId.value = null;
+};
+
+const openActivateModal = (user) => {
+  modalConfig.value = {
+    title: 'Restore Participant Access',
+    message: `Confirm restoration of account access for ${user.name}. All privileges will be re-established.`,
+    confirmText: 'Restore Access',
+    type: 'success',
+    action: 'activate',
+    user: user
+  };
+  isModalOpen.value = true;
+  activeDropdownId.value = null;
+};
+
+const handleModalConfirm = async () => {
+  const { action, user } = modalConfig.value;
+  const id = user?.id;
+  if (!id) return;
+
+  isProcessing.value = true;
+  try {
+    const url = `/api/super-admin/users/${id}/${action}`;
+    await axios.post(url);
+    
+    if (window.notify) {
+       const actionLabels = { 
+         promote: 'Authority Elevated', 
+         suspend: 'Access Revoked', 
+         verify: 'Identity Authorized', 
+         activate: 'Access Restored' 
+       };
+       window.notify.success(actionLabels[action], 'Nexus Registry updated successfully.');
+    }
+    
+    isModalOpen.value = false;
+    fetchData();
+    if (inspectedUser.value && inspectedUser.value.id === id) {
+       // Refresh inspector data if open
+       axios.get(`/api/super-admin/users`).then(res => {
+          const updated = res.data.find(u => u.id === id);
+          if (updated) inspectedUser.value = updated;
+       });
+    }
+  } catch (error) {
+    if (window.notify) window.notify.error('Governance Error', error.response?.data?.message || 'Protocol synchronization failure.');
+  } finally {
+    isProcessing.value = false;
+  }
+};
+
+onMounted(fetchData);
+</script>

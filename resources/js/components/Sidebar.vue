@@ -247,6 +247,7 @@ const categorizedNavigation = computed(() => {
       title: 'Global Governance',
       items: [
         { name: 'SuperAdminDashboard', path: '/super-admin', label: 'Governance Nexus', icon: icons.dashboard },
+        { name: 'AdminProducts', path: '/admin/products', label: 'Global Product Oversight', icon: icons.products },
         { name: 'MyProducts', path: '/vendor/products', label: 'Inventory Control', icon: icons.products },
         { name: 'SuperAdminCategories', path: '/super-admin/categories', label: 'Asset Classifications', icon: icons.rfqs },
         { name: 'AdminNotifications', path: '/admin/notifications', label: 'Broadcast Center', icon: icons.reports },

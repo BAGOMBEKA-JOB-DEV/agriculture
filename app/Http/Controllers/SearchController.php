@@ -24,12 +24,7 @@ class SearchController extends Controller
         $user = auth('sanctum')->user();
         $products = Product::query()
             ->with(['category:id,name'])
-            ->where(function (Builder $q) use ($user) {
-                $q->where('status', 'available');
-                if ($user && ($user->role === 'vendor' || $user->role === 'admin' || $user->role === 'super_admin')) {
-                    $q->orWhere('seller_id', $user->id);
-                }
-            })
+            ->where('status', 'available')
             ->where(function (Builder $q) use ($loweredQuery) {
                 $q->whereRaw('LOWER(name) LIKE ?', ["%{$loweredQuery}%"])
                   ->orWhereRaw('LOWER(description) LIKE ?', ["%{$loweredQuery}%"])

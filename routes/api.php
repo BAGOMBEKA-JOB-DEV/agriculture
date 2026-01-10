@@ -93,6 +93,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/stats', [\App\Http\Controllers\SuperAdminController::class, 'stats']);
         Route::get('/users', [\App\Http\Controllers\SuperAdminController::class, 'users']);
         Route::post('/users/{id}/promote', [\App\Http\Controllers\SuperAdminController::class, 'promoteToSuperAdmin']);
+        Route::post('/users/{id}/verify', [\App\Http\Controllers\SuperAdminController::class, 'verifyUser']);
+        Route::post('/users/{id}/suspend', [\App\Http\Controllers\SuperAdminController::class, 'suspendUser']);
+        Route::post('/users/{id}/activate', [\App\Http\Controllers\SuperAdminController::class, 'activateUser']);
         
         // Category Management
         Route::apiResource('categories', CategoryController::class)->except(['index']);

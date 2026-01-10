@@ -350,9 +350,9 @@ const submitRfq = async () => {
     });
     showRfqModal.value = false;
     router.push('/buyer/rfqs');
-    alert('RFQ submitted successfully!');
+    if (window.notify) window.notify.success('RFQ Submitted', 'Your trade request has been dispatched to the vendor.');
   } catch (error) {
-    alert(error.response?.data?.message || 'Failed to submit RFQ');
+    if (window.notify) window.notify.error('Transmission Failure', error.response?.data?.message || 'Failed to submit RFQ');
   }
 };
 
