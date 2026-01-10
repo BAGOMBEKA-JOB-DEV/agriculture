@@ -12,25 +12,55 @@
     <!-- Sidebar -->
     <div
       :class="[
-        'fixed inset-y-0 left-0 z-50 w-64 bg-agri-forest shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0',
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        'fixed inset-y-0 left-0 z-50 bg-agri-forest shadow-2xl transform transition-all duration-300 ease-in-out lg:static lg:inset-0',
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+        isCollapsed ? 'lg:w-[5.5rem]' : 'lg:w-64 w-64'
       ]"
     >
       <div class="flex flex-col h-full">
         <!-- Logo Area -->
-        <div class="flex items-center h-20 px-6 border-b border-agri-lush/30">
-          <div class="w-8 h-8 rounded-lg bg-agri-earth flex items-center justify-center mr-3 shadow-sm">
-            <svg class="w-5 h-5 text-agri-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-            </svg>
+        <div 
+          class="flex items-center h-20 border-b border-agri-lush/30 relative overflow-hidden transition-all duration-300"
+          :class="isCollapsed ? 'justify-center px-0' : 'px-6'"
+        >
+          <div class="flex items-center min-w-max">
+            <div class="w-8 h-8 rounded-lg bg-agri-earth flex items-center justify-center shadow-sm flex-shrink-0">
+              <svg class="w-5 h-5 text-agri-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+              </svg>
+            </div>
+            <transition
+              enter-active-class="transition-opacity duration-300"
+              enter-from-class="opacity-0"
+              enter-to-class="opacity-100"
+              leave-active-class="transition-opacity duration-200"
+              leave-from-class="opacity-100"
+              leave-to-class="opacity-0"
+            >
+              <h1 v-if="!isCollapsed" class="ml-3 text-white text-lg font-bold tracking-tight truncate">IAM</h1>
+            </transition>
           </div>
-          <h1 class="text-white text-lg font-bold tracking-tight">IAM</h1>
+          
+          <!-- Desktop Collapse Toggle -->
+          <button 
+            @click="toggleCollapse"
+            class="hidden lg:flex absolute right-4 w-6 h-6 items-center justify-center rounded-lg hover:bg-agri-lush/50 text-agri-earth transition-colors"
+          >
+            <svg class="w-4 h-4 transform transition-transform duration-300" :class="{ 'rotate-180': isCollapsed }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
         </div>
 
         <!-- Navigation -->
         <nav class="flex-1 px-4 py-6 overflow-y-auto space-y-8 scrollbar-hide">
           <div v-for="category in categorizedNavigation" :key="category.title">
-            <h3 class="px-2 text-xs font-semibold text-agri-earth uppercase tracking-wider mb-4 opacity-70">
+            <h3 
+              :class="[
+                'px-2 text-xs font-semibold text-agri-earth uppercase tracking-wider mb-4 opacity-70 transition-all duration-300 truncate',
+                isCollapsed ? 'opacity-0 h-0 mb-0 pointer-events-none' : 'opacity-70'
+              ]"
+            >
               {{ category.title }}
             </h3>
             <div class="space-y-1">
@@ -39,7 +69,8 @@
                 :key="item.name"
                 :to="item.path"
                 :class="[
-                  'group flex items-center px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200',
+                  'group flex items-center py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative',
+                  isCollapsed ? 'px-0 justify-center' : 'px-4',
                   $route.name === item.name || $route.path === item.path || ($route.path.startsWith(item.path + '/') && item.path !== '/dashboard' && item.path !== '/super-admin')
                     ? 'bg-agri-earth text-agri-forest shadow-lg'
                     : 'text-gray-300 hover:bg-agri-lush hover:text-white'
@@ -48,14 +79,34 @@
               >
                 <div 
                   :class="[
-                    'mr-3 p-1 rounded-lg transition-colors',
+                    'p-1 rounded-lg transition-all duration-200 flex-shrink-0',
+                    isCollapsed ? 'mr-0' : 'mr-3',
                     $route.name === item.name || $route.path === item.path || ($route.path.startsWith(item.path + '/') && item.path !== '/dashboard' && item.path !== '/super-admin')
                       ? 'bg-agri-forest text-agri-earth'
                       : 'bg-agri-lush text-gray-400 group-hover:text-white'
                   ]"
                   v-html="item.icon"
                 ></div>
-                {{ item.label }}
+                <transition
+                  enter-active-class="transition-opacity duration-300"
+                  enter-from-class="opacity-0"
+                  enter-to-class="opacity-100"
+                  leave-active-class="transition-opacity duration-200"
+                  leave-from-class="opacity-100"
+                  leave-to-class="opacity-0"
+                >
+                  <span v-if="!isCollapsed" class="truncate transition-opacity">{{ item.label }}</span>
+                </transition>
+
+                <!-- Nexus Insight Tooltip: Efficiency Mode Only -->
+                <div 
+                  v-if="isCollapsed" 
+                  class="fixed left-[5.5rem] px-3 py-2 bg-white/95 backdrop-blur-md text-agri-forest text-[10px] font-black uppercase tracking-widest rounded-xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-x-1 group-hover:translate-x-0 z-[100] whitespace-nowrap lg:block hidden"
+                >
+                  {{ item.label }}
+                  <!-- Tooltip Arrow -->
+                  <div class="absolute right-full top-1/2 -translate-y-1/2 border-8 border-transparent border-r-white/95"></div>
+                </div>
               </router-link>
             </div>
           </div>
@@ -66,23 +117,44 @@
           <div class="relative">
             <button
               @click="toggleDropdown"
-              class="flex items-center w-full p-2 rounded-xl bg-agri-lush/50 hover:bg-agri-lush transition-colors group"
+              class="flex items-center w-full p-2 rounded-xl bg-agri-lush/50 hover:bg-agri-lush transition-all duration-300 group overflow-hidden"
+              :class="{ 'justify-center': isCollapsed }"
             >
               <div class="flex-shrink-0">
                 <div class="h-10 w-10 rounded-xl bg-agri-earth flex items-center justify-center shadow-inner">
                   <span class="text-sm font-bold text-agri-forest">{{ userInitial }}</span>
                 </div>
               </div>
-              <div class="ml-3 flex-1 text-left">
-                <p class="text-sm font-semibold text-white truncate">{{ user?.name || 'User Name' }}</p>
-                <p class="text-xs text-gray-400 truncate capitalize">{{ user?.role || 'Guest' }} Account</p>
-              </div>
+              <transition
+                enter-active-class="transition-all duration-300"
+                enter-from-class="w-0 opacity-0 ml-0"
+                enter-to-class="w-auto opacity-100 ml-3"
+                leave-active-class="transition-all duration-200"
+                leave-from-class="w-auto opacity-100 ml-3"
+                leave-to-class="w-0 opacity-0 ml-0"
+              >
+                <div v-if="!isCollapsed" class="ml-3 flex-1 text-left truncate transition-all overflow-hidden">
+                  <p class="text-sm font-semibold text-white truncate">{{ user?.name || 'User Name' }}</p>
+                  <p class="text-xs text-gray-400 truncate capitalize">{{ user?.role || 'Guest' }} Account</p>
+                </div>
+              </transition>
               <svg
-                :class="['h-4 w-4 text-gray-400 transition-transform duration-200', isDropdownOpen ? 'rotate-180' : '']"
+                v-if="!isCollapsed"
+                :class="['h-4 w-4 text-gray-400 transition-transform duration-200 ml-2', isDropdownOpen ? 'rotate-180' : '']"
                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
               >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
+
+              <!-- Nexus Insight Tooltip: Efficiency Mode Only -->
+              <div 
+                v-if="isCollapsed" 
+                class="fixed left-[5.5rem] px-3 py-2 bg-white/95 backdrop-blur-md text-agri-forest text-[10px] font-black uppercase tracking-widest rounded-xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-x-1 group-hover:translate-x-0 z-[100] whitespace-nowrap lg:block hidden"
+              >
+                Account Actions
+                <!-- Tooltip Arrow -->
+                <div class="absolute right-full top-1/2 -translate-y-1/2 border-8 border-transparent border-r-white/95"></div>
+              </div>
             </button>
 
             <!-- User Dropdown -->
@@ -176,6 +248,7 @@ const router = useRouter()
 const route = useRoute()
 
 const isMobileOpen = ref(false)
+const isCollapsed = ref(false)
 const isDropdownOpen = ref(false)
 const user = ref(null)
 
@@ -261,6 +334,10 @@ const categorizedNavigation = computed(() => {
 
 const toggleMobileSidebar = () => {
   isMobileOpen.value = !isMobileOpen.value
+}
+
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
 }
 
 const closeMobileSidebar = () => {
