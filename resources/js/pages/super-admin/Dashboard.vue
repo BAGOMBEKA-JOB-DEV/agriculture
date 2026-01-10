@@ -226,28 +226,38 @@ onUnmounted(() => {
   <div class="min-h-screen bg-white pb-24">
     <Notification ref="notificationRef" />
 
-    <!-- Governance Header -->
-    <div class="bg-white border-b border-gray-100 py-12">
-        <div class="container mx-auto px-8">
+    <!-- Governance Header: Sovereign Dark Branding -->
+    <div class="bg-agri-forest py-16 relative overflow-hidden">
+        <!-- Abstract Branding Accents -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-agri-lush/10 rounded-full -ml-32 -mb-32 blur-2xl"></div>
+        
+        <div class="container mx-auto px-8 relative z-10">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                 <div>
-                    <h1 class="text-3xl font-black text-gray-900 tracking-tight">
-                       Governance <span class="text-agri-forest">Nexus</span>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-white/20">
+                            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        </div>
+                        <span class="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Governance Nexus Protocol</span>
+                    </div>
+                    <h1 class="text-4xl font-black text-white tracking-tight">
+                       Sovereign <span class="text-agri-lush">Registry</span>
                     </h1>
-                    <p class="text-gray-500 font-medium mt-2 max-w-xl">Sovereign registry oversight and global participant telemetry.</p>
+                    <p class="text-white/60 font-medium mt-2 max-w-xl text-lg">Central oversight for global participant telemetry and market compliance.</p>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <div class="px-4 py-2 bg-agri-forest/5 rounded-2xl border border-agri-forest/20 flex items-center space-x-2">
-                        <div class="h-2 w-2 rounded-full bg-agri-forest animate-pulse"></div>
-                        <span class="text-[10px] font-black text-agri-forest uppercase tracking-widest">Registry Sync Active</span>
+                    <div class="px-6 py-3 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md flex items-center space-x-3">
+                        <div class="h-2 w-2 rounded-full bg-agri-lush animate-pulse shadow-[0_0_10px_rgba(132,204,22,0.8)]"></div>
+                        <span class="text-[10px] font-black text-white uppercase tracking-widest">Nexus Sync: Online</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Discovery Suite: Integrated Control Center -->
-    <div class="bg-white/90 border-b border-gray-100 py-5 sticky top-0 z-30 backdrop-blur-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+    <!-- Discovery Suite: High-Depth Control Center -->
+    <div class="bg-gray-50/80 border-b border-gray-100 py-6 sticky top-0 z-30 backdrop-blur-xl shadow-sm">
         <div class="container mx-auto px-8">
             <div class="flex flex-col xl:flex-row items-stretch xl:items-center gap-5">
                 <!-- Global Search -->
@@ -354,17 +364,23 @@ onUnmounted(() => {
     </div>
 
     <div class="container mx-auto px-8 mt-12">
-      <!-- Telemetry Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div v-for="card in stats_cards" :key="card.label" class="bg-white p-6 rounded-3xl border border-gray-100 hover:border-agri-forest/30 hover:shadow-xl hover:shadow-gray-100 transition-all duration-500 group">
-            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 group-hover:text-agri-forest transition-colors">{{ card.label }}</p>
-            <div class="flex items-end justify-between">
-                <p class="text-4xl font-black text-gray-900 tracking-tighter">{{ card.value }}</p>
-                <div class="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center text-agri-forest group-hover:bg-agri-forest group-hover:text-white transition-all duration-500">
-                    <svg v-if="card.icon === 'UsersIcon'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    <svg v-if="card.icon === 'StoreIcon'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                    <svg v-if="card.icon === 'ShoppingBagIcon'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                    <svg v-if="card.icon === 'CurrencyIcon'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <!-- Telemetry Grid: High-Contrast Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 -mt-10">
+        <div v-for="card in stats_cards" :key="card.label" class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/50 hover:shadow-agri-forest/10 hover:-translate-y-1 transition-all duration-500 group relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-full -mr-12 -mt-12 group-hover:bg-agri-forest/5 transition-colors duration-500"></div>
+            
+            <div class="relative z-10 flex flex-col h-full justify-between">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="p-3 rounded-2xl bg-gray-50 text-agri-forest group-hover:bg-agri-forest group-hover:text-white transition-all duration-500 border border-gray-100 group-hover:border-agri-forest">
+                        <svg v-if="card.icon === 'UsersIcon'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        <svg v-if="card.icon === 'StoreIcon'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        <svg v-if="card.icon === 'ShoppingBagIcon'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        <svg v-if="card.icon === 'CurrencyIcon'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 group-hover:text-agri-forest transition-colors">{{ card.label }}</h4>
+                    <p class="text-4xl font-black text-gray-900 tracking-tighter leading-none">{{ card.value }}</p>
                 </div>
             </div>
         </div>
@@ -372,58 +388,66 @@ onUnmounted(() => {
 
       <!-- System Manifest -->
       <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden">
-        <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-center">
-            <h2 class="text-xs font-bold text-gray-900 uppercase tracking-widest">Global Participant Registry</h2>
+        <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+            <h2 class="text-xs font-black text-gray-900 uppercase tracking-[0.2em]">Global Participant Registry</h2>
             <div class="flex items-center space-x-4">
-                <span class="px-3 py-1 rounded-full bg-gray-50 text-gray-500 text-xs font-bold border border-gray-100">{{ users.length }} Active Nodes</span>
+                <div class="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm">
+                    <div class="w-2 h-2 rounded-full bg-agri-forest"></div>
+                    <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">{{ users.length }} Active Nodes</span>
+                </div>
             </div>
         </div>
 
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead>
-              <tr class="bg-gray-50/20 text-left">
-                <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Identity Node</th>
-                <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Jurisdiction</th>
-                <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Authority Role</th>
-                <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Protocol Status</th>
-                <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Moderation</th>
+              <tr class="bg-gray-50/50 text-left border-b border-gray-100">
+                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Identity Node</th>
+                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Jurisdiction</th>
+                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Authority Role</th>
+                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Protocol Status</th>
+                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Moderation</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50">
+            <tbody class="divide-y divide-gray-100">
               <tr v-if="loading">
-                  <td colspan="5" class="py-16 text-center">
-                      <svg class="animate-spin h-8 w-8 text-agri-forest/30 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                      <p class="text-[10px] font-black text-gray-300 uppercase tracking-widest mt-4">Syncing Nexus Registry...</p>
-                  </td>
-              </tr>
-              <tr v-else-if="users.length === 0" class="group">
                   <td colspan="5" class="py-24 text-center">
                       <div class="relative inline-block">
-                          <div class="absolute -inset-4 bg-agri-forest/5 rounded-full blur-2xl group-hover:bg-agri-forest/10 transition-all duration-700"></div>
-                          <div class="relative h-20 w-20 bg-white border border-gray-100 rounded-3xl flex items-center justify-center text-gray-300 shadow-sm mx-auto mb-6 group-hover:scale-110 group-hover:border-agri-forest/20 transition-all duration-500">
-                             <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                          <svg class="animate-spin h-12 w-12 text-agri-forest/20 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          <div class="absolute inset-0 flex items-center justify-center">
+                              <div class="h-2 w-2 rounded-full bg-agri-forest animate-ping"></div>
+                          </div>
+                      </div>
+                      <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-6">Syncing Nexus Registry...</p>
+                  </td>
+              </tr>
+              <tr v-else-if="users.length === 0" class="group transition-colors duration-500">
+                  <td colspan="5" class="py-32 text-center bg-gray-50/20">
+                      <div class="relative inline-block">
+                          <div class="absolute -inset-8 bg-agri-forest/5 rounded-full blur-3xl group-hover:bg-agri-forest/10 transition-all duration-1000"></div>
+                          <div class="relative h-24 w-24 bg-white border border-gray-100 rounded-[2.5rem] flex items-center justify-center text-gray-200 shadow-xl shadow-gray-200/50 mx-auto mb-8 group-hover:scale-110 group-hover:border-agri-forest/20 transition-all duration-700">
+                             <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
                              </svg>
                           </div>
                       </div>
-                      <h3 class="text-lg font-black text-gray-900 tracking-tight">No Participants Found</h3>
-                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 max-w-[280px] mx-auto leading-loose">
-                          No identity nodes match your current discovery parameters.
+                      <h3 class="text-xl font-black text-gray-900 tracking-tight">Zero Results Protocol</h3>
+                      <p class="text-xs font-medium text-gray-400 mt-2 max-w-[320px] mx-auto leading-relaxed">
+                          No identity nodes match your current discovery parameters across all sovereign jurisdictions.
                       </p>
                       <button 
                         @click="resetFilters"
-                        class="mt-8 px-8 py-3 bg-white border border-gray-100 rounded-2xl text-[10px] font-black text-agri-forest uppercase tracking-[0.2em] hover:bg-agri-forest hover:text-white hover:border-agri-forest transition-all duration-500 active:scale-95 shadow-sm"
+                        class="mt-10 px-10 py-4 bg-white border border-gray-100 rounded-3xl text-[10px] font-black text-agri-forest shadow-lg shadow-gray-200/50 uppercase tracking-[0.3em] hover:bg-agri-forest hover:text-white hover:border-agri-forest hover:-translate-y-1 transition-all duration-700 active:scale-95"
                       >
                         Reset Discovery Suite
                       </button>
                   </td>
               </tr>
-              <tr v-else v-for="user in users" :key="user.id" class="hover:bg-gray-50/30 transition-all duration-300">
-                <td class="px-8 py-6">
-                  <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 font-black uppercase text-sm shadow-sm">
+              <tr v-else v-for="user in users" :key="user.id" class="hover:bg-gray-50/50 transition-all duration-500 group/row">
+                <td class="px-8 py-7">
+                  <div class="flex items-center space-x-5">
+                    <div class="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 font-black uppercase text-lg shadow-sm group-hover/row:border-agri-forest/30 group-hover/row:bg-white transition-all duration-500">
                       {{ user.name.charAt(0) }}
                     </div>
                     <div>
@@ -574,32 +598,37 @@ onUnmounted(() => {
             appear
           >
             <div v-if="isDrawerOpen" class="absolute inset-y-0 right-0 max-w-xl w-full bg-white shadow-2xl flex flex-col">
-              <!-- Drawer Header -->
-              <div class="px-8 py-12 border-b border-gray-100 bg-white sticky top-0 z-20">
-                <div class="flex items-start justify-between">
-                  <div class="flex items-center space-x-6">
-                    <div class="w-20 h-20 rounded-[2rem] bg-agri-forest/5 flex items-center justify-center text-agri-forest font-black text-3xl border border-agri-forest/10 shadow-sm uppercase">
+              <!-- Drawer Header: Sovereign Identity -->
+              <div class="px-8 py-16 border-b border-white/10 bg-agri-forest sticky top-0 z-20 overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                
+                <div class="relative z-10 flex items-start justify-between">
+                  <div class="flex items-center space-x-8">
+                    <div class="w-24 h-24 rounded-[2.5rem] bg-white/10 flex items-center justify-center text-white font-black text-4xl border border-white/20 shadow-2xl backdrop-blur-md uppercase">
                       {{ inspectedUser?.name?.charAt(0) }}
                     </div>
                     <div>
-                      <h2 class="text-3xl font-black text-gray-900 tracking-tight">{{ inspectedUser?.name }}</h2>
-                      <div class="flex items-center mt-2 space-x-2">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="roleClass(inspectedUser?.role)">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] bg-white/10 text-white/70 border border-white/10">Registry Node</span>
+                      </div>
+                      <h2 class="text-4xl font-black text-white tracking-tight">{{ inspectedUser?.name }}</h2>
+                      <div class="flex items-center mt-4 space-x-3">
+                        <span class="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 bg-white/5 text-white/90">
                           {{ inspectedUser?.role?.replace('_', ' ') }}
                         </span>
-                        <div v-if="inspectedUser?.status === 'suspended'" class="flex items-center px-3 py-1 bg-red-50 border border-red-100 rounded-full">
-                           <div class="w-1.5 h-1.5 rounded-full mr-2 bg-red-500"></div>
-                           <span class="text-[9px] font-black text-red-600 uppercase tracking-widest">Revoked Node</span>
+                        <div v-if="inspectedUser?.status === 'suspended'" class="flex items-center px-4 py-1.5 bg-red-500/20 border border-red-500/30 rounded-xl">
+                           <div class="w-2 h-2 rounded-full mr-2 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                           <span class="text-[10px] font-black text-red-200 uppercase tracking-widest">Access Revoked</span>
                         </div>
-                        <div v-else class="flex items-center px-3 py-1 bg-gray-50 border border-gray-100 rounded-full">
-                           <div class="w-1.5 h-1.5 rounded-full mr-2" :class="inspectedUser?.email_verified_at ? 'bg-green-500' : 'bg-yellow-500'"></div>
-                           <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">{{ inspectedUser?.email_verified_at ? 'Verified Node' : 'Pending Node' }}</span>
+                        <div v-else class="flex items-center px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl">
+                           <div class="w-2 h-2 rounded-full mr-2" :class="inspectedUser?.email_verified_at ? 'bg-agri-lush shadow-[0_0_8px_rgba(132,204,22,0.8)]' : 'bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.8)]'"></div>
+                           <span class="text-[10px] font-black text-white/70 uppercase tracking-widest">{{ inspectedUser?.email_verified_at ? 'Verified Node' : 'Discovery Mode' }}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <button @click="closeInspector" class="p-3 bg-gray-50 rounded-2xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all group">
-                    <svg class="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <button @click="closeInspector" class="p-4 bg-white/10 rounded-3xl text-white/60 hover:text-white hover:bg-white/20 transition-all group backdrop-blur-md border border-white/10">
+                    <svg class="w-6 h-6 group-hover:rotate-90 transition-transform duration-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                   </button>
                 </div>
               </div>
