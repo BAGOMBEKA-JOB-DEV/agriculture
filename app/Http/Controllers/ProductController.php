@@ -43,15 +43,8 @@ class ProductController extends Controller
             // Private Inventory: Show only vendor's own products
             $query->where('seller_id', $user->id);
         } else {
-            // Global Marketplace: Show all available products
-            $query->where(function ($q) use ($user) {
-                $q->where('status', 'available');
-                
-                // Vendors also see their own products (even if pending/rejected) in the global list
-                if ($user && $user->role === 'vendor') {
-                    $q->orWhere('seller_id', $user->id);
-                }
-            });
+            // Global Marketplace: Show all available products for everyone
+            $query->where('status', 'available');
         }
         
         $products = $query->orderBy('created_at', 'desc')->get();

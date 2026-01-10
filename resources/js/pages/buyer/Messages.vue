@@ -113,7 +113,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
                                 <span>Forward</span>
                             </button>
-                            <button v-if="msg.sender_id === authStore.user?.id" @click="deleteMessage(msg.id)" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-500 flex items-center space-x-2">
+                            <button v-if="msg.sender_id === authStore.user?.id" @click="openDeleteModal(msg.id)" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-500 flex items-center space-x-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 <span>Delete</span>
                             </button>
@@ -231,6 +231,19 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <Modal
+      :is-open="isDeleteModalOpen"
+      title="Delete Message"
+      message="Are you sure you want to delete this message for everyone? This action cannot be revoked."
+      confirm-text="Delete for Everyone"
+      cancel-text="Abort"
+      type="danger"
+      :loading="isDeleting"
+      @confirm="deleteMessage"
+      @cancel="isDeleteModalOpen = false"
+    />
   </div>
 </template>
 
@@ -241,6 +254,7 @@ import { useAuthStore } from '../../stores/auth';
 import axios from 'axios';
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
+import Modal from '../../components/Modal.vue';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -437,17 +451,31 @@ const handleForward = async (targetUserId) => {
     }
 };
 
-const deleteMessage = async (messageId) => {
-    if(!confirm('Delete this message for everyone?')) return;
+const isDeleteModalOpen = ref(false);
+const messageIdToDelete = ref(null);
+const isDeleting = ref(false);
+
+const openDeleteModal = (messageId) => {
+    messageIdToDelete.value = messageId;
+    isDeleteModalOpen.value = true;
+};
+
+const deleteMessage = async () => {
+    if (!messageIdToDelete.value) return;
     
+    isDeleting.value = true;
     try {
-        await axios.delete(`/api/messages/${messageId}`);
+        await axios.delete(`/api/messages/${messageIdToDelete.value}`);
         // Refresh messages to show deleted state
         if (selectedParticipantId.value) {
             fetchMessages(selectedParticipantId.value, true);
         }
+        isDeleteModalOpen.value = false;
     } catch (error) {
         console.error('Error deleting message:', error);
+    } finally {
+        isDeleting.value = false;
+        messageIdToDelete.value = null;
     }
 };
 

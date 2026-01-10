@@ -48,16 +48,40 @@
           <p class="mt-2 text-sm text-gray-500 font-semibold tracking-wide uppercase">Identity Portal • IAM Hub</p>
         </div>
 
-        <!-- Auth Alert -->
-        <Alert 
-          v-if="authError" 
-          type="error" 
-          title="Access Denied" 
-          class="mb-8"
-          @close="authError = null"
-        >
-          {{ authError }}
-        </Alert>
+        <!-- High-Fidelity Error Registry -->
+        <div v-if="authError" class="animate-in fade-in slide-in-from-top-2 duration-300 mb-8 px-1">
+           <!-- Revocation Specific UI -->
+           <div v-if="authError.includes('revoked')" class="bg-red-50/50 border border-red-100 rounded-[1.5rem] p-6 flex items-start space-x-4 shadow-sm relative overflow-hidden group">
+              <div class="absolute inset-y-0 left-0 w-1.5 bg-red-500"></div>
+              <div class="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0 text-red-600">
+                 <svg class="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                 </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                 <h4 class="text-[10px] font-black text-red-600 uppercase tracking-[0.2em] mb-1">Access Protocol Violation</h4>
+                 <p class="text-xs font-bold text-gray-900 leading-relaxed pr-4">{{ authError }}</p>
+                 <div class="mt-4 flex flex-wrap items-center gap-4">
+                    <a href="mailto:support@agriglobal.com" class="text-[9px] font-black text-red-600 uppercase tracking-widest hover:underline transition-all">Emergency Support</a>
+                    <span class="w-1 h-1 rounded-full bg-red-200 hidden sm:block"></span>
+                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Protocol ID: #REVOKED</span>
+                 </div>
+              </div>
+              <button @click="authError = null" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+           </div>
+
+           <!-- Standard Alert UI -->
+           <Alert 
+             v-else
+             type="error" 
+             title="Access Denied" 
+             @close="authError = null"
+           >
+             {{ authError }}
+           </Alert>
+        </div>
         
         <form class="space-y-6" @submit.prevent="handleLogin">
           <div class="space-y-4">
@@ -166,12 +190,19 @@ const handleLogin = async () => {
   if (result.success) {
     router.push('/dashboard')
   } else {
-    if (result.errors) {
+    // Priority: Revocation Protocol
+    if (result.message && result.message.includes('revoked')) {
+      authError.value = result.message
+      
+      // Cinematic Revocation Toast (Global Registry Sync)
+      if (window.notify) {
+         window.notify.error('Access Revoked', result.message, 0)
+      }
+    } else if (result.errors) {
       errors.value = result.errors
       authError.value = `Access attempt for '${form.value.email}' failed. Please check the required fields below.`
     } else {
-      // Custom user-friendly message including the provided input
-      authError.value = `Identity '${form.value.email}' is not recognized in our registry, or the credential key is incorrect.`
+      authError.value = result.message || `Identity '${form.value.email}' not recognized.`
     }
     loading.value = false
   }

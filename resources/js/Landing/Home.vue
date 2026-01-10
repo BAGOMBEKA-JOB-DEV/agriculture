@@ -42,7 +42,7 @@
             </router-link>
           </div>
           
-          <div class="mt-16 grid grid-cols-3 gap-8 border-t border-white/10 pt-8 max-w-xl">
+          <div class="mt-16 grid grid-cols-3 gap-8 border-t border-white/10 pt-8 max-w-xl mb-5">
             <div>
               <p class="text-3xl font-black text-white">45k+</p>
               <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Verified Sellers</p>

@@ -81,7 +81,7 @@ const subscribe = async (plan) => {
       router.push('/buyer/dashboard');
     }
   } catch (error) {
-    alert(error.response?.data?.message || 'Subscription failed');
+    if (window.notify) window.notify.error('Access Failure', error.response?.data?.message || 'Subscription failed');
   } finally {
     processing.value = null;
   }

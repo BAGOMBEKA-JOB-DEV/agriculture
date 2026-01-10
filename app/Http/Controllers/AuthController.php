@@ -56,6 +56,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        // Enforce Account Revocation
+        if ($user->status === 'suspended') {
+            Auth::logout();
+            return response()->json([
+                'message' => 'Please your account has been revoked! Contact support for any more help'
+            ], 403);
+        }
+
         // Dispatch Security Alert Job
         \App\Jobs\ProcessLoginSecurityAlert::dispatch(
             $user, 
