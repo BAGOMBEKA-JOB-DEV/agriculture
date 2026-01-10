@@ -34,6 +34,12 @@ const resetFilters = () => {
   fetchData();
 };
 
+const toggleDropdown = (userId) => {
+  activeDropdownId.value =
+    activeDropdownId.value === userId ? null : userId;
+};
+
+
 // Modal State
 const isModalOpen = ref(false);
 const isProcessing = ref(false);
