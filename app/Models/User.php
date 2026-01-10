@@ -9,11 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+    protected $with = ['roles.permissions'];
+
+    protected $appends = ['permissions_list'];
 
     /**
      * The attributes that are mass assignable.
@@ -85,5 +90,10 @@ class User extends Authenticatable
     public function activeSubscription()
     {
         return $this->subscriptions()->where('status', 'active')->where('ends_at', '>', now())->first();
+    }
+
+    public function getPermissionsListAttribute()
+    {
+        return $this->roles->flatMap->permissions->pluck('slug')->unique()->values();
     }
 }

@@ -67,7 +67,9 @@
 
               <button
                 v-if="confirmText"
-                @click="confirm"
+                :type="formId ? 'submit' : 'button'"
+                :form="formId || undefined"
+                @click="!formId ? confirm() : null"
                 :class="[
                     'px-6 py-3 text-sm font-bold text-white border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all shadow-lg',
                     type === 'danger' ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500 shadow-red-500/20' : 'bg-agri-forest hover:bg-agri-lush focus:ring-agri-forest shadow-agri-forest/20'
@@ -101,7 +103,8 @@ defineProps({
   loading: { type: Boolean, default: false },
   type: { type: String, default: 'primary' }, // primary, danger, success
   hideFooter: { type: Boolean, default: false },
-  maxWidthClass: { type: String, default: 'max-w-md' }
+  maxWidthClass: { type: String, default: 'max-w-md' },
+  formId: { type: String, default: '' } // Form ID to submit
 })
 
 const emit = defineEmits(['confirm', 'cancel'])

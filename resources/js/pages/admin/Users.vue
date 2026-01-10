@@ -26,9 +26,9 @@
                 <div>
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">System Role</label>
                     <select v-model="userForm.role" class="w-full bg-gray-50 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-900 focus:ring-2 focus:ring-agri-forest/20 focus:border-agri-forest transition-all">
-                        <option value="user">Standard User (Buyer)</option>
-                        <option value="vendor">Verified Vendor</option>
-                        <option value="admin">Administrator</option>
+                        <option v-for="role in roles" :key="role.slug" :value="role.slug">
+                            {{ role.name }}
+                        </option>
                     </select>
                 </div>
                 <div>
@@ -121,7 +121,7 @@
             <div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="flex items-center space-x-3 w-full md:w-auto">
                     <!-- Bulk Actions -->
-                    <div v-if="selectedUsers.length > 0" class="flex items-center space-x-2 animate-fade-in-up">
+                    <div v-if="selectedUsers.length > 0 && authStore.can('manage_users')" class="flex items-center space-x-2 animate-fade-in-up">
                         <span class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">{{ selectedUsers.length }} Selected</span>
                         <div class="h-8 w-[1px] bg-gray-200 mx-2"></div>
                         <button @click="confirmBulkAction('activate')" class="text-xs font-bold text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-colors">Activate</button>
@@ -137,9 +137,9 @@
                      </div>
                      <select v-model="roleFilter" class="px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold uppercase tracking-wide text-gray-600 focus:ring-2 focus:ring-agri-forest/20 focus:border-agri-forest outline-none cursor-pointer">
                         <option value="">All Roles</option>
-                        <option value="admin">Admins</option>
-                        <option value="vendor">Vendors</option>
-                        <option value="user">Buyers</option>
+                        <option v-for="role in roles" :key="role.slug" :value="role.slug">
+                            {{ role.name }}
+                        </option>
                      </select>
                 </div>
             </div>
@@ -233,7 +233,7 @@
                                     Reset Password
                                 </button>
                              </div>
-                             <div class="py-1">
+                              <div v-if="authStore.can('manage_users')" class="py-1">
                                 <button v-if="!user.suspended_at" @click="confirmAction('suspend', user)" class="group flex w-full items-center px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
                                     <svg class="mr-3 h-4 w-4 text-red-400 group-hover:text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                                     Suspend Access
@@ -246,7 +246,7 @@
                                     <svg class="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     Delete Identity
                                 </button>
-                             </div>
+                              </div>
                         </div>
                    </div>
                 </td>
@@ -262,9 +262,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
+import { useAuthStore } from '../../stores/auth';
 import Notification from '../../components/Notification.vue';
 import Modal from '../../components/Modal.vue';
 
+const authStore = useAuthStore();
 const notificationRef = ref(null);
 const users = ref([]);
 const loading = ref(true);
@@ -277,6 +279,9 @@ const showUserModal = ref(false);
 const showInviteModal = ref(false);
 const showLogModal = ref(false);
 const showConfirmModal = ref(false);
+
+// Forms & Data
+const roles = ref([]);
 
 // Forms & Data
 const editingUser = ref(null);
@@ -336,9 +341,14 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
 const fetchUsers = async () => {
     loading.value = true;
+    loading.value = true;
     try {
-        const response = await axios.get('/api/admin/users');
-        users.value = response.data.data || response.data;
+        const [usersRes, rolesRes] = await Promise.all([
+            axios.get('/api/admin/users'),
+            axios.get('/api/admin/roles')
+        ]);
+        users.value = usersRes.data.data || usersRes.data;
+        roles.value = rolesRes.data;
         // Mock active status logic if not present
         if (users.value.length > 0 && !users.value[0].updated_at) {
              users.value.forEach(u => u.updated_at = new Date().toISOString());

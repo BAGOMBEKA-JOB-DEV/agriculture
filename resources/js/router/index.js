@@ -22,6 +22,7 @@ import AdminUsers from '../pages/admin/Users.vue';
 
 import SuperAdminDashboard from '../pages/super-admin/Dashboard.vue';
 import SuperAdminCategories from '../pages/super-admin/Categories.vue';
+import RoleManagement from '../pages/super-admin/RoleManagement.vue';
 
 import Marketplace from '../pages/Marketplace.vue';
 import MarketplaceDetail from '../pages/MarketplaceDetail.vue';
@@ -262,6 +263,15 @@ const routes = [
     meta: {
       requiresAuth: true,
       breadcrumb: { label: 'Asset Classifications' }
+    },
+  },
+  {
+    path: '/super-admin/roles',
+    name: 'RoleManagement',
+    component: RoleManagement,
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Role Ecosystem' }
     },
   },
 

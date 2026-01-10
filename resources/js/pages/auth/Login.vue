@@ -125,13 +125,15 @@ const handleLogin = async () => {
   const result = await authStore.login(form.value);
 
   if (result.success) {
-    // Redirect based on role
-    if (authStore.user.role === 'vendor') {
-      router.push('/vendor/dashboard');
-    } else if (authStore.user.role === 'admin') {
-      router.push('/admin/dashboard');
+    // Redirect based on permissions
+    if (authStore.can('access_super_admin')) {
+        router.push('/super-admin');
+    } else if (authStore.can('access_admin')) {
+        router.push('/admin/dashboard'); // Or whatever the admin landing is
+    } else if (authStore.can('access_vendor')) {
+        router.push('/vendor/dashboard'); // Ensure this route exists or matches sidebar
     } else {
-      router.push('/buyer/dashboard');
+      router.push('/dashboard'); // Standard user dashboard
     }
   } else {
     error.value = result.message;

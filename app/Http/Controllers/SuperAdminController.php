@@ -16,9 +16,9 @@ class SuperAdminController extends Controller
     {
         return response()->json([
             'total_users' => User::count(),
-            'total_vendors' => User::where('role', 'vendor')->count(),
-            'total_buyers' => User::where('role', 'buyer')->count(),
-            'total_traders' => User::where('role', 'trader')->count(),
+            'total_vendors' => User::whereHas('roles', fn($q) => $q->where('slug', 'vendor'))->count(),
+            'total_buyers' => User::whereHas('roles', fn($q) => $q->where('slug', 'buyer'))->count(),
+            'total_traders' => User::whereHas('roles', fn($q) => $q->where('slug', 'trader'))->count(),
             'total_products' => Product::count(),
             'total_rfqs' => Rfq::count(),
             'total_revenue' => Payment::where('status', 'completed')->sum('amount'),
@@ -29,7 +29,7 @@ class SuperAdminController extends Controller
 
     public function users(Request $request)
     {
-        $query = User::with(['sellerProfile', 'buyerProfile']);
+        $query = User::with(['sellerProfile', 'buyerProfile', 'roles']);
 
         // Search Nexus (Name or Email)
         if ($request->filled('q')) {
@@ -42,7 +42,7 @@ class SuperAdminController extends Controller
 
         // Role Authority Filter
         if ($request->filled('role')) {
-            $query->where('role', $request->role);
+            $query->whereHas('roles', fn($q) => $q->where('slug', $request->role));
         }
 
         // Registry Status Filter
@@ -74,8 +74,14 @@ class SuperAdminController extends Controller
     public function promoteToSuperAdmin($id)
     {
         $user = User::findOrFail($id);
-        $user->role = 'super_admin';
+        $user->role = 'super_admin'; // Legacy
         $user->save();
+
+        // Dynamic Role Sync
+        $role = \App\Models\Role::where('slug', 'super_admin')->first();
+        if ($role) {
+            $user->roles()->syncWithoutDetaching([$role->id]);
+        }
 
         NotifyGovernanceAction::dispatch($user, 'promote');
 
@@ -104,7 +110,7 @@ class SuperAdminController extends Controller
     {
         $user = User::findOrFail($id);
         // Only revoke if not already a super admin to prevent lockouts
-        if ($user->role === 'super_admin') {
+        if ($user->hasRole('super_admin')) {
             return response()->json(['message' => 'Sovereign nodes cannot be revoked through standard protocols.'], 403);
         }
         

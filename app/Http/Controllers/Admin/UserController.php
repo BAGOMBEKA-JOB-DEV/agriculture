@@ -41,6 +41,14 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function getRoles()
+    {
+        // Return all roles except super_admin
+        return response()->json(
+            \App\Models\Role::where('slug', '!=', 'super_admin')->get(['name', 'slug'])
+        );
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -49,7 +57,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'role' => ['required', Rule::in(['admin', 'vendor', 'user', 'buyer'])],
+            'role' => ['required', 'exists:roles,slug'], // Dynamic check
             'location' => 'nullable|string'
         ]);
 
@@ -68,13 +76,50 @@ class UserController extends Controller
         // Dispatch Job to send email
         \App\Jobs\ProcessUserCreation::dispatch($user, $password);
         
+        // Dynamic Role Sync
+        $role = \App\Models\Role::where('slug', $validated['role'])->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
+        
         return response()->json([
             'message' => 'User created successfully',
             'user' => $this->formatUser($user),
         ]);
     }
 
-    // ... (update method remains)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        $user = User::findOrFail($id);
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'role' => ['required', 'exists:roles,slug'], // Dynamic check
+            'location' => 'nullable|string'
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'role' => $validated['role'],
+            'location' => $validated['location'],
+        ]);
+
+        // Dynamic Role Sync
+        $role = \App\Models\Role::where('slug', $validated['role'])->first();
+        if ($role) {
+            $user->roles()->sync([$role->id]);
+        }
+
+        return response()->json([
+            'message' => 'User updated successfully',
+            'user' => $this->formatUser($user),
+        ]);
+    }
 
     // ... (destroy method remains)
 

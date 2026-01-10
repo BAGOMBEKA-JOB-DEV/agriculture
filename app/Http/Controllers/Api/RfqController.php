@@ -14,7 +14,7 @@ class RfqController extends Controller
         
         $query = Rfq::with(['product', 'buyer', 'seller']);
 
-        if ($user->role === 'vendor') {
+        if ($user->hasRole('vendor')) {
             $query->where('seller_id', $user->id);
         } else {
             $query->where('buyer_id', $user->id);

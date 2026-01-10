@@ -75,7 +75,7 @@ const subscribe = async (plan) => {
     await authStore.checkAuth();
     
     // Redirect based on role
-    if (authStore.user.role === 'vendor') {
+    if (authStore.can('access_vendor')) {
       router.push('/vendor/dashboard');
     } else {
       router.push('/buyer/dashboard');

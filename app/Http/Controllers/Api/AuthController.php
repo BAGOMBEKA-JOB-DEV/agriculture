@@ -19,7 +19,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:user,vendor',
+            'role' => 'required|exists:roles,slug',
             'user_type' => 'nullable|in:farmer,trader,company,buyer',
             'phone' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:255',
@@ -36,8 +36,14 @@ class AuthController extends Controller
             'status' => 'pending',
         ]);
 
+        // Dynamic Role Assignment
+        $role = \App\Models\Role::where('slug', $request->role)->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
+
         // Create profile based on role
-        if ($user->role === 'vendor') {
+        if ($user->hasRole('vendor')) {
             SellerProfile::create([
                 'user_id' => $user->id,
                 'business_name' => $request->name,
