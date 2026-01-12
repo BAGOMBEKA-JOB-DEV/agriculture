@@ -20,8 +20,11 @@
       <div class="flex flex-col h-full">
         <!-- Logo Area -->
         <div 
-          class="flex items-center h-20 border-b border-agri-lush/30 relative overflow-hidden transition-all duration-300"
-          :class="isCollapsed ? 'justify-center px-0' : 'px-6'"
+          class="flex items-center h-20 border-b border-agri-lush/30 relative overflow-hidden transition-opacity duration-300"
+          :class="[
+            isCollapsed ? 'justify-center px-0' : 'px-6',
+            isDropdownOpen ? 'opacity-40' : ''
+          ]"
         >
           <div class="flex items-center min-w-max">
             <div class="w-8 h-8 rounded-lg bg-agri-earth flex items-center justify-center shadow-sm flex-shrink-0">
@@ -53,7 +56,10 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 px-4 py-6 overflow-y-auto space-y-8 scrollbar-hide">
+        <nav 
+          class="flex-1 px-4 py-6 overflow-y-auto space-y-8 scrollbar-hide transition-opacity duration-300 delay-75"
+          :class="isDropdownOpen ? 'opacity-40' : ''"
+        >
           <div v-for="category in categorizedNavigation" :key="category.title">
             <h3 
               :class="[
@@ -159,35 +165,48 @@
 
             <!-- User Dropdown -->
             <transition
-              enter-active-class="transition duration-100 ease-out"
-              enter-from-class="transform scale-95 opacity-0"
-              enter-to-class="transform scale-100 opacity-100"
-              leave-active-class="transition duration-75 ease-in"
-              leave-from-class="transform scale-100 opacity-100"
-              leave-to-class="transform scale-95 opacity-0"
+              enter-active-class="transition duration-200 ease-out"
+              enter-from-class="transform scale-95 opacity-0 translate-y-2"
+              enter-to-class="transform scale-100 opacity-100 translate-y-0"
+              leave-active-class="transition duration-150 ease-in"
+              leave-from-class="transform scale-100 opacity-100 translate-y-0"
+              leave-to-class="transform scale-95 opacity-0 translate-y-2"
             >
               <div
                 v-if="isDropdownOpen"
-                class="absolute bottom-full left-0 right-0 mb-2 py-1 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-20"
+                class="absolute bottom-full left-0 right-0 mb-3 mx-1 py-3 bg-agri-forest rounded-2xl shadow-[0_0_50px_0_rgba(0,0,0,0.6)] ring-1 ring-white/10 z-50 overflow-hidden"
               >
+                <!-- Profile Link -->
                 <router-link
                   to="/settings"
                   @click="closeDropdown"
-                  class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-agri-sand/50 transition-colors"
+                  class="flex items-center px-5 py-3.5 text-sm font-medium text-white hover:bg-white/10 transition-all duration-300 group border-b border-white/10 relative overflow-hidden"
                 >
-                  <svg class="mr-3 h-5 w-5 text-agri-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                  </svg>
-                  My Profile
+                  <div class="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center mr-4 group-hover:bg-agri-earth/20 transition-all duration-300 shadow-inner border border-white/5">
+                    <svg class="h-4 w-4 text-agri-earth group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                  </div>
+                  <div class="flex flex-col relative z-10">
+                     <span class="font-bold tracking-tight text-white group-hover:translate-x-1 transition-transform duration-300">My Profile</span>
+                     <span class="text-[10px] text-gray-300 uppercase tracking-[0.2em] group-hover:text-white/90 transition-colors duration-300">Manage Account</span>
+                  </div>
                 </router-link>
+
+                <!-- Sign Out -->
                 <button
                   @click="handleLogout"
-                  class="flex items-center w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  class="flex items-center w-full px-5 py-3.5 text-sm font-medium text-red-300 hover:bg-red-500/10 hover:text-red-200 transition-all duration-300 group relative overflow-hidden"
                 >
-                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                  </svg>
-                  Sign Out
+                   <div class="h-9 w-9 rounded-xl bg-red-500/10 flex items-center justify-center mr-4 group-hover:bg-red-500/20 transition-all duration-300 border border-red-500/10">
+                      <svg class="h-4 w-4 transition-transform group-hover:rotate-180 duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                      </svg>
+                   </div>
+                   <div class="flex flex-col items-start pr-2 relative z-10">
+                     <span class="font-bold tracking-tight group-hover:translate-x-1 transition-transform duration-300">Sign Out</span>
+                     <span class="text-[10px] text-red-300/50 uppercase tracking-[0.2em] group-hover:text-red-200/80 transition-colors duration-300 w-full text-left">End Session</span>
+                  </div>
                 </button>
               </div>
             </transition>
