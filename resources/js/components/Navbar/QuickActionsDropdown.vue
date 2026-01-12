@@ -27,6 +27,7 @@
           <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none">Marketplace Nexus</p>
         </div>
         <router-link
+          v-if="canBroadcast"
           to="/vendor/products/create"
           @click="closeDropdown"
           class="flex items-center px-5 py-3.5 text-sm text-gray-700 hover:bg-agri-sand/20 hover:text-agri-forest transition-colors group"
@@ -39,6 +40,7 @@
           <span class="font-bold tracking-tight">Broadcast Listing</span>
         </router-link>
         <router-link
+          v-if="canSubmitRFQ"
           to="/rfqs/create"
           @click="closeDropdown"
           class="flex items-center px-5 py-3.5 text-sm text-gray-700 hover:bg-agri-sand/20 hover:text-agri-forest transition-colors group"
@@ -56,9 +58,11 @@
 </template>
 
 <script setup lang="js">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 const isOpen = ref(false)
+const authStore = useAuthStore()
 
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value
@@ -73,6 +77,30 @@ const handleClickOutside = (event) => {
     closeDropdown()
   }
 }
+
+// Role Checks
+const checkRole = (roles) => {
+    const roleList = Array.isArray(roles) ? roles : [roles];
+    // Dynamic role check (prioritize this)
+    if (authStore.user?.roles?.some(r => roleList.includes(r.slug))) return true;
+    // Legacy fallback check
+    if (roleList.includes(authStore.user?.role)) return true;
+    return false;
+};
+
+const canBroadcast = computed(() => {
+    // Admin & Super Admin always access
+    if (checkRole(['super_admin', 'admin'])) return true;
+    // Vendor access
+    return checkRole('vendor');
+});
+
+const canSubmitRFQ = computed(() => {
+    // Admin & Super Admin always access
+    if (checkRole(['super_admin', 'admin'])) return true;
+    // Buyer, Trader, and Standard User access
+    return checkRole(['buyer', 'trader', 'user']);
+});
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
