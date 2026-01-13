@@ -11,9 +11,11 @@ import Subscriptions from '../pages/Subscriptions.vue';
 
 // Role-specific Components
 import BuyerRfqs from '../pages/buyer/Rfqs.vue';
+import RfqCreate from '../pages/buyer/RfqCreate.vue';
 import BuyerMessages from '../pages/buyer/Messages.vue';
 
 import VendorProducts from '../pages/vendor/Products.vue';
+import VendorRfqs from '../pages/vendor/Rfqs.vue';
 import VendorProductCreate from '../pages/vendor/ProductCreate.vue';
 import VendorProductEdit from '../pages/vendor/ProductEdit.vue';
 
@@ -110,6 +112,18 @@ const routes = [
     },
   },
   {
+    path: '/rfqs/create',
+    name: 'RfqCreate',
+    component: RfqCreate,
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'My Requests', path: '/rfqs' },
+        { label: 'Initiate Request' }
+      ]
+    },
+  },
+  {
     path: '/rfqs',
     name: 'RFQs',
     component: BuyerRfqs,
@@ -181,15 +195,19 @@ const routes = [
     },
   },
   {
-    path: '/vendor/products/:id/edit',
-    name: 'ProductEdit',
+    path: '/vendor/products/edit/:id',
+    name: 'VendorProductEdit',
     component: VendorProductEdit,
+    meta: { requiresAuth: true, role: 'vendor' },
+  },
+  {
+    path: '/vendor/rfqs',
+    name: 'VendorRfqs',
+    component: VendorRfqs,
     meta: {
       requiresAuth: true,
-      breadcrumb: [
-        { label: 'Inventory', path: '/vendor/products' },
-        { label: 'Edit Product' }
-      ]
+      role: 'vendor',
+      breadcrumb: [{ label: 'Incoming Requests' }]
     },
   },
 

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rfq extends Model
 {
@@ -38,9 +40,14 @@ class Rfq extends Model
         return $this->belongsTo(User::class, 'seller_id');
     }
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(RfqMessage::class);
     }
 
     public function scopePending($query)
