@@ -40,6 +40,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // RFQs
     Route::apiResource('rfqs', RfqController::class);
+    Route::get('rfqs/{id}/conversations', [RfqController::class, 'getConversations']);
+    Route::get('rfqs/{id}/messages', [RfqController::class, 'getMessages']);
+    Route::post('rfqs/{id}/messages', [RfqController::class, 'storeMessage']);
 
     // Subscriptions
     Route::post('/subscribe', [SubscriptionController::class, 'subscribe']);

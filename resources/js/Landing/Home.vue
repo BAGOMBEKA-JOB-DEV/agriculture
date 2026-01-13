@@ -35,7 +35,7 @@
               Start Trading Now
             </router-link>
             <router-link
-              to="/products"
+              to="/marketplace"
               class="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-5 rounded-2xl text-lg font-black hover:bg-white/20 transition-all duration-300 text-center"
             >
               Browse Marketplace
