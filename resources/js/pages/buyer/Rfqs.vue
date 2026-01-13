@@ -10,69 +10,137 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-6 -mt-8 relative z-20">
-      <!-- RFQ List -->
-      <div class="bg-white rounded-[2rem] shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden mb-8">
-        <div class="overflow-x-auto">
-          <table class="w-full whitespace-nowrap">
-            <thead>
-              <tr class="bg-gray-50/50 border-b border-gray-100">
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-left">Product</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Quantity</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Delivery Date</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Status</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              <tr v-for="rfq in rfqs" :key="rfq.id" class="group hover:bg-agri-sand/10 transition-colors">
-                <td class="px-8 py-6">
-                  <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-xl bg-agri-sand flex items-center justify-center text-agri-forest font-black mr-4">
+    <div class="container mx-auto px-6 -mt-12 relative z-20">
+      
+      <!-- Action Bar -->
+      <div class="flex justify-between items-end mb-8">
+        <div>
+            <!-- Breadcrumb or Filter could go here -->
+             <p class="text-sm text-gray-400 font-medium">Overview</p>
+        </div>
+        <button @click="$router.push('/rfqs/create')" 
+                class="inline-flex items-center justify-center px-6 py-2.5 bg-agri-earth hover:bg-[#c29260] text-white text-sm font-bold uppercase tracking-wide rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            New Request
+        </button>
+      </div>
+
+      <!-- RFQ Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div v-for="rfq in rfqs" :key="rfq.id" class="card-enterprise flex flex-col h-full group hover:border-agri-forest transition-all duration-300">
+            
+            <!-- Card Header -->
+            <div class="px-6 py-5 border-b border-gray-100/50 flex justify-between items-start bg-gray-50/30">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-agri-forest font-serif font-black text-lg">
                         {{ rfq.product?.name?.charAt(0) || 'R' }}
                     </div>
                     <div>
-                        <div class="text-sm font-black text-gray-900">{{ rfq.product?.name }}</div>
-                        <div class="text-[10px] text-gray-400 font-bold uppercase">REF: #RFQ-{{ rfq.id }}</div>
+                        <h3 class="text-base font-bold text-gray-900 leading-tight group-hover:text-agri-forest transition-colors">{{ rfq.product?.name }}</h3>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">#{{ rfq.id }}</p>
                     </div>
-                  </div>
-                </td>
-                <td class="px-8 py-6 text-center">
-                  <div class="text-sm font-black text-agri-forest">{{ rfq.quantity }} {{ rfq.product?.unit }}</div>
-                </td>
-                <td class="px-8 py-6 text-center">
-                  <div class="text-sm font-medium text-gray-500">{{ formatDate(rfq.preferred_date) }}</div>
-                </td>
-                <td class="px-8 py-6 text-right">
-                  <span :class="getStatusClasses(rfq.status)" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                    {{ rfq.status }}
-                  </span>
-                </td>
-                <td class="px-8 py-6 text-right">
-                    <button @click="viewNegotiations(rfq)" class="bg-agri-forest/10 hover:bg-agri-forest text-agri-forest hover:text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all mr-2">
-                        Negotiations
-                    </button>
-                    <button @click="cancelRfq(rfq)" class="bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all">
+                </div>
+                <!-- Simple Status Dot + Text -->
+                 <div class="flex items-center space-x-1.5 bg-white px-2 py-1 rounded-full border border-gray-100 shadow-sm">
+                    <span class="w-2 h-2 rounded-full" 
+                          :class="{
+                              'bg-yellow-400': rfq.status === 'pending',
+                              'bg-blue-500': rfq.status === 'responded',
+                              'bg-green-500': rfq.status === 'accepted',
+                              'bg-red-500': rfq.status === 'rejected'
+                          }"></span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-gray-600">{{ rfq.status }}</span>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6 flex-1 flex flex-col gap-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Volume</span>
+                        <p class="text-sm font-semibold text-gray-900">{{ rfq.quantity }} <span class="text-gray-500 text-xs">{{ rfq.product?.unit }}</span></p>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Needed By</span>
+                        <p class="text-sm font-semibold text-gray-900">{{ formatDate(rfq.preferred_date) }}</p>
+                    </div>
+                </div>
+                
+                <!-- Supplier / Submitted To Section -->
+                <div class="pt-2 border-t border-gray-50 grid grid-cols-2 gap-4">
+                     <div class="space-y-1">
+                        <!-- Label changes based on role -->
+                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                            {{ rfq.buyer_id === authStore.user?.id ? 'Submitted To' : 'Requested By' }}
+                        </span>
+                        
+                        <!-- Participant Name/Avatar -->
+                        <div class="flex items-center">
+                            <div class="w-5 h-5 rounded-full bg-agri-sand text-agri-forest text-[9px] font-black flex items-center justify-center mr-2 shadow-sm border border-agri-earth/10">
+                                {{ (rfq.buyer_id === authStore.user?.id ? rfq.seller?.name : rfq.buyer?.name)?.charAt(0) || 'U' }}
+                            </div>
+                            <p class="text-xs font-bold text-gray-900 truncate">
+                                {{ (rfq.buyer_id === authStore.user?.id ? rfq.seller?.name : rfq.buyer?.name) || 'Unknown User' }}
+                            </p>
+                        </div>
+                     </div>
+                     <div class="space-y-1">
+                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Created</span>
+                        <p class="text-xs font-semibold text-gray-700">{{ formatDate(rfq.created_at) }}</p>
+                     </div>
+                </div>
+
+                <div class="space-y-1 pt-2 border-t border-gray-50">
+                     <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Ship To</span>
+                     <p class="text-sm font-medium text-gray-700 truncate flex items-center">
+                        <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        {{ rfq.delivery_location }}
+                     </p>
+                </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
+                
+                <!-- Response Count -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex -space-x-1.5 overflow-hidden">
+                        <div v-for="i in Math.min(rfq.vendor_response_count || 0, 3)" :key="i" class="w-5 h-5 rounded-full bg-agri-clay border border-white"></div>
+                        <div v-if="(rfq.vendor_response_count || 0) === 0" class="w-5 h-5 rounded-full bg-gray-200 border border-white flex items-center justify-center text-[8px] text-gray-500">0</div>
+                    </div>
+                    <span class="text-xs font-medium text-gray-500">
+                        <strong class="text-gray-900">{{ rfq.vendor_response_count || 0 }}</strong> Responses
+                    </span>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <button @click="cancelRfq(rfq)" class="text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-wider transition-colors">
                         Cancel
                     </button>
-                </td>
-              </tr>
-              
-              <tr v-if="rfqs.length === 0">
-                  <td colspan="5" class="px-8 py-20 text-center">
-                       <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
-                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                            </svg>
-                       </div>
-                       <p class="text-gray-900 font-black text-xl mb-2">No Trade Requests</p>
-                       <p class="text-gray-500 font-medium">Create your first sourcing request to start negotiating with suppliers.</p>
-                  </td>
-              </tr>
-            </tbody>
-          </table>
+                    <button @click="viewNegotiations(rfq)" 
+                            class="text-[10px] font-black text-agri-forest hover:text-agri-earth uppercase tracking-wider flex items-center group/btn">
+                        Negotiations
+                        <svg class="w-3.5 h-3.5 ml-1 transform group-hover/btn:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
         </div>
       </div>
+      
+      <!-- Empty State -->
+      <div v-if="rfqs.length === 0" class="card-enterprise p-16 text-center">
+           <div class="w-20 h-20 bg-agri-sand/50 rounded-full flex items-center justify-center mx-auto mb-6 text-agri-earth">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+           </div>
+           <h3 class="text-lg font-bold text-gray-900 mb-2">Start Trading</h3>
+           <p class="text-sm text-gray-500 mb-8 max-w-sm mx-auto">Create a request to broadcast your needs to our network of premium agriculture suppliers.</p>
+           <button @click="$router.push('/rfqs/create')" class="inline-flex items-center px-6 py-3 bg-agri-earth hover:bg-[#c29260] text-white text-sm font-bold uppercase tracking-wide rounded-lg shadow-sm hover:shadow transition-all">
+               Create First Request
+           </button>
+      </div>
+
     </div>
 
     <!-- Negotiation Drawer (Slide-over from Right) -->

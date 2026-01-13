@@ -11,8 +11,18 @@ class RfqController extends Controller
      */
     public function index(Request $request)
     {
-        // Everyone can see ALL RFQs
+        // Restrict to ONLY RFQs where the user is the Buyer (Creator) or Seller (Recipient)
+        $user = auth()->user();
+        
         $rfqs = \App\Models\Rfq::with(['product', 'seller', 'buyer'])
+            ->where(function($q) use ($user) {
+                $q->where('buyer_id', $user->id)
+                  ->orWhere('seller_id', $user->id);
+            })
+            ->withCount(['messages as vendor_response_count' => function ($query) {
+                $query->select(\Illuminate\Support\Facades\DB::raw('count(distinct sender_id)'))
+                      ->whereColumn('sender_id', '!=', 'rfqs.buyer_id');
+            }])
             ->latest()
             ->get();
             
