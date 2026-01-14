@@ -62,6 +62,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
 
+    // Reporting & Analytics
+    Route::prefix('reports')->group(function () {
+        Route::get('/vendor', [\App\Http\Controllers\ReportingController::class, 'vendorStats']);
+        Route::get('/buyer', [\App\Http\Controllers\ReportingController::class, 'buyerStats']);
+        
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/admin', [\App\Http\Controllers\ReportingController::class, 'adminStats']);
+        });
+    });
+
     // Admin routes protected by role middleware
     Route::middleware('role:admin')->group(function () {
         // Admin Broadcast Center

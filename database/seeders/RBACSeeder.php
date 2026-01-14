@@ -26,6 +26,15 @@ class RBACSeeder extends Seeder
             'view_subscriptions' => 'View Subscription Plans',
             'manage_warehouse' => 'Manage Product Inventory',
 
+            // Reporting Module (Granular)
+            'view_reports_sales' => 'View Sales Reports',
+            'view_reports_products' => 'View Product Performance',
+            'view_reports_users' => 'View User Statistics',
+            'view_reports_financial' => 'View Financial Reports',
+            'view_reports_operations' => 'View Operational Efficiency',
+            'view_reports_compliance' => 'View Compliance & Risks',
+            'view_reports_system' => 'View System Health',
+
             // Admin Modules
             'manage_users' => 'Manage System Entities',
             'moderate_products' => 'Moderate Asset Registry',
@@ -47,15 +56,18 @@ class RBACSeeder extends Seeder
                 'access_super_admin', 'access_admin', 'access_vendor',
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions', 'manage_warehouse',
                 'manage_users', 'moderate_products', 'broadcast_notifications', 'manage_categories', 'manage_roles',
+                'view_reports_sales', 'view_reports_products', 'view_reports_users', 'view_reports_financial', 'view_reports_operations', 'view_reports_compliance', 'view_reports_system',
             ],
             'admin' => [
                 'access_admin', 'access_vendor',
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions', 'manage_warehouse',
                 'moderate_products', 'manage_users',
+                'view_reports_sales', 'view_reports_products', 'view_reports_users', 'view_reports_compliance',
             ],
             'vendor' => [
                 'access_vendor',
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions', 'manage_warehouse',
+                'view_reports_sales', 'view_reports_products',
             ],
             'user' => [
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions',

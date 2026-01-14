@@ -195,7 +195,7 @@ const routes = [
     },
   },
   {
-    path: '/vendor/products/edit/:id',
+    path: '/vendor/products/:id/edit',
     name: 'VendorProductEdit',
     component: VendorProductEdit,
     meta: { requiresAuth: true, role: 'vendor' },
@@ -262,6 +262,88 @@ const routes = [
         { label: 'Edit Alert' }
       ]
     },
+  },
+
+  // Reporting & Analytics Routes
+  {
+    path: '/reports/sales',
+    name: 'ReportsSales',
+    component: () => import('../pages/Reports/Index.vue'),
+    props: { type: 'sales' },
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Sales Reports' }
+    }
+  },
+  {
+    path: '/reports/products',
+    name: 'ReportsProducts',
+    component: () => import('../pages/Reports/Index.vue'),
+    props: { type: 'products' },
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Product Reports' }
+    }
+  },
+  {
+    path: '/reports/financial',
+    name: 'ReportsFinancial',
+    component: () => import('../pages/Reports/Index.vue'),
+    props: { type: 'financial' },
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Financial Reports' }
+    }
+  },
+  {
+    path: '/reports/market',
+    name: 'ReportsMarket',
+    component: () => import('../pages/Reports/Index.vue'),
+    props: { type: 'market' },
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Market Reports' }
+    }
+  },
+  {
+    path: '/reports/users',
+    name: 'ReportsUser',
+    component: () => import('../pages/Reports/Index.vue'),
+    props: { type: 'users' },
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'User Reports' }
+    }
+  },
+  {
+    path: '/reports/compliance',
+    name: 'ReportsCompliance',
+    component: () => import('../pages/Reports/Index.vue'),
+    props: { type: 'compliance' },
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Compliance Reports' }
+    }
+  },
+  {
+    path: '/reports/operations',
+    name: 'ReportsOperations',
+    component: () => import('../pages/Reports/Index.vue'),
+    props: { type: 'operations' },
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Operations Reports' }
+    }
+  },
+  {
+    path: '/reports/system',
+    name: 'ReportsSystem',
+    component: () => import('../pages/Reports/Index.vue'),
+    props: { type: 'system' },
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'System Health' }
+    }
   },
 
   // Super Admin Specific Routes

@@ -75,7 +75,7 @@
                 :key="item.name"
                 :to="item.path"
                 :class="[
-                  'group flex items-center py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative',
+                  'group flex items-center py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative z-20 cursor-pointer',
                   isCollapsed ? 'px-0 justify-center' : 'px-4',
                   $route.name === item.name || $route.path === item.path || ($route.path.startsWith(item.path + '/') && item.path !== '/dashboard' && item.path !== '/super-admin')
                     ? 'bg-agri-earth text-agri-forest shadow-lg'
@@ -370,16 +370,13 @@ const categorizedNavigation = computed(() => {
     }
   }
 
-  // Dynamic: Global Governance (Super Admin Access)
-  if (can('access_super_admin')) {
+    if (can('access_super_admin')) {
     const governanceItems = [
       { name: 'SuperAdminDashboard', path: '/super-admin', label: 'Governance Nexus', icon: icons.dashboard },
     ]
 
     if (can('moderate_products')) {
       // governanceItems.push({ name: 'AdminProducts', path: '/admin/products', label: 'Global Product Oversight', icon: icons.products })
-      // Custom MyProducts link for super admin convenience if they act as vendor too, or checking inventory
-      // governanceItems.push({ name: 'MyProducts', path: '/vendor/products', label: 'Inventory Control', icon: icons.products })
     }
 
     if (can('manage_categories')) {
@@ -390,10 +387,6 @@ const categorizedNavigation = computed(() => {
       governanceItems.push({ name: 'AdminNotifications', path: '/admin/notifications', label: 'Broadcast Center', icon: icons.reports })
     }
 
-    if (can('manage_users')) {
-      // governanceItems.push({ name: 'AdminUsers', path: '/admin/users', label: 'Entity Registry', icon: icons.users })
-    }
-
     if (can('manage_roles')) {
       governanceItems.push({ name: 'RoleManagement', path: '/super-admin/roles', label: 'Role Ecosystem', icon: icons.tasks })
     }
@@ -402,6 +395,48 @@ const categorizedNavigation = computed(() => {
       title: 'Global Governance',
       items: governanceItems
     })
+  }
+  
+  // Analytics & Reports (Dedicated Section)
+  const reportItems = []
+  
+  if (can('view_reports_financial') || can('access_super_admin')) {
+      reportItems.push({ name: 'ReportsFinancial', path: '/reports/financial', label: 'Financial Reports', icon: icons.reports })
+  }
+
+  if (can('view_reports_sales') || can('access_super_admin')) {
+      reportItems.push({ name: 'ReportsSales', path: '/reports/sales', label: 'Sales Reports', icon: icons.products })
+  }
+  
+  if (can('view_reports_market') || can('access_super_admin')) {
+      reportItems.push({ name: 'ReportsMarket', path: '/reports/market', label: 'Demand Analysis', icon: icons.rfqs })
+  }
+
+  if (can('view_reports_products') || can('access_super_admin')) {
+      reportItems.push({ name: 'ReportsProducts', path: '/reports/products', label: 'Product Reports', icon: icons.tasks })
+  }
+  
+  if (can('view_reports_users') || can('access_super_admin')) {
+      reportItems.push({ name: 'ReportsUser', path: '/reports/users', label: 'User Reports', icon: icons.users })
+  }
+
+  if (can('view_reports_compliance') || can('access_super_admin')) {
+      reportItems.push({ name: 'ReportsCompliance', path: '/reports/compliance', label: 'Compliance Reports', icon: icons.reports })
+  }
+
+  if (can('view_reports_operations') || can('access_super_admin')) {
+      reportItems.push({ name: 'ReportsOperations', path: '/reports/operations', label: 'Trade Requests', icon: icons.tasks })
+  }
+  
+  if (can('view_reports_system') || can('access_super_admin')) {
+      reportItems.push({ name: 'ReportsSystem', path: '/reports/system', label: 'System Health', icon: icons.dashboard })
+  }
+
+  if (reportItems.length > 0) {
+      nav.push({
+          title: 'Analytics & Reports',
+          items: reportItems
+      })
   }
 
   return nav
