@@ -119,18 +119,19 @@
                   >
                     Initiate Trade Discussion
                   </button>
-                  <button 
+                  <!-- <button 
                     @click="showRfqModal = true"
                     class="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white py-6 rounded-[1.5rem] font-black uppercase text-xs tracking-widest hover:bg-white/20 transition-all"
                   >
                     Issue Formal RFQ
-                  </button>
+                  </button> -->
                 </div>
 
                 <!-- Vendor Metadata -->
                 <div class="flex items-center p-6 bg-white/5 rounded-[2rem] border border-white/5">
-                  <div class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-agri-forest font-black text-xl shadow-lg">
-                    {{ product.seller?.name?.charAt(0) }}
+                  <div class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-agri-forest font-black text-xl shadow-lg overflow-hidden">
+                    <img v-if="product.seller?.avatar_url" :src="product.seller.avatar_url" class="w-full h-full object-cover">
+                    <span v-else>{{ product.seller?.name?.charAt(0) }}</span>
                   </div>
                   <div class="ml-5">
                     <p class="text-[10px] font-black text-agri-earth uppercase tracking-widest mb-1">Authorized Vendor</p>

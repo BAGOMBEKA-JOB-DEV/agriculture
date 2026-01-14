@@ -178,8 +178,9 @@
                 </td>
                 <td class="px-6 py-5">
                   <div class="flex items-center">
-                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center font-black mr-4 uppercase text-xs shadow-sm bg-white border', getAvatarBorder(user.role)]">
-                      <span :class="getAvatarText(user.role)">{{ user.name.charAt(0) }}</span>
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center font-black mr-4 uppercase text-xs shadow-sm bg-white border overflow-hidden', getAvatarBorder(user.role)]">
+                      <img v-if="user.avatar_url" :src="user.avatar_url" class="w-full h-full object-cover">
+                      <span v-else :class="getAvatarText(user.role)">{{ user.name.charAt(0) }}</span>
                     </div>
                     <div>
                         <div class="text-sm font-bold text-gray-900 group-hover:text-agri-forest transition-colors">{{ user.name }}</div>

@@ -127,8 +127,9 @@
               :class="{ 'justify-center': isCollapsed }"
             >
               <div class="flex-shrink-0">
-                <div class="h-10 w-10 rounded-xl bg-agri-earth flex items-center justify-center shadow-inner">
-                  <span class="text-sm font-bold text-agri-forest">{{ userInitial }}</span>
+                <div class="h-10 w-10 rounded-xl bg-agri-earth flex items-center justify-center shadow-inner overflow-hidden">
+                  <img v-if="user?.avatar_url" :src="user.avatar_url" class="w-full h-full object-cover">
+                  <span v-else class="text-sm font-bold text-agri-forest">{{ userInitial }}</span>
                 </div>
               </div>
               <transition

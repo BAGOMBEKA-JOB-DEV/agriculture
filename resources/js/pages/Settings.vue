@@ -80,6 +80,74 @@
                     </div>
                 </div>
 
+                <!-- Profile Photo Section -->
+                <div class="mb-10 p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100 shadow-sm transition-all group/avatar">
+                    <div class="flex flex-col md:flex-row items-center gap-10">
+                        <div class="relative">
+                            <!-- Image Container -->
+                            <div class="w-32 h-32 md:w-36 md:h-36 rounded-[2rem] overflow-hidden border-4 border-white shadow-md bg-white flex items-center justify-center relative z-10">
+                                <img 
+                                    v-if="avatarPreview || authStore.user?.avatar_url" 
+                                    :src="avatarPreview || authStore.user?.avatar_url" 
+                                    class="w-full h-full object-cover"
+                                    :class="{'opacity-40 grayscale': uploadingAvatar}"
+                                >
+                                <div v-else class="flex flex-col items-center">
+                                    <UserIcon class="w-12 h-12 text-gray-200" />
+                                </div>
+
+                                <!-- Loading Overlay -->
+                                <div v-if="uploadingAvatar" class="absolute inset-0 bg-white/60 flex items-center justify-center">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-3 border-agri-forest border-t-transparent"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Upload Button Overlay -->
+                            <label class="absolute -bottom-2 -right-2 w-12 h-12 bg-agri-forest text-white rounded-2xl shadow-lg border-4 border-white flex items-center justify-center cursor-pointer hover:bg-agri-lush transition-all z-20 group">
+                                <input type="file" class="hidden" @change="handleFileChange" accept="image/*" :disabled="uploadingAvatar">
+                                <CameraIcon class="w-6 h-6" />
+                            </label>
+                        </div>
+
+                        <div class="flex-1 space-y-4 text-center md:text-left">
+                            <div>
+                                <h3 class="text-base font-black text-gray-900 uppercase tracking-widest flex items-center justify-center md:justify-start">
+                                    Profile Photo
+                                    <span v-if="avatarFile" class="ml-3 px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-100">
+                                        Pending Save
+                                    </span>
+                                </h3>
+                                <p class="text-xs text-gray-500 font-medium leading-relaxed max-w-sm mt-1">
+                                    Upload a professional photo so other traders can recognize you. Max size 2MB (JPG, PNG).
+                                </p>
+                            </div>
+
+                            <!-- Controls -->
+                            <div v-if="avatarFile" class="flex items-center justify-center md:justify-start space-x-3 pt-1">
+                                <button 
+                                    @click="uploadAvatar" 
+                                    :disabled="uploadingAvatar"
+                                    class="px-6 py-2.5 bg-agri-forest text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-agri-lush transition-all flex items-center shadow-md shadow-agri-forest/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                                >
+                                    <div v-if="uploadingAvatar" class="w-3.5 h-3.5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <svg v-else class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                    {{ uploadingAvatar ? 'Saving...' : 'Save Changes' }}
+                                </button>
+                                <button 
+                                    @click="cancelAvatarChange" 
+                                    :disabled="uploadingAvatar"
+                                    class="px-6 py-2.5 bg-white text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-gray-200 hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                            <div v-else class="flex flex-col space-y-1">
+                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Identity Status: Verified</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <form @submit.prevent="saveProfile" class="space-y-6">
                   <div class="grid md:grid-cols-2 gap-6">
                     <div class="space-y-2">
@@ -314,6 +382,9 @@ const EyeIcon = {
 const EyeSlashIcon = {
   template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>'
 }
+const CameraIcon = {
+  template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" /></svg>'
+}
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -323,6 +394,9 @@ const loading = ref(false)
 const showCurrent = ref(false)
 const showNew = ref(false)
 const showConfirm = ref(false)
+const avatarPreview = ref(null)
+const avatarFile = ref(null)
+const uploadingAvatar = ref(false)
 
 const profileData = ref({
   name: '',
@@ -356,6 +430,48 @@ const prefItems = [
 
 const togglePref = (id) => {
     profileData.value.notification_preferences[id] = !profileData.value.notification_preferences[id]
+}
+
+const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+        avatarFile.value = file
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            avatarPreview.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+const cancelAvatarChange = () => {
+    avatarFile.value = null
+    avatarPreview.value = null
+}
+
+const uploadAvatar = async () => {
+    if (!avatarFile.value) return
+    uploadingAvatar.value = true
+    const formData = new FormData()
+    formData.append('avatar', avatarFile.value)
+
+    try {
+        const response = await axios.post('/api/user/avatar', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        authStore.user = response.data.user
+        avatarPreview.value = null
+        avatarFile.value = null
+        if (window.notify) {
+            window.notify.success('Success', 'Profile photo updated successfully.')
+        }
+    } catch (error) {
+        if (window.notify) {
+            window.notify.error('Error', error.response?.data?.message || 'Could not update your photo.')
+        }
+    } finally {
+        uploadingAvatar.value = false
+    }
 }
 
 const fetchUser = async () => {

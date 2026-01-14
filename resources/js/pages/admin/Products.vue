@@ -273,12 +273,50 @@
           <div class="flex-1 overflow-y-auto p-8 bg-white custom-scrollbar">
             <!-- Manifest Tab -->
             <div v-if="activeTab === 'manifest'" class="space-y-10 animate-in fade-in slide-in-from-right-4 duration-300">
-               <div>
-                 <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Qualitative Brief</h4>
-                 <p class="text-sm font-medium text-gray-600 leading-relaxed italic border-l-4 border-agri-forest/20 pl-6">
-                    "{{ inspectedProduct?.description }}"
-                 </p>
-               </div>
+                <div>
+                  <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Qualitative Brief</h4>
+                  <p class="text-sm font-medium text-gray-600 leading-relaxed italic border-l-4 border-agri-forest/20 pl-6">
+                     "{{ inspectedProduct?.description }}"
+                  </p>
+                </div>
+
+                <!-- Merchant Intelligence -->
+                <div>
+                  <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Merchant Intelligence</h4>
+                  <div class="flex items-center p-6 bg-gray-50 rounded-[2rem] border border-gray-100 shadow-sm group">
+                    <div 
+                      class="w-14 h-14 rounded-2xl bg-white border border-gray-200 flex items-center justify-center text-agri-forest font-black text-xl shadow-inner overflow-hidden flex-shrink-0 cursor-zoom-in group/avatar relative"
+                      @click="inspectedProduct?.seller?.avatar_url ? openLightbox(0, [inspectedProduct.seller.avatar_url], inspectedProduct.seller.name, 'Merchant Identity') : null"
+                    >
+                      <img v-if="inspectedProduct?.seller?.avatar_url" :src="inspectedProduct.seller.avatar_url" class="w-full h-full object-cover transition-transform group-hover/avatar:scale-110">
+                      <span v-else>{{ inspectedProduct?.seller?.name?.charAt(0) }}</span>
+                      <div v-if="inspectedProduct?.seller?.avatar_url" class="absolute inset-0 bg-black/0 group-hover/avatar:bg-black/5 transition-all"></div>
+                    </div>
+                    <div class="ml-5 flex-1 min-w-0">
+                      <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Authorized Producer</p>
+                      <p class="text-lg font-black text-gray-900 group-hover:text-agri-forest transition-colors truncate">{{ inspectedProduct?.seller?.name }}</p>
+                      <div class="mt-4 grid grid-cols-1 gap-3">
+                         <div class="flex items-center text-[11px] font-medium text-gray-500">
+                           <svg class="w-3.5 h-3.5 mr-2 text-agri-forest/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                           {{ inspectedProduct?.seller?.email || 'No email registered' }}
+                         </div>
+                         <div class="flex items-center text-[11px] font-medium text-gray-500">
+                           <svg class="w-3.5 h-3.5 mr-2 text-agri-forest/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                           {{ inspectedProduct?.seller?.phone || 'No phone registered' }}
+                         </div>
+                         <div class="flex items-center text-[11px] font-medium text-gray-500">
+                           <svg class="w-3.5 h-3.5 mr-2 text-agri-forest/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                           {{ inspectedProduct?.seller?.location || 'Unspecified Jurisdiction' }}
+                         </div>
+                      </div>
+                    </div>
+                    <div class="ml-auto w-10 h-10 rounded-full border border-agri-forest/10 flex items-center justify-center bg-agri-forest/5 flex-shrink-0">
+                        <svg class="w-5 h-5 text-agri-forest" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.64.304 1.24.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                  </div>
+                </div>
                <div class="grid grid-cols-2 gap-8">
                   <div class="p-6 bg-agri-sand/20 rounded-[2rem] border border-agri-sand/30">
                      <span class="text-[9px] font-black text-agri-forest uppercase tracking-widest mb-1 block">Trade Price</span>
@@ -404,12 +442,12 @@
               mode="out-in"
             >
               <div :key="lightboxIndex" class="aspect-video relative overflow-hidden rounded-[4rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/10">
-                  <img :src="inspectedProduct.images[lightboxIndex]" class="w-full h-full object-contain">
+                  <img :src="lightboxImages[lightboxIndex]" class="w-full h-full object-contain">
               </div>
             </Transition>
 
             <!-- Navigation Controls -->
-            <div v-if="inspectedProduct?.images.length > 1" class="absolute inset-y-0 -inset-x-20 flex items-center justify-between pointer-events-none">
+            <div v-if="lightboxImages.length > 1" class="absolute inset-y-0 -inset-x-20 flex items-center justify-between pointer-events-none">
               <button 
                 @click="prevImage"
                 class="w-20 h-20 bg-white/10 hover:bg-white rounded-full flex items-center justify-center text-white hover:text-agri-forest transition-all shadow-2xl backdrop-blur-md pointer-events-auto"
@@ -427,8 +465,8 @@
 
           <!-- Counter & Caption -->
           <div class="mt-12 text-center">
-            <p class="text-[10px] font-black text-agri-earth uppercase tracking-[0.3em] mb-2">Visual Evidence {{ lightboxIndex + 1 }} of {{ inspectedProduct?.images.length }}</p>
-            <h3 class="text-xl font-black text-white tracking-tight">{{ inspectedProduct?.name }}</h3>
+            <p class="text-[10px] font-black text-agri-earth uppercase tracking-[0.3em] mb-2">{{ lightboxLabel }} {{ lightboxImages.length > 1 ? (lightboxIndex + 1) + ' of ' + lightboxImages.length : '' }}</p>
+            <h3 class="text-xl font-black text-white tracking-tight">{{ lightboxTitle }}</h3>
           </div>
         </div>
       </Transition>
@@ -517,6 +555,9 @@ const activeTab = ref('manifest');
 // Lightbox State
 const showLightbox = ref(false);
 const lightboxIndex = ref(0);
+const lightboxImages = ref([]);
+const lightboxTitle = ref('');
+const lightboxLabel = ref('');
 
 const openInspector = (product) => {
   inspectedProduct.value = product;
@@ -531,20 +572,23 @@ const closeInspector = () => {
   }, 300);
 };
 
-const openLightbox = (index) => {
+const openLightbox = (index, images = null, title = null, label = null) => {
+  lightboxImages.value = images || inspectedProduct.value.images || [];
   lightboxIndex.value = index;
+  lightboxTitle.value = title || inspectedProduct.value?.name || 'Asset Evidence';
+  lightboxLabel.value = label || 'Visual Evidence';
   showLightbox.value = true;
 };
 
 const nextImage = () => {
-  if (inspectedProduct.value?.images) {
-    lightboxIndex.value = (lightboxIndex.value + 1) % inspectedProduct.value.images.length;
+  if (lightboxImages.value.length > 0) {
+    lightboxIndex.value = (lightboxIndex.value + 1) % lightboxImages.value.length;
   }
 };
 
 const prevImage = () => {
-  if (inspectedProduct.value?.images) {
-    const len = inspectedProduct.value.images.length;
+  if (lightboxImages.value.length > 0) {
+    const len = lightboxImages.value.length;
     lightboxIndex.value = (lightboxIndex.value - 1 + len) % len;
   }
 };
