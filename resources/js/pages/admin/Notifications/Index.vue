@@ -122,8 +122,9 @@
                 </td>
                 <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-500 text-center">
                   <div class="flex items-center justify-center">
-                    <div class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 mr-2">
-                        {{ announcement.creator ? announcement.creator.name.charAt(0) : '?' }}
+                    <div class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 mr-2 overflow-hidden shadow-sm">
+                        <img v-if="announcement.creator?.avatar_url" :src="announcement.creator.avatar_url" class="w-full h-full object-cover">
+                        <span v-else>{{ announcement.creator ? announcement.creator.name.charAt(0) : '?' }}</span>
                     </div>
                     {{ announcement.creator ? announcement.creator.name : 'Unknown' }}
                   </div>

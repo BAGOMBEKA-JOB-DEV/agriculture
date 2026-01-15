@@ -18,7 +18,7 @@ class User extends Authenticatable
 
     protected $with = ['roles.permissions'];
 
-    protected $appends = ['permissions_list'];
+    protected $appends = ['permissions_list', 'avatar_url'];
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +28,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar',
         'password',
         'role',
         'location',
@@ -95,5 +96,15 @@ class User extends Authenticatable
     public function getPermissionsListAttribute()
     {
         return $this->roles->flatMap->permissions->pluck('slug')->unique()->values();
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+
+        // Return a UI Avatar placeholder if no avatar set
+        return "https://ui-avatars.com/api/?name=" . urlencode($this->name) . "&color=7F9CF5&background=EBF4FF";
     }
 }

@@ -26,8 +26,9 @@
                 <button v-for="convo in conversations" :key="convo.user.id" 
                         @click="handleForward(convo.user.id)"
                         class="w-full flex items-center p-4 rounded-xl hover:bg-gray-50 transition-colors text-left group">
-                    <div class="w-10 h-10 rounded-full bg-agri-forest/10 text-agri-forest flex items-center justify-center font-black mr-4 group-hover:bg-agri-forest group-hover:text-white transition-colors">
-                        {{ convo.user.name.charAt(0) }}
+                    <div class="w-10 h-10 rounded-full bg-agri-forest/10 text-agri-forest flex items-center justify-center font-black mr-4 overflow-hidden group-hover:bg-agri-forest transition-colors">
+                        <img v-if="convo.user.avatar_url" :src="convo.user.avatar_url" class="w-full h-full object-cover">
+                        <span v-else class="group-hover:text-white">{{ convo.user.name.charAt(0) }}</span>
                     </div>
                     <span class="font-bold text-gray-800">{{ convo.user.name }}</span>
                 </button>
@@ -52,8 +53,9 @@
               <div v-if="selectedParticipantId == convo.user.id" class="absolute left-0 top-0 bottom-0 w-1.5 bg-agri-forest"></div>
               
               <div class="flex items-center mb-3">
-                <div class="w-10 h-10 rounded-xl bg-agri-sand flex items-center justify-center text-agri-forest font-black mr-3">
-                    {{ convo.user.name.charAt(0) }}
+                <div class="w-10 h-10 rounded-xl bg-agri-sand flex items-center justify-center text-agri-forest font-black mr-3 overflow-hidden">
+                    <img v-if="convo.user.avatar_url" :src="convo.user.avatar_url" class="w-full h-full object-cover">
+                    <span v-else>{{ convo.user.name.charAt(0) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-center">
@@ -83,8 +85,9 @@
             <!-- Header -->
             <div class="px-10 py-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
               <div class="flex items-center">
-                 <div class="w-10 h-10 rounded-xl bg-agri-forest text-agri-earth flex items-center justify-center font-black mr-4">
-                     {{ selectedParticipantName.charAt(0) }}
+                 <div class="w-10 h-10 rounded-xl bg-agri-forest text-agri-earth flex items-center justify-center font-black mr-4 overflow-hidden">
+                     <img v-if="selectedParticipantAvatar" :src="selectedParticipantAvatar" class="w-full h-full object-cover">
+                     <span v-else>{{ selectedParticipantName.charAt(0) }}</span>
                  </div>
                  <div>
                      <span class="font-black text-gray-900">{{ selectedParticipantName }}</span>
@@ -262,6 +265,7 @@ const conversations = ref([]);
 const activeMessages = ref([]);
 const selectedParticipantId = ref(null);
 const selectedParticipantName = ref('');
+const selectedParticipantAvatar = ref('');
 const newMessage = ref('');
 const messagesContainer = ref(null);
 const fileInput = ref(null);
@@ -332,8 +336,10 @@ const selectConversation = async (participantId) => {
   const convo = conversations.value.find(c => c.user.id == participantId);
   if (convo) {
     selectedParticipantName.value = convo.user.name;
+    selectedParticipantAvatar.value = convo.user.avatar_url;
   } else {
     selectedParticipantName.value = 'Trade Partner';
+    selectedParticipantAvatar.value = '';
   }
 
   // Initial fetch

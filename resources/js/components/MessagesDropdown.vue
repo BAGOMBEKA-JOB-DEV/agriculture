@@ -47,8 +47,9 @@
           :class="{ 'bg-agri-sand/5': isUnread(convo) }"
         >
           <div class="flex-shrink-0 relative">
-            <div class="h-11 w-11 rounded-xl bg-agri-sand/20 text-agri-forest flex items-center justify-center font-semibold shadow-sm group-hover:bg-agri-forest group-hover:text-white transition-all">
-              {{ convo.user.name.charAt(0).toUpperCase() }}
+            <div class="h-11 w-11 rounded-xl bg-agri-sand/20 text-agri-forest flex items-center justify-center font-semibold shadow-sm group-hover:bg-agri-forest group-hover:text-white transition-all overflow-hidden">
+              <img v-if="convo.user.avatar_url" :src="convo.user.avatar_url" class="w-full h-full object-cover">
+              <span v-else>{{ convo.user.name.charAt(0).toUpperCase() }}</span>
             </div>
             <div v-if="isUnread(convo)" class="absolute -top-0.5 -right-0.5 h-3 w-3 bg-agri-forest border-2 border-white rounded-full"></div>
           </div>

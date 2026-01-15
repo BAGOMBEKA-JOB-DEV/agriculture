@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -58,6 +60,17 @@ class AuthController extends Controller
         }
 
         if (!Auth::attempt($request->only('email', 'password'))) {
+            // Log Failed Login
+            ActivityLog::create([
+                'event' => 'Login Attempt',
+                'action' => 'Authentication',
+                'level' => 'warning',
+                'user_name' => $request->email,
+                'module' => 'Auth',
+                'status' => 'failed',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent')
+            ]);
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
@@ -65,11 +78,37 @@ class AuthController extends Controller
 
         // Enforce Account Revocation
         if ($user->status === 'suspended') {
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'event' => 'Login Attempt',
+                'action' => 'Authentication',
+                'level' => 'error',
+                'user_name' => $user->name,
+                'user_role' => $user->role,
+                'module' => 'Auth',
+                'status' => 'suspended',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent')
+            ]);
             Auth::logout();
             return response()->json([
                 'message' => 'Please your account has been revoked! Contact support for any more help'
             ], 403);
         }
+
+        // Log Successful Login
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'event' => 'User Login',
+            'action' => 'Authentication',
+            'level' => 'info',
+            'user_name' => $user->name,
+            'user_role' => $user->role,
+            'module' => 'Auth',
+            'status' => 'success',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent')
+        ]);
 
         // Dispatch Security Alert Job
         \App\Jobs\ProcessLoginSecurityAlert::dispatch(
@@ -90,7 +129,22 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'event' => 'User Logout',
+            'action' => 'Authentication',
+            'level' => 'info',
+            'user_name' => $user->name,
+            'user_role' => $user->role,
+            'module' => 'Auth',
+            'status' => 'success',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent')
+        ]);
+
+        $user->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully']);
     }
@@ -148,5 +202,31 @@ class AuthController extends Controller
         ]);
 
         return response()->json(['message' => 'Password changed successfully']);
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->update(['avatar' => $path]);
+
+            return response()->json([
+                'user' => $user->fresh(),
+                'message' => 'Profile picture updated successfully'
+            ]);
+        }
+
+        return response()->json(['message' => 'No file uploaded'], 400);
     }
 }

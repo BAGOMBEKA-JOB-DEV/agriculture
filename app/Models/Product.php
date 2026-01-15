@@ -34,5 +34,10 @@ class Product extends Model
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
     }
+
+    public function rfqs(): HasMany
+    {
+        return $this->hasMany(Rfq::class);
+    }
 }
 

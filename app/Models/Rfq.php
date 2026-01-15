@@ -22,12 +22,16 @@ class Rfq extends Model
         'status',
         'seller_response',
         'responded_at',
+        'final_price',
+        'accepted_at',
     ];
 
     protected $casts = [
         'quantity' => 'decimal:2',
+        'final_price' => 'decimal:2',
         'preferred_date' => 'date',
         'responded_at' => 'datetime',
+        'accepted_at' => 'datetime',
     ];
 
     public function buyer()
