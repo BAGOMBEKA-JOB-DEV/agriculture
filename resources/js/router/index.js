@@ -108,7 +108,8 @@ const routes = [
     component: Dashboard,
     meta: {
       requiresAuth: true,
-      permission: 'view_dashboard',
+      // No permission required - dashboard is accessible to all authenticated users
+      // Content displayed is based on user's permissions
       breadcrumb: { label: 'Dashboard' }
     },
   },

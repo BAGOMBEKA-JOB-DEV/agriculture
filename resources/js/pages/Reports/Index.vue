@@ -357,6 +357,7 @@
                             @change="fetchReport"
                             class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 focus:ring-2 focus:ring-agri-forest/20 outline-none"
                         >
+                         
                             <option :value="10">10 / page</option>
                             <option :value="25">25 / page</option>
                             <option :value="50">50 / page</option>
@@ -414,36 +415,56 @@ export default {
     computed: {
         availableReports() {
             const user = window.authStore?.user;
-            const roles = user?.roles?.map(r => r.name.toLowerCase()) || [];
+            const permissions = user?.permissions_list || [];
             
             const reports = [];
             
-            if (roles.some(r => ['super_admin', 'admin'].includes(r))) {
-                reports.push(
-                    { id: 'executive', label: 'Overview' },
-                    { id: 'financial', label: 'Financial' },
-                    { id: 'users', label: 'Users' },
-                    { id: 'market', label: 'Demand Analysis' },
-                    { id: 'products', label: 'Products' },
-                    { id: 'compliance', label: 'Compliance' },
-                    { id: 'operations', label: 'Trade Requests' },
-                    { id: 'system', label: 'System' }
-                );
+            // Check individual permissions for full report access
+            if (permissions.includes('view_reports_financial')) {
+                reports.push({ id: 'financial', label: 'Financial' });
             }
-            // Vendor
-            if (roles.includes('vendor')) {
-                reports.push(
-                    { id: 'sales', label: 'Manage Sales' },
-                    { id: 'market', label: 'Demand Analysis' },
-                    { id: 'operations', label: 'Trade Requests' }
-                );
+            
+            if (permissions.includes('view_reports_users')) {
+                reports.push({ id: 'users', label: 'Users' });
             }
-            // Buyer
-            if (roles.includes('buyer')) {
-                reports.push(
-                    { id: 'market', label: 'Demand Analysis' },
-                    { id: 'operations', label: 'My Requests' }
-                );
+            
+            if (permissions.includes('view_reports_market')) {
+                reports.push({ id: 'market', label: 'Demand Analysis' });
+            }
+            
+            if (permissions.includes('view_reports_products')) {
+                reports.push({ id: 'products', label: 'Products' });
+            }
+            
+            if (permissions.includes('view_reports_compliance')) {
+                reports.push({ id: 'compliance', label: 'Compliance' });
+            }
+            
+            if (permissions.includes('view_reports_trade_requests')) {
+                reports.push({ id: 'operations', label: 'Trade Requests' });
+            }
+            
+            if (permissions.includes('view_reports_system')) {
+                reports.push({ id: 'system', label: 'System' });
+            }
+            
+            if (permissions.includes('view_reports_sales')) {
+                reports.push({ id: 'sales', label: 'Sales' });
+            }
+            
+            // Fallback for buyers, traders, and basic users without explicit report permissions
+            // If they have marketplace access but no report permissions, give them basic reports
+            const hasAnyReportPermission = permissions.some(p => p.startsWith('view_reports_'));
+            const hasMarketplaceAccess = permissions.includes('view_marketplace_products') || permissions.includes('view_rfqs');
+            
+            if (!hasAnyReportPermission && hasMarketplaceAccess) {
+                // Basic users (buyers/traders) get market analysis and trade requests
+                if (!reports.some(r => r.id === 'market')) {
+                    reports.push({ id: 'market', label: 'Demand Analysis' });
+                }
+                if (!reports.some(r => r.id === 'operations')) {
+                    reports.push({ id: 'operations', label: 'My Requests' });
+                }
             }
             
             return reports;
@@ -1001,17 +1022,19 @@ export default {
         async fetchReport() {
             this.loading = true;
             try {
-                let endpoint = '/api/reports/admin';
-                const userRes = await axios.get('/api/user');
-                const roles = userRes.data.roles?.map(r => r.name.toLowerCase()) || [];
+                // Determine endpoint based on permissions, not roles
+                let endpoint = '/api/reports/buyer'; // Default to buyer endpoint for basic users
                 
-                if (roles.includes('vendor')) {
+                const userRes = await axios.get('/api/user');
+                const permissions = userRes.data.permissions_list || [];
+                
+                // Vendor endpoint if user has vendor-specific permissions
+                if (permissions.includes('access_vendor') && permissions.includes('manage_warehouse')) {
                     endpoint = '/api/reports/vendor';
-                } else if (roles.includes('buyer') || roles.includes('regular_user') || roles.includes('trader')) { 
-                    endpoint = '/api/reports/buyer';
                 }
                 
-                if (roles.includes('super_admin') || roles.includes('admin')) {
+                // Admin endpoint if user has admin permissions (overrides vendor)
+                if (permissions.includes('access_admin') || permissions.includes('access_super_admin')) {
                     endpoint = '/api/reports/admin';
                 }
 
