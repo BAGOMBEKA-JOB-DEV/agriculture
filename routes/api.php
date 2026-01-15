@@ -7,6 +7,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\NetworkController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -127,5 +128,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Role Management (requires manage_roles permission)
     Route::middleware('permission:manage_roles')->group(function () {
         Route::apiResource('super-admin/roles', \App\Http\Controllers\Api\RoleController::class);
+    });
+
+    // Global Network Directory
+    Route::prefix('network')->group(function () {
+        Route::get('/vendors', [NetworkController::class, 'vendors']);
+        Route::get('/traders', [NetworkController::class, 'traders']);
+        Route::get('/buyers', [NetworkController::class, 'buyers']);
     });
 });

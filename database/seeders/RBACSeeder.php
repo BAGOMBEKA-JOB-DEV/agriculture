@@ -42,6 +42,11 @@ class RBACSeeder extends Seeder
             'broadcast_notifications' => 'Broadcast Global Notifications',
             'manage_categories' => 'Manage Asset Classifications',
             'manage_roles' => 'Manage Dynamic Role Ecosystem',
+            
+            // Global Network Hub
+            'view_vendors' => 'View Vendor Directory',
+            'view_traders' => 'View Trader Directory',
+            'view_buyers' => 'View Buyer Directory',
         ];
 
         foreach ($permissions as $slug => $description) {
@@ -58,24 +63,28 @@ class RBACSeeder extends Seeder
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions', 'manage_warehouse',
                 'manage_users', 'moderate_products', 'broadcast_notifications', 'manage_categories', 'manage_roles',
                 'view_reports_sales', 'view_reports_products', 'view_reports_users', 'view_reports_financial', 'view_reports_market', 'view_reports_trade_requests', 'view_reports_compliance', 'view_reports_system',
+                'view_vendors', 'view_traders', 'view_buyers',
             ],
             'admin' => [
                 'access_admin', 'access_vendor',
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions', 'manage_warehouse',
                 'moderate_products', 'manage_users',
                 'view_reports_sales', 'view_reports_products', 'view_reports_users', 'view_reports_compliance',
+                'view_vendors', 'view_traders', 'view_buyers',
             ],
             'vendor' => [
                 'access_vendor',
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions', 'manage_warehouse',
                 'view_reports_sales', 'view_reports_products',
+                'view_traders', 'view_vendors', 'view_buyers',  // Vendors can see potential trading partners
             ],
             'user' => [
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions',
+                'view_vendors', // Regular users (buyers/traders) primarily need to see vendors
             ],
             // Legacy fallbacks
-            'buyer' => ['view_marketplace_products', 'view_rfqs'],
-            'trader' => ['view_marketplace_products', 'view_rfqs'],
+            'buyer' => ['view_marketplace_products', 'view_rfqs', 'view_vendors', 'view_traders'],
+            'trader' => ['view_marketplace_products', 'view_rfqs', 'view_vendors', 'view_buyers'],
         ];
 
         foreach ($roles as $slug => $rolePermissions) {

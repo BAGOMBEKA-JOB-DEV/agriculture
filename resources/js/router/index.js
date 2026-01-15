@@ -411,8 +411,19 @@ const routes = [
 
   {
     path: '/',
-    name: 'Home',
     component: Home,
+  },
+
+  // Global Network Hub
+  {
+    path: '/network/:type',
+    name: 'Network',
+    component: () => import('../pages/Network/Index.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Global Network' }
+    },
+    props: true
   },
 ];
 

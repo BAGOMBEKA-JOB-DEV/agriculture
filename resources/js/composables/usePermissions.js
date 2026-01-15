@@ -56,8 +56,23 @@ export function usePermissions() {
         return authStore.user?.permissions_list || [];
     });
 
+    /**
+     * Ensure the user has a specific permission, otherwise notify and return false
+     * @param {string} permission - The permission slug to check
+     * @returns {boolean}
+     */
+    const ensure = (permission) => {
+        if (can(permission)) return true;
+
+        if (window.notify) {
+            window.notify.accessDenied(permission);
+        }
+        return false;
+    };
+
     return {
         can,
+        ensure,
         canAny,
         canAll,
         hasRole,

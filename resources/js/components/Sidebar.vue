@@ -301,8 +301,28 @@ const categorizedNavigation = computed(() => {
       })
   }
 
+  // Global Network (Dedicated Section)
+  const networkItems = []
+  if (can('view_vendors')) {
+      networkItems.push({ name: 'NetworkVendors', path: '/network/vendors', label: 'Verified Vendors', icon: icons.users })
+  }
+  if (can('view_traders')) {
+      networkItems.push({ name: 'NetworkTraders', path: '/network/traders', label: 'Active Traders', icon: icons.rfqs })
+  }
+  if (can('view_buyers')) {
+      networkItems.push({ name: 'NetworkBuyers', path: '/network/buyers', label: 'Global Buyers', icon: icons.dashboard })
+  }
+  
+  if (networkItems.length > 0) {
+      nav.push({
+          title: 'Global Network',
+          items: networkItems
+      })
+  }
+
   // Marketplace Section
   const marketplaceItems = []
+
   if (can('view_marketplace_products')) {
       marketplaceItems.push({ name: 'Products', path: '/products', label: 'Browse Products', icon: icons.products })
   }
