@@ -68,26 +68,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vendor', [\App\Http\Controllers\ReportingController::class, 'vendorStats']);
         Route::get('/buyer', [\App\Http\Controllers\ReportingController::class, 'buyerStats']);
         
-        Route::middleware('role:admin')->group(function () {
+        Route::middleware('permission:access_admin')->group(function () {
             Route::get('/admin', [\App\Http\Controllers\ReportingController::class, 'adminStats']);
         });
     });
 
-    // Admin routes protected by role middleware
-    Route::middleware('role:admin')->group(function () {
-        // Admin Broadcast Center
+    // Admin routes protected by permission middleware
+    // Broadcast Center (requires broadcast_notifications permission)
+    Route::middleware('permission:broadcast_notifications')->group(function () {
         Route::get('/admin/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index']);
         Route::post('/admin/notifications/broadcast', [\App\Http\Controllers\Admin\NotificationController::class, 'store']);
         Route::get('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'show']);
         Route::put('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'update']);
-        
-        // Admin Dashboard & Product Moderation
+    });
+    
+    // Product Moderation (requires moderate_products permission)
+    Route::middleware('permission:moderate_products')->group(function () {
         Route::get('/admin/stats', [\App\Http\Controllers\AdminController::class, 'stats']);
         Route::get('/admin/products', [\App\Http\Controllers\AdminController::class, 'products']);
         Route::post('/admin/products/{id}/approve', [\App\Http\Controllers\AdminController::class, 'approveProduct']);
         Route::post('/admin/products/{id}/reject', [\App\Http\Controllers\AdminController::class, 'rejectProduct']);
-        
-        // Admin User Management
+    });
+    
+    // User Management (requires manage_users permission)
+    Route::middleware('permission:manage_users')->group(function () {
         Route::get('/admin/roles', [\App\Http\Controllers\Admin\UserController::class, 'getRoles']);
         Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index']);
         Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store']);
@@ -105,19 +109,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/users/{id}/verify', [\App\Http\Controllers\Admin\UserController::class, 'verifyUser']);
     });
     
-    // Super Admin Governance
-    Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
+    // Super Admin Governance (requires access_super_admin permission)
+    Route::middleware('permission:access_super_admin')->prefix('super-admin')->group(function () {
         Route::get('/stats', [\App\Http\Controllers\SuperAdminController::class, 'stats']);
         Route::get('/users', [\App\Http\Controllers\SuperAdminController::class, 'users']);
         Route::post('/users/{id}/promote', [\App\Http\Controllers\SuperAdminController::class, 'promoteToSuperAdmin']);
         Route::post('/users/{id}/verify', [\App\Http\Controllers\SuperAdminController::class, 'verifyUser']);
         Route::post('/users/{id}/suspend', [\App\Http\Controllers\SuperAdminController::class, 'suspendUser']);
         Route::post('/users/{id}/activate', [\App\Http\Controllers\SuperAdminController::class, 'activateUser']);
-        
-        // Category Management
-        Route::apiResource('categories', CategoryController::class)->except(['index']);
+    });
+    
+    // Category Management (requires manage_categories permission)
+    Route::middleware('permission:manage_categories')->group(function () {
+        Route::apiResource('super-admin/categories', CategoryController::class)->except(['index']);
+    });
 
-        // Role Management
-        Route::apiResource('roles', \App\Http\Controllers\Api\RoleController::class);
+    // Role Management (requires manage_roles permission)
+    Route::middleware('permission:manage_roles')->group(function () {
+        Route::apiResource('super-admin/roles', \App\Http\Controllers\Api\RoleController::class);
     });
 });

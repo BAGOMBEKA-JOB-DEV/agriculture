@@ -108,6 +108,7 @@ const routes = [
     component: Dashboard,
     meta: {
       requiresAuth: true,
+      permission: 'view_dashboard',
       breadcrumb: { label: 'Dashboard' }
     },
   },
@@ -117,6 +118,7 @@ const routes = [
     component: RfqCreate,
     meta: {
       requiresAuth: true,
+      permission: 'view_rfqs',
       breadcrumb: [
         { label: 'My Requests', path: '/rfqs' },
         { label: 'Initiate Request' }
@@ -129,6 +131,7 @@ const routes = [
     component: BuyerRfqs,
     meta: {
       requiresAuth: true,
+      permission: 'view_rfqs',
       breadcrumb: { label: 'My Requests' }
     },
   },
@@ -138,6 +141,7 @@ const routes = [
     component: BuyerMessages,
     meta: {
       requiresAuth: true,
+      permission: 'access_conversations',
       breadcrumb: { label: 'Trade Discussions' }
     },
   },
@@ -147,6 +151,7 @@ const routes = [
     component: Subscriptions,
     meta: {
       requiresAuth: true,
+      permission: 'view_subscriptions',
       breadcrumb: { label: 'Membership Plan' }
     },
   },
@@ -156,6 +161,7 @@ const routes = [
     component: () => import('../pages/Notifications/Index.vue'),
     meta: {
       requiresAuth: true,
+      permission: 'access_inbox',
       breadcrumb: { label: 'Inbox' }
     },
   },
@@ -165,6 +171,7 @@ const routes = [
     component: () => import('../pages/Notifications/Show.vue'),
     meta: {
       requiresAuth: true,
+      permission: 'access_inbox',
       breadcrumb: [
         { label: 'Inbox', path: '/notifications' },
         { label: 'Message' }
@@ -179,6 +186,7 @@ const routes = [
     component: VendorProducts,
     meta: {
       requiresAuth: true,
+      permission: 'manage_warehouse',
       breadcrumb: { label: 'Inventory' }
     },
   },
@@ -188,6 +196,7 @@ const routes = [
     component: VendorProductCreate,
     meta: {
       requiresAuth: true,
+      permission: 'manage_warehouse',
       breadcrumb: [
         { label: 'Inventory', path: '/vendor/products' },
         { label: 'Add Product' }
@@ -198,7 +207,10 @@ const routes = [
     path: '/vendor/products/:id/edit',
     name: 'VendorProductEdit',
     component: VendorProductEdit,
-    meta: { requiresAuth: true, role: 'vendor' },
+    meta: {
+      requiresAuth: true,
+      permission: 'manage_warehouse'
+    },
   },
   {
     path: '/vendor/rfqs',
@@ -206,7 +218,7 @@ const routes = [
     component: VendorRfqs,
     meta: {
       requiresAuth: true,
-      role: 'vendor',
+      permission: 'access_vendor',
       breadcrumb: [{ label: 'Incoming Requests' }]
     },
   },
@@ -218,6 +230,7 @@ const routes = [
     component: AdminProducts,
     meta: {
       requiresAuth: true,
+      permission: 'moderate_products',
       breadcrumb: { label: 'Product Moderation' }
     },
   },
@@ -227,6 +240,7 @@ const routes = [
     component: AdminUsers,
     meta: {
       requiresAuth: true,
+      permission: 'manage_users',
       breadcrumb: { label: 'Identity Nexus' }
     },
   },
@@ -236,6 +250,7 @@ const routes = [
     component: () => import('../pages/admin/Notifications/Create.vue'),
     meta: {
       requiresAuth: true,
+      permission: 'broadcast_notifications',
       breadcrumb: [
         { label: 'Broadcast Center', path: '/admin/notifications' },
         { label: 'New Alert' }
@@ -248,6 +263,7 @@ const routes = [
     component: () => import('../pages/admin/Notifications/Index.vue'),
     meta: {
       requiresAuth: true,
+      permission: 'broadcast_notifications',
       breadcrumb: { label: 'Broadcast Center' }
     },
   },
@@ -272,6 +288,7 @@ const routes = [
     props: { type: 'sales' },
     meta: {
       requiresAuth: true,
+      permission: 'view_reports_sales',
       breadcrumb: { label: 'Sales Reports' }
     }
   },
@@ -282,6 +299,7 @@ const routes = [
     props: { type: 'products' },
     meta: {
       requiresAuth: true,
+      permission: 'view_reports_products',
       breadcrumb: { label: 'Product Reports' }
     }
   },
@@ -292,6 +310,7 @@ const routes = [
     props: { type: 'financial' },
     meta: {
       requiresAuth: true,
+      permission: 'view_reports_financial',
       breadcrumb: { label: 'Financial Reports' }
     }
   },
@@ -302,6 +321,7 @@ const routes = [
     props: { type: 'market' },
     meta: {
       requiresAuth: true,
+      permission: 'view_reports_market',
       breadcrumb: { label: 'Market Reports' }
     }
   },
@@ -312,6 +332,7 @@ const routes = [
     props: { type: 'users' },
     meta: {
       requiresAuth: true,
+      permission: 'view_reports_users',
       breadcrumb: { label: 'User Reports' }
     }
   },
@@ -322,6 +343,7 @@ const routes = [
     props: { type: 'compliance' },
     meta: {
       requiresAuth: true,
+      permission: 'view_reports_compliance',
       breadcrumb: { label: 'Compliance Reports' }
     }
   },
@@ -332,6 +354,7 @@ const routes = [
     props: { type: 'operations' },
     meta: {
       requiresAuth: true,
+      permission: 'view_reports_trade_requests',
       breadcrumb: { label: 'Operations Reports' }
     }
   },
@@ -342,6 +365,7 @@ const routes = [
     props: { type: 'system' },
     meta: {
       requiresAuth: true,
+      permission: 'view_reports_system',
       breadcrumb: { label: 'System Health' }
     }
   },
@@ -353,6 +377,7 @@ const routes = [
     component: SuperAdminDashboard,
     meta: {
       requiresAuth: true,
+      permission: 'access_super_admin',
       breadcrumb: { label: 'Governance Nexus' }
     },
   },
@@ -362,7 +387,11 @@ const routes = [
     component: SuperAdminCategories,
     meta: {
       requiresAuth: true,
-      breadcrumb: { label: 'Asset Classifications' }
+      permission: 'manage_categories',
+      breadcrumb: [
+        { label: 'Governance Nexus', path: '/super-admin' },
+        { label: 'Asset Classifications' }
+      ]
     },
   },
   {
@@ -371,7 +400,11 @@ const routes = [
     component: RoleManagement,
     meta: {
       requiresAuth: true,
-      breadcrumb: { label: 'Role Ecosystem' }
+      permission: 'manage_roles',
+      breadcrumb: [
+        { label: 'Governance Nexus', path: '/super-admin' },
+        { label: 'Role Ecosystem' }
+      ]
     },
   },
 
@@ -389,7 +422,7 @@ const router = createRouter({
 
 import { useAuthStore } from '../stores/auth';
 
-// Navigation guard
+// Navigation guard with permission checking
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
@@ -401,13 +434,27 @@ router.beforeEach(async (to, from, next) => {
   const token = localStorage.getItem('token');
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
+  // Check authentication
   if (requiresAuth && !token) {
-    next('/login');
-  } else if ((to.path === '/login' || to.path === '/register') && token) {
-    next('/dashboard');
-  } else {
-    next();
+    return next('/login');
   }
+
+  if ((to.path === '/login' || to.path === '/register') && token) {
+    return next('/dashboard');
+  }
+
+  // Check permission requirements
+  if (to.meta.permission && authStore.user) {
+    const hasPermission = authStore.user.permissions_list?.includes(to.meta.permission);
+    const isSuperAdmin = authStore.user.roles?.some(r => r.slug === 'super_admin');
+
+    if (!hasPermission && !isSuperAdmin) {
+      console.warn(`Access denied: Missing permission '${to.meta.permission}'`);
+      return next('/dashboard'); // Redirect to dashboard if no permission
+    }
+  }
+
+  next();
 });
 
 export default router;
