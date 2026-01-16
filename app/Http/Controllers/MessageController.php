@@ -26,9 +26,14 @@ class MessageController extends Controller
             $lastMessage = $convoMessages->first();
             $otherUser = $lastMessage->sender_id === $user->id ? $lastMessage->receiver : $lastMessage->sender;
             
+            $unreadCount = $convoMessages->where('receiver_id', $user->id)
+                ->whereNull('read_at')
+                ->count();
+            
             return [
                 'user' => $otherUser,
-                'last_message' => $lastMessage
+                'last_message' => $lastMessage,
+                'unread_count' => $unreadCount
             ];
         })->values();
 
