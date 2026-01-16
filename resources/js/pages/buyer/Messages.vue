@@ -38,53 +38,130 @@
     </div>
 
     <div class="container mx-auto px-6 -mt-8 relative z-20">
-      <div class="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 flex h-[700px] overflow-hidden">
+      <div class="bg-white rounded-[2.5rem] shadow-lg border border-gray-100 flex h-[700px] overflow-hidden">
         <!-- Conversation List -->
-        <div class="w-1/3 border-r border-gray-100 flex flex-col bg-gray-50/30">
-          <div class="p-8 border-b border-gray-100 bg-white">
-            <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest">Active Channels</h2>
+        <div class="border-r border-gray-100 flex flex-col bg-gray-50/30 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[width]"
+             :class="[
+                isSidebarCollapsed ? 'md:w-24' : 'md:w-1/3',
+                selectedParticipantId ? 'hidden md:flex w-full' : 'flex w-full'
+             ]">
+          
+          <div class="p-6 border-b border-gray-100 bg-white h-20 flex items-center justify-between shrink-0">
+            <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest transition-opacity duration-300 whitespace-nowrap overflow-hidden"
+                :class="isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                Active Channels
+            </h2>
+            <button @click="isSidebarCollapsed = !isSidebarCollapsed" 
+                    :title="isSidebarCollapsed ? 'Expand History' : 'Collapse History'"
+                    class="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-agri-forest transition-colors mx-auto">
+                <svg class="w-5 h-5 transition-transform duration-500" 
+                     :class="isSidebarCollapsed ? 'rotate-180' : ''"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+            </button>
           </div>
-          <div class="flex-1 overflow-y-auto">
-            <div v-for="convo in conversations" 
+
+          <!-- Search & Filters -->
+          <div class="px-6 py-4 border-b border-gray-100 bg-white space-y-4 transition-all duration-300" 
+               v-if="!isSidebarCollapsed">
+              <!-- Search Bar -->
+              <div class="relative">
+                  <input v-model="searchQuery" 
+                         type="text" 
+                         placeholder="Search messages..." 
+                         class="w-full bg-gray-50 border-none rounded-xl py-3 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-agri-forest/20 transition-all placeholder-gray-400">
+                  <svg class="w-4 h-4 text-gray-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+              </div>
+              
+              <!-- Filter Pills -->
+              <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
+                  <button v-for="filter in ['all', 'unread', 'read', 'archived']" 
+                          :key="filter"
+                          @click="activeFilter = filter"
+                          class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap"
+                          :class="activeFilter === filter ? 'bg-agri-forest text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'">
+                      {{ filter }}
+                  </button>
+              </div>
+          </div>
+
+          <div class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+            <div v-for="convo in filteredConversations" 
                  :key="convo.user.id"
                  @click="selectConversation(convo.user.id)"
-                 class="p-6 border-b border-gray-50 cursor-pointer hover:bg-white transition-all duration-300 relative group"
-                 :class="{ 'bg-white shadow-inner': selectedParticipantId == convo.user.id }">
-              <div v-if="selectedParticipantId == convo.user.id" class="absolute left-0 top-0 bottom-0 w-1.5 bg-agri-forest"></div>
+                 class="border-b border-gray-50 cursor-pointer hover:bg-white transition-all duration-300 relative group overflow-hidden"
+                 :class="[
+                    selectedParticipantId == convo.user.id ? 'bg-white shadow-inner' : '',
+                    isSidebarCollapsed ? 'p-4 flex justify-center' : 'p-6'
+                 ]">
               
-              <div class="flex items-center mb-3">
-                <div class="w-10 h-10 rounded-xl bg-agri-sand flex items-center justify-center text-agri-forest font-black mr-3 overflow-hidden">
+              <div v-if="selectedParticipantId == convo.user.id" 
+                   class="absolute left-0 top-0 bottom-0 bg-agri-forest transition-all duration-300"
+                   :class="isSidebarCollapsed ? 'w-1' : 'w-1.5'"></div>
+              
+              <div class="flex items-center" :class="isSidebarCollapsed ? 'justify-center w-full' : 'mb-3'">
+                <div class="rounded-xl flex items-center justify-center text-agri-forest font-black overflow-hidden transition-all duration-500 shrink-0 relative"
+                     :class="[
+                        isSidebarCollapsed ? 'w-10 h-10 bg-white ring-2 ring-gray-100' : 'w-10 h-10 bg-agri-sand mr-3',
+                        selectedParticipantId == convo.user.id && isSidebarCollapsed ? '!ring-agri-forest' : ''
+                     ]">
                     <img v-if="convo.user.avatar_url" :src="convo.user.avatar_url" class="w-full h-full object-cover">
                     <span v-else>{{ convo.user.name.charAt(0) }}</span>
+                    
+                    <!-- Online/Status Indicator (Optional enhancement) -->
+                    <div v-if="convo.unread_count > 0 && isSidebarCollapsed" 
+                         class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></div>
                 </div>
-                <div class="flex-1 min-w-0">
+
+                <div class="flex-1 min-w-0 transition-all duration-500"
+                     :class="isSidebarCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto'">
                     <div class="flex justify-between items-center">
                         <span class="font-black text-gray-900 truncate">{{ convo.user.name }}</span>
-                        <span class="text-[10px] font-bold text-gray-400">{{ formatRecentDate(convo.last_message.created_at) }}</span>
+                        <div class="flex flex-col items-end">
+                            <span class="text-[10px] font-bold text-gray-400 mb-1">{{ formatRecentDate(convo.last_message.created_at) }}</span>
+                            <!-- Unread Badge -->
+                            <div v-if="convo.unread_count > 0" 
+                                 class="bg-agri-forest text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm min-w-[20px] text-center">
+                                {{ convo.unread_count }}
+                            </div>
+                        </div>
                     </div>
                 </div>
               </div>
-              <p class="text-xs text-gray-500 font-medium truncate leading-relaxed">
+              
+              <p class="text-xs text-gray-500 font-medium truncate leading-relaxed transition-all duration-500"
+                 :class="isSidebarCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 block'">
                 <span v-if="convo.last_message.sender_id === authStore.user?.id" class="text-agri-forest font-black">You:</span>
                 {{ convo.last_message.message || convo.last_message.content }}
               </p>
             </div>
             
-            <div v-if="conversations.length === 0" class="p-12 text-center text-gray-400">
-                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-100">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            <div v-if="filteredConversations.length === 0" class="text-center text-gray-400 transition-all duration-500" :class="isSidebarCollapsed ? 'p-4' : 'p-12'">
+                <div class="bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-100 transition-all duration-500"
+                     :class="isSidebarCollapsed ? 'w-10 h-10' : 'w-16 h-16'">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                 </div>
-                <p class="text-xs font-black uppercase tracking-widest">No Active Channels</p>
+                <p class="text-xs font-black uppercase tracking-widest whitespace-nowrap overflow-hidden transition-all duration-500"
+                   :class="isSidebarCollapsed ? 'scale-0 h-0 opacity-0' : 'scale-100 h-auto opacity-100'">
+                    {{ searchQuery ? 'No search results' : (activeFilter === 'all' ? 'No Active Channels' : 'No matches found') }}
+                </p>
             </div>
           </div>
         </div>
 
         <!-- Message View -->
-        <div class="w-2/3 flex flex-col bg-white">
+        <div class="flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300"
+             :class="selectedParticipantId ? 'flex' : 'hidden md:flex'">
           <template v-if="selectedParticipantId">
             <!-- Header -->
             <div class="px-10 py-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
               <div class="flex items-center">
+                 <button @click="selectedParticipantId = null" class="mr-4 md:hidden p-2 rounded-full hover:bg-gray-100 text-gray-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                 </button>
                  <div class="w-10 h-10 rounded-xl bg-agri-forest text-agri-earth flex items-center justify-center font-black mr-4 overflow-hidden">
                      <img v-if="selectedParticipantAvatar" :src="selectedParticipantAvatar" class="w-full h-full object-cover">
                      <span v-else>{{ selectedParticipantName.charAt(0) }}</span>
@@ -97,7 +174,7 @@
             </div>
 
             <!-- Messages -->
-            <div class="flex-1 overflow-y-auto p-10 space-y-8 bg-gray-50/20" ref="messagesContainer">
+            <div class="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-8 bg-gray-50/20" ref="messagesContainer">
               <div v-for="msg in activeMessages" :key="msg.id" 
                    class="flex flex-col mb-2"
                    :class="msg.sender_id === authStore.user?.id ? 'items-end' : 'items-start'">
@@ -177,7 +254,7 @@
             </div>
 
             <!-- Input -->
-            <div class="p-8 border-t border-gray-100 bg-white">
+            <div class="p-4 md:p-8 border-t border-gray-100 bg-white">
               <!-- File Previews -->
               <div v-if="selectedFiles.length > 0" class="flex flex-wrap gap-2 mb-4">
                  <div v-for="(file, index) in selectedFiles" :key="index" class="relative group">
@@ -193,13 +270,13 @@
 
               <form @submit.prevent="sendMessage" class="flex items-center bg-gray-50 rounded-2xl p-2 focus-within:ring-4 focus-within:ring-agri-forest/5 transition-all">
                 <!-- File Trigger -->
-                <button type="button" @click="$refs.fileInput.click()" class="p-4 text-gray-400 hover:text-agri-forest transition-colors">
+                <button type="button" @click="$refs.fileInput.click()" class="p-4 text-gray-400 hover:text-agri-forest transition-colors flex-shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                 </button>
                 <input type="file" ref="fileInput" multiple class="hidden" @change="handleFileSelect">
 
                 <!-- Emoji Toggle -->
-                <div class="relative">
+                <div class="relative flex-shrink-0 hidden md:block">
                     <button type="button" @click.stop="showEmojiPicker = !showEmojiPicker" class="p-4 text-gray-400 hover:text-yellow-500 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </button>
@@ -215,7 +292,7 @@
                        class="flex-1 bg-transparent border-none px-2 py-4 focus:outline-none font-medium text-sm text-gray-900">
                 <button type="submit" 
                         :disabled="!newMessage.trim() && selectedFiles.length === 0"
-                        class="bg-agri-forest text-agri-earth w-12 h-12 rounded-xl flex items-center justify-center hover:bg-agri-lush hover:text-white disabled:opacity-30 transition-all shadow-lg">
+                        class="bg-agri-forest text-agri-earth w-12 h-12 rounded-xl flex items-center justify-center hover:bg-agri-lush hover:text-white disabled:opacity-30 transition-all shadow-lg flex-shrink-0">
                   <svg class="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
                   </svg>
@@ -271,10 +348,40 @@ const messagesContainer = ref(null);
 const fileInput = ref(null);
 const selectedFiles = ref([]);
 const lightboxImage = ref(null);
+const isSidebarCollapsed = ref(false);
 const activeActionId = ref(null);
 const showForwardModal = ref(false);
 const messageToForward = ref(null);
 const showEmojiPicker = ref(false);
+const searchQuery = ref('');
+const activeFilter = ref('all');
+
+const filteredConversations = computed(() => {
+  let filtered = conversations.value;
+
+  // Search Filter
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(convo => 
+      convo.user.name.toLowerCase().includes(query) || 
+      (convo.last_message.message || convo.last_message.content || '').toLowerCase().includes(query)
+    );
+  }
+
+  // Status Filter
+  if (activeFilter.value === 'unread') {
+    filtered = filtered.filter(convo => convo.unread_count > 0);
+  } else if (activeFilter.value === 'read') {
+    filtered = filtered.filter(convo => convo.unread_count === 0);
+  } else if (activeFilter.value === 'archived') {
+    // Note: archived logic might need backend support, for now returning empty or placeholder filter
+    // If there's no is_archived on convo, we'll just return it as is or empty.
+    // Setting it up for future use.
+    filtered = filtered.filter(convo => convo.is_archived);
+  }
+
+  return filtered;
+});
 
 const fetchConversations = async () => {
   try {
@@ -410,12 +517,39 @@ const scrollToBottom = () => {
 const formatRecentDate = (date) => {
   if (!date) return '';
   const d = new Date(date);
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+  
+  if (d.toDateString() === today.toDateString()) {
+      return `Today ${timeStr}`;
+  } else if (d.toDateString() === yesterday.toDateString()) {
+      return `Yesterday ${timeStr}`;
+  } else {
+      const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      return `${dateStr} ${timeStr}`;
+  }
 };
 
 const formatFullDate = (date) => {
   if (!date) return '';
-  return new Date(date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const d = new Date(date);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+  
+  if (d.toDateString() === today.toDateString()) {
+      return `Today ${timeStr}`;
+  } else if (d.toDateString() === yesterday.toDateString()) {
+      return `Yesterday ${timeStr}`;
+  } else {
+      const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      return `${dateStr} ${timeStr}`;
+  }
 };
 
 // Lightbox & Actions
