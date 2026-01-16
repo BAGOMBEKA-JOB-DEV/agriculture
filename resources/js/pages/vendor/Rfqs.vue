@@ -1,16 +1,111 @@
 <template>
   <div class="min-h-screen bg-gray-50/50 pb-12 font-sans">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-100 py-10">
-        <div class="container mx-auto px-6">
-            <div class="flex items-center justify-between">
+    <div class="bg-agri-forest py-16 relative overflow-hidden">
+        <div class="absolute inset-0 bg-agri-earth/5 opacity-20"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
                 <div>
-                   <h1 class="text-3xl font-black text-gray-900 tracking-tight mb-2">
-                       Incoming <span class="text-agri-forest">Trade Requests</span>
-                   </h1>
-                   <p class="text-gray-500 font-medium">Manage and negotiate incoming supply requests from global buyers.</p>
+                    <h1 class="text-4xl font-black text-white mb-2 tracking-tighter">
+                       Incoming <span class="text-agri-earth">Trade Requests</span>
+                    </h1>
+                    <p class="text-agri-earth/70 font-medium text-sm">Manage and negotiate incoming supply requests from global buyers.</p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                  <!-- Discovery Search -->
+                  <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                      <svg class="h-5 w-5 text-agri-earth/40 group-focus-within:text-agri-earth transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <input 
+                      v-model="filters.q"
+                      @input="debouncedFetch"
+                      type="text" 
+                      placeholder="Search Requests or IDs..."
+                      class="bg-white/10 backdrop-blur-md border border-white/20 rounded-[2rem] pl-14 pr-8 py-4 text-white placeholder-agri-earth/50 font-bold text-sm w-full lg:w-96 focus:outline-none focus:ring-2 focus:ring-agri-earth/50 transition-all shadow-xl"
+                    >
+                  </div>
+
+                  <!-- Advanced Toggle -->
+                  <button 
+                    @click="showAdvancedFilters = !showAdvancedFilters"
+                    class="p-4 rounded-[1.5rem] border transition-all duration-300 flex items-center space-x-2"
+                    :class="showAdvancedFilters ? 'bg-agri-earth text-agri-forest border-agri-earth' : 'bg-white/5 text-white border-white/10 hover:bg-white/10'"
+                  >
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    <span class="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Filters</span>
+                  </button>
                 </div>
             </div>
+
+            <!-- Advanced Filter Panel -->
+            <Transition
+              enter-active-class="transition-all duration-500 ease-out"
+              leave-active-class="transition-all duration-300 ease-in"
+              enter-from-class="max-h-0 opacity-0 mt-0"
+              enter-to-class="max-h-[500px] opacity-100 mt-8"
+              leave-from-class="max-h-[500px] opacity-100 mt-8"
+              leave-to-class="max-h-0 opacity-0 mt-0"
+            >
+              <div v-if="showAdvancedFilters" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-hidden">
+                <!-- Status Filter -->
+                <div class="space-y-2">
+                  <label class="text-[9px] font-black text-agri-earth/60 uppercase tracking-widest ml-4">Registry Status</label>
+                  <select v-model="filters.status" @change="fetchRfqs" class="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 text-white font-bold text-xs outline-none cursor-pointer focus:ring-2 focus:ring-agri-earth/30 transition-all">
+                    <option value="" class="text-gray-900">All Statuses</option>
+                    <option value="pending" class="text-gray-900">Pending</option>
+                    <option value="responded" class="text-gray-900">Responded</option>
+                    <option value="accepted" class="text-gray-900">Accepted</option>
+                    <option value="rejected" class="text-gray-900">Rejected</option>
+                  </select>
+                </div>
+
+                <!-- Location Filter -->
+                <div class="space-y-2">
+                  <label class="text-[9px] font-black text-agri-earth/60 uppercase tracking-widest ml-4">Delivery Origin</label>
+                  <input 
+                    v-model="filters.location"
+                    @input="debouncedFetch"
+                    type="text" 
+                    placeholder="Filter by Location..."
+                    class="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 text-white font-bold text-xs outline-none focus:ring-2 focus:ring-agri-earth/30 transition-all placeholder-agri-earth/40"
+                  >
+                </div>
+
+                <!-- Quantity Range Filter -->
+                <div class="lg:col-span-2 space-y-2 bg-white/5 p-6 rounded-[2rem] border border-white/10">
+                  <label class="text-[9px] font-black text-agri-earth/60 uppercase tracking-widest block mb-4">Quantity Range</label>
+                  <div class="flex items-center space-x-4">
+                    <input 
+                      v-model="filters.min_quantity" 
+                      @input="debouncedFetch"
+                      type="number" 
+                      placeholder="Min" 
+                      class="flex-1 bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white text-xs font-bold focus:outline-none focus:ring-1 focus:ring-agri-earth/40"
+                    >
+                    <span class="text-white/20 font-black">TO</span>
+                    <input 
+                      v-model="filters.max_quantity" 
+                      @input="debouncedFetch"
+                      type="number" 
+                      placeholder="Max" 
+                      class="flex-1 bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white text-xs font-bold focus:outline-none focus:ring-1 focus:ring-agri-earth/40"
+                    >
+                    <button 
+                      @click="resetFilters"
+                      class="px-4 py-3 text-[9px] font-black text-agri-earth hover:text-white uppercase tracking-widest transition-colors"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Transition>
         </div>
     </div>
 
@@ -19,72 +114,106 @@
       <div class="bg-white rounded-[2rem] shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
         
         <!-- Loading State -->
-        <div v-if="loading" class="p-20 text-center">
+        <div v-if="loading" class="p-24 text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-agri-forest mx-auto mb-4"></div>
-            <p class="text-gray-400 font-medium">Synching ledger...</p>
+            <p class="text-gray-400 font-medium tracking-tight">Syncing trade registry...</p>
         </div>
 
-        <!-- RFQ Table -->
-        <div v-else class="overflow-x-auto">
-          <table class="w-full whitespace-nowrap">
-            <thead>
-              <tr class="bg-gray-50/50 border-b border-gray-100">
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Requested Asset</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Buyer</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Volume</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Delivery Date</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Status</th>
-                <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              <tr v-for="rfq in rfqs" :key="rfq.id" class="group hover:bg-agri-sand/10 transition-colors duration-300">
-                <td class="px-8 py-6">
-                  <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-xl bg-agri-sand flex items-center justify-center text-agri-forest font-black mr-4 group-hover:bg-agri-forest group-hover:text-white transition-all shadow-sm">
-                        {{ rfq.product?.name?.charAt(0) || 'R' }}
+        <!-- RFQ Grid -->
+        <div v-else class="p-10">
+          <div v-if="rfqs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div v-for="rfq in rfqs" :key="rfq.id" class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full group overflow-hidden">
+                
+                <!-- Card Header -->
+                <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-start">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-agri-forest font-black text-lg group-hover:bg-agri-forest group-hover:text-white transition-colors duration-300">
+                            {{ rfq.product?.name?.charAt(0) || 'R' }}
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-gray-400 font-black uppercase tracking-widest block mb-0.5">Requested Asset</span>
+                            <h3 class="text-base font-black text-gray-900 leading-tight tracking-tight">{{ rfq.product?.name || 'Bulk Commodity' }}</h3>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">REF: #RFQ-{{ rfq.id }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-sm font-black text-gray-900 group-hover:text-agri-forest transition-colors">{{ rfq.product?.name || 'Bulk Commodity' }}</div>
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tight mt-0.5">REF: #RFQ-{{ rfq.id }}</div>
+                    
+                    <!-- Status -->
+                    <div class="flex items-center space-x-1.5 px-3 py-1 bg-gray-50 rounded-full border border-gray-100">
+                        <span class="w-1.5 h-1.5 rounded-full" 
+                              :class="{
+                                  'bg-yellow-400': rfq.status === 'pending',
+                                  'bg-blue-500': rfq.status === 'responded',
+                                  'bg-agri-lush': rfq.status === 'accepted',
+                                  'bg-red-400': rfq.status === 'rejected'
+                              }"></span>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-600">{{ rfq.status }}</span>
                     </div>
-                  </div>
-                </td>
-                <td class="px-8 py-6">
-                  <div class="text-sm font-bold text-gray-600">{{ rfq.buyer?.name || 'Verified Buyer' }}</div>
-                </td>
-                <td class="px-8 py-6 text-center">
-                  <div class="text-sm font-black text-agri-forest">{{ rfq.quantity }} {{ rfq.product?.unit || 'Units' }}</div>
-                </td>
-                <td class="px-8 py-6 text-center">
-                  <div class="text-sm font-medium text-gray-500">{{ formatDate(rfq.preferred_date) }}</div>
-                </td>
-                <td class="px-8 py-6 text-right">
-                  <span :class="getStatusClasses(rfq.status)" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest inline-block shadow-sm">
-                    {{ rfq.status }}
-                  </span>
-                </td>
-                <td class="px-8 py-6 text-right">
-                    <button @click="viewNegotiation(rfq)" class="bg-agri-forest/10 hover:bg-agri-forest text-agri-forest hover:text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all">
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-8 flex-1 flex flex-col gap-6">
+                    <div class="grid grid-cols-2 gap-8">
+                        <div class="space-y-1">
+                            <span class="text-[9px] text-gray-400 font-black uppercase tracking-widest">Volume</span>
+                            <p class="text-sm font-bold text-gray-900">{{ rfq.quantity }} <span class="text-agri-forest/60 text-xs font-bold">{{ rfq.product?.unit || 'Units' }}</span></p>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[9px] text-gray-400 font-black uppercase tracking-widest">Delivery Date</span>
+                            <p class="text-sm font-bold text-gray-900">{{ formatDate(rfq.preferred_date) }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Buyer Context -->
+                    <div class="pt-6 border-t border-gray-50 space-y-3">
+                         <span class="text-[9px] text-gray-400 font-black uppercase tracking-widest leading-none">Buyer</span>
+                         
+                         <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-agri-sand/50 text-agri-forest text-[11px] font-black flex items-center justify-center mr-3 border border-agri-earth/10">
+                                {{ rfq.buyer?.name?.charAt(0) || 'B' }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900 truncate">
+                                    {{ rfq.buyer?.name || 'Verified Buyer' }}
+                                </p>
+                                <p class="text-[9px] text-agri-forest font-bold uppercase tracking-tighter">Verified Member</p>
+                            </div>
+                         </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-gray-50">
+                         <div class="flex items-center text-gray-500">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <p class="text-xs font-bold text-gray-700 truncate">{{ rfq.delivery_location || 'Global Trade Zone' }}</p>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="px-8 py-5 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-3.5 h-3.5 text-agri-forest" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-500">Negotiation Room</span>
+                    </div>
+
+                    <button @click="viewNegotiation(rfq)" 
+                            class="px-6 py-2.5 bg-agri-forest text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-agri-lush transition-all shadow-sm flex items-center gap-2 group/btn">
                         Negotiate
+                        <svg class="w-3 h-3 transform group-hover/btn:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </button>
-                </td>
-              </tr>
-              
-              <!-- Empty State -->
-              <tr v-if="rfqs.length === 0">
-                  <td colspan="6" class="px-8 py-20 text-center">
-                       <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
-                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                            </svg>
-                       </div>
-                       <p class="text-gray-900 font-black text-xl mb-2">No Incoming Requests</p>
-                       <p class="text-gray-500 font-medium">Your products are visible on the marketplace. Requests will appear here.</p>
-                  </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div v-else class="py-32 text-center">
+               <div class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-gray-200 shadow-inner">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+               </div>
+               <p class="text-gray-900 font-black text-xl mb-2 tracking-tighter">No Incoming Trade Requests</p>
+               <p class="text-gray-500 font-medium max-w-sm mx-auto">Your products are currently broadcasting. Requests will appear here instantly.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -132,7 +261,7 @@
                                             <button @click="updateStatus('accepted')" :disabled="processing" class="flex-1 bg-white/20 hover:bg-white/30 text-white py-2 rounded-lg text-xs font-black uppercase tracking-widest backdrop-blur-sm transition-all border border-white/10">
                                                 Accept Request
                                             </button>
-                                            <button @click="updateStatus('rejected')" :disabled="processing" class="flex-1 bg-red-500/20 hover:bg-red-500/40 text-red-100 hover:text-white py-2 rounded-lg text-xs font-black uppercase tracking-widest backdrop-blur-sm transition-all border border-red-400/30">
+                                            <button @click="showRejectModal = true" :disabled="processing" class="flex-1 bg-red-500/20 hover:bg-red-500/40 text-red-100 hover:text-white py-2 rounded-lg text-xs font-black uppercase tracking-widest backdrop-blur-sm transition-all border border-red-400/30">
                                                 Reject
                                             </button>
                                         </div>
@@ -300,6 +429,22 @@
             </div>
         </div>
     </div>
+
+    <!-- Rejection Confirmation Modal -->
+    <Modal 
+        :isOpen="showRejectModal" 
+        title="Reject Trade Request?"
+        type="danger"
+        confirmText="Confirm Rejection"
+        cancelText="Cancel"
+        :loading="processing"
+        @confirm="confirmReject"
+        @cancel="showRejectModal = false"
+    >
+        <p class="text-gray-500 font-medium">
+            You are about to decline this request from <span class="text-gray-900 font-bold">{{ selectedRfq?.buyer?.name }}</span>. This action is irreversible.
+        </p>
+    </Modal>
   </div>
 </template>
 
@@ -307,6 +452,7 @@
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
+import Modal from '@/components/Modal.vue';
 
 const authStore = useAuthStore();
 const rfqs = ref([]);
@@ -319,10 +465,44 @@ const processing = ref(false);
 const messagesContainer = ref(null);
 const pollingInterval = ref(null);
 
+// Rejection Modal State
+const showRejectModal = ref(false);
+
+// Advanced Filters
+const showAdvancedFilters = ref(false);
+const filters = ref({
+  q: '',
+  status: '',
+  location: '',
+  min_quantity: null,
+  max_quantity: null
+});
+
+let debounceTimer = null;
+const debouncedFetch = () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    fetchRfqs();
+  }, 500);
+};
+
+const resetFilters = () => {
+  filters.value = {
+    q: '',
+    status: '',
+    location: '',
+    min_quantity: null,
+    max_quantity: null
+  };
+  fetchRfqs();
+};
+
 const fetchRfqs = async () => {
   loading.value = true;
   try {
-    const response = await axios.get('/api/rfqs');
+    const response = await axios.get('/api/rfqs', {
+      params: { ...filters.value }
+    });
     // Filter for requests where current user is the SELLER
     const myId = authStore.user?.id;
     rfqs.value = response.data.filter(r => r.seller_id === myId);
@@ -476,6 +656,11 @@ const updateStatus = async (status) => {
     } finally {
         processing.value = false;
     }
+};
+
+const confirmReject = async () => {
+    await updateStatus('rejected');
+    showRejectModal.value = false;
 };
 
 const scrollToBottom = () => {
