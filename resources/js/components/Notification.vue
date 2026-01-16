@@ -5,31 +5,46 @@
         v-for="notification in notifications"
         :key="notification.id"
         :class="[
-          'max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5',
-          notification.type === 'success' ? 'ring-green-500' : '',
-          notification.type === 'error' ? 'ring-red-500' : '',
-          notification.type === 'warning' ? 'ring-yellow-500' : '',
-          notification.type === 'info' ? 'ring-blue-500' : ''
+          'max-w-sm w-full bg-white shadow-2xl rounded-2xl pointer-events-auto border overflow-hidden transition-all duration-300',
+          notification.type === 'success' ? 'border-green-100' : 
+          notification.type === 'error' ? 'border-red-100' : 
+          notification.type === 'access_denied' ? 'border-agri-forest/20 shadow-agri-forest/5' :
+          notification.type === 'warning' ? 'border-yellow-100' : 'border-blue-100'
         ]"
       >
-        <div class="p-4">
+        <div v-if="notification.type === 'access_denied'" class="h-1.5 w-full bg-agri-forest/10 relative overflow-hidden">
+            <div class="absolute inset-0 bg-agri-forest animate-pulse opacity-20"></div>
+        </div>
+        <div class="p-5">
           <div class="flex items-start">
             <div class="flex-shrink-0">
+               <div v-if="notification.type === 'access_denied'" class="w-10 h-10 rounded-xl bg-agri-forest/10 flex items-center justify-center text-agri-forest">
+                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+               </div>
               <component
+                v-else
                 :is="getIcon(notification.type)"
                 class="h-6 w-6"
                 :class="getIconColor(notification.type)"
               />
             </div>
-            <div class="ml-3 w-0 flex-1 pt-0.5">
-              <p class="text-sm font-medium text-gray-900">
+            <div class="ml-4 w-0 flex-1 pt-0.5">
+              <p class="text-[10px] font-black uppercase tracking-widest mb-1" :class="notification.type === 'access_denied' ? 'text-agri-forest' : 'text-gray-400'">
+                {{ notification.type === 'access_denied' ? 'Permission Needed' : (notification.type === 'error' ? 'System Error' : 'Notice') }}
+              </p>
+              <p class="text-sm font-bold text-gray-900 leading-tight">
                 {{ notification.title }}
               </p>
-              <p class="mt-1 text-sm text-gray-500">
+              <p class="mt-2 text-xs font-medium text-gray-500 leading-relaxed">
                 {{ notification.message }}
               </p>
+              
+              <div v-if="notification.type === 'access_denied'" class="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
+                  <span class="text-[9px] font-black text-agri-forest/40 uppercase tracking-tighter">Support ID: {{ notification.id }}</span>
+                  <button @click="removeNotification(notification.id)" class="text-[9px] font-black text-agri-forest uppercase tracking-widest hover:text-agri-lush transition-colors">Acknowledge</button>
+              </div>
             </div>
-            <div class="ml-4 flex-shrink-0 flex">
+            <div v-if="notification.type !== 'access_denied'" class="ml-4 flex-shrink-0 flex">
               <button
                 @click="removeNotification(notification.id)"
                 class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -128,7 +143,13 @@ const notify = {
   success: (title, message, duration) => addNotification('success', title, message, duration),
   error: (title, message, duration) => addNotification('error', title, message, duration),
   warning: (title, message, duration) => addNotification('warning', title, message, duration),
-  info: (title, message, duration) => addNotification('info', title, message, duration)
+  info: (title, message, duration) => addNotification('info', title, message, duration),
+  accessDenied: (permission) => addNotification(
+      'access_denied', 
+      'Sorry!', 
+      `You don't have permission to do this. Please contact support if you need more help getting this access.`, 
+      0
+  )
 }
 
 // Make notify available globally
