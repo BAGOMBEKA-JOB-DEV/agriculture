@@ -8,6 +8,7 @@ import Dashboard from '../components/Dashboard.vue';
 import Products from '../pages/Products.vue';
 import ProductDetail from '../pages/ProductDetail.vue';
 import Subscriptions from '../pages/Subscriptions.vue';
+import LandingSubscriptions from '../Landing/Subscription.vue';
 
 // Role-specific Components
 import BuyerRfqs from '../pages/buyer/Rfqs.vue';
@@ -154,6 +155,14 @@ const routes = [
       requiresAuth: true,
       permission: 'view_subscriptions',
       breadcrumb: { label: 'Membership Plan' }
+    },
+  },
+  {
+    path: '/membership-plans',
+    name: 'LandingSubscriptions',
+    component: LandingSubscriptions,
+    meta: {
+      requiresAuth: false,
     },
   },
   {

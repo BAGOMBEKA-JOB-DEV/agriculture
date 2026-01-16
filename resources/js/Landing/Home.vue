@@ -8,7 +8,7 @@
       <!-- Background Image with Overlay -->
       <div class="absolute inset-0 z-0">
         <img 
-          :src="heroAgri" 
+          :src="'/images/hero-agri.png'" 
           alt="Modern Agriculture" 
           class="w-full h-full object-cover"
         >
@@ -127,7 +127,7 @@
              <div class="absolute -bottom-10 -right-10 w-60 h-60 bg-agri-lush/10 rounded-full blur-3xl"></div>
              <div class="relative rounded-3xl overflow-hidden shadow-2xl border-8 border-white group">
                 <img 
-                  :src="agriTrade" 
+                  :src="'/images/agri-trade.png'" 
                   alt="Agriculture Logistics" 
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 >
@@ -172,8 +172,6 @@
 <script setup>
 import Navigation from '../components/Navigation.vue'
 import Footer from '../components/Footer.vue'
-import heroAgri from 'assets/hero-agri.png'
-import agriTrade from 'assets/agri-trade.png'
 </script>
 
 <style scoped>

@@ -6,7 +6,7 @@
     <!-- Left side - Branding & Context -->
     <div class="lg:w-1/2 relative overflow-hidden bg-agri-forest flex items-center justify-center p-12">
       <div class="absolute inset-0 z-0">
-        <img :src="heroAgri" alt="Agriculture Trade" class="w-full h-full object-cover opacity-30">
+        <img :src="'/images/hero-agri.png'" alt="Agriculture Trade" class="w-full h-full object-cover opacity-30">
         <div class="absolute inset-0 bg-gradient-to-br from-agri-forest via-agri-forest/80 to-transparent"></div>
       </div>
       
@@ -164,7 +164,6 @@
 <script setup lang="js">
 import Navigation from '../Navigation.vue'
 import Alert from '../Form/Alert.vue'
-import heroAgri from 'assets/hero-agri.png'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
