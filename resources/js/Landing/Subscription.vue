@@ -3,7 +3,7 @@
 
   <div class="font-sans text-gray-900 overflow-x-hidden bg-white min-h-screen selection:bg-agri-forest/20">
     <!-- Flashy Hero Section -->
-    <section class="relative pt-32 pb-24 bg-white overflow-hidden text-center lg:text-left">
+    <section class="relative pt-32 pb-24 bg-agri-forest/20 overflow-hidden text-center lg:text-left">
       <!-- High-Impact Background Accents & Overlays -->
       <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-agri-sand/30 rounded-full blur-[160px] -translate-y-1/2 translate-x-1/2"></div>
       <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-agri-lush/10 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2"></div>
@@ -18,9 +18,9 @@
         <div class="grid lg:grid-cols-2 gap-16 items-center">
            <div class="relative">
               <!-- Big Catchy Animation: Coffee Burst -->
-              <div class="absolute -top-32 -left-20 w-48 h-48 animate-float-slow delay-700 pointer-events-none z-20 hidden xl:block">
-                 <img :src="'/images/catchy_coffee_3d_asset_1768568689881.png'" alt="Coffee" class="w-full h-auto drop-shadow-xl mix-blend-multiply brightness-[1.02] contrast-[1.05]" />
-              </div>
+              <!-- <div class="absolute -top-32 -left-50  w-48 h-48 animate-float-slow delay-700 pointer-events-none z-20 hidden xl:block">
+                 <img :src="'/images/catchy_coffee_3d_asset_1768568689881.png'" alt="Coffee" class="w-full h-auto drop-shadow-xl mix-blend-multiply mr-[100px] brightness-[1.02] contrast-[1.05]" />
+              </div> -->
 
               <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-agri-forest/5 border border-agri-forest/10 text-agri-forest text-[11px] font-black uppercase tracking-[0.25em] mb-8 shadow-sm">
                 <span class="w-2 h-2 rounded-full bg-agri-earth animate-pulse"></span>
