@@ -14,7 +14,7 @@ class RfqController extends Controller
         // Restrict to ONLY RFQs where the user is the Buyer (Creator) or Seller (Recipient)
         $user = auth()->user();
         
-        $rfqs = \App\Models\Rfq::with(['product', 'seller', 'buyer'])
+        $query = \App\Models\Rfq::with(['product', 'seller', 'buyer'])
             ->where(function($q) use ($user) {
                 $q->where('buyer_id', $user->id)
                   ->orWhere('seller_id', $user->id);
@@ -22,9 +22,45 @@ class RfqController extends Controller
             ->withCount(['messages as vendor_response_count' => function ($query) {
                 $query->select(\Illuminate\Support\Facades\DB::raw('count(distinct sender_id)'))
                       ->whereColumn('sender_id', '!=', 'rfqs.buyer_id');
-            }])
-            ->latest()
-            ->get();
+            }]);
+
+        // Advanced Filters
+        // Advanced Filters
+        if ($request->filled('q')) {
+            $search = strtolower($request->q);
+            $query->where(function($q) use ($search) {
+                // Determine if input is numeric to search by ID, or text to search by product name
+                if (is_numeric($search)) {
+                     $q->where('id', 'like', "%{$search}%")
+                       ->orWhereHas('product', function($pq) use ($search) {
+                           $pq->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+                       });
+                } else {
+                     $q->whereHas('product', function($pq) use ($search) {
+                          $pq->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+                     });
+                }
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('location')) {
+            $location = strtolower($request->location);
+            $query->whereRaw('LOWER(delivery_location) LIKE ?', ["%{$location}%"]);
+        }
+
+        if ($request->filled('min_quantity')) {
+            $query->where('quantity', '>=', $request->min_quantity);
+        }
+
+        if ($request->filled('max_quantity')) {
+            $query->where('quantity', '<=', $request->max_quantity);
+        }
+
+        $rfqs = $query->latest()->get();
             
         return response()->json($rfqs);
     }
