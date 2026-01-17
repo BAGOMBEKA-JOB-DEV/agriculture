@@ -43,3 +43,47 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style>
+/* 
+  IAM Global Layout "Premium Stretch"
+  Allows content to fill the screen while maintaining 
+  elegant horizontal gutters for professional aesthetics.
+*/
+
+/* Target ALL Tailwind width-limiting containers in the authenticated area */
+#app .min-h-screen.bg-gray-50 .container,
+#app .min-h-screen.bg-gray-50 .max-w-7xl,
+#app .min-h-screen.bg-gray-50 .max-w-6xl,
+#app .min-h-screen.bg-gray-50 .max-w-5xl,
+#app .min-h-screen.bg-gray-50 .max-w-4xl,
+#app .min-h-screen.bg-gray-50 .max-w-3xl,
+#app .min-h-screen.bg-gray-50 .max-w-2xl,
+#app .min-h-screen.bg-gray-50 .max-w-xl,
+#app nav .max-w-7xl,
+#app nav .container {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  /* Maintain internal aesthetic padding */
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Force left-alignment without aggressive edge-touching */
+#app .min-h-screen.bg-gray-50 .mx-auto {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Limit stretch on extremely wide monitors for readability */
+@media (min-width: 1920px) {
+
+  #app .min-h-screen.bg-gray-50 .container,
+  #app .min-h-screen.bg-gray-50 .max-w-7xl {
+    max-width: 1600px !important;
+  }
+}
+</style>
