@@ -5,15 +5,22 @@
         <div class="max-w-md w-full">
             <!-- Brand Identity -->
             <div class="mb-10 text-center">
-                <div class="inline-flex items-center space-x-3 mb-4">
+                <!-- <div class="inline-flex items-center space-x-3 mb-4">
                     <div
                         class="w-12 h-12 bg-agri-forest rounded-2xl flex items-center justify-center shadow-lg shadow-agri-forest/20">
                         <ShieldIcon class="w-7 h-7 text-white" />
                     </div>
                     <span class="text-3xl font-black text-gray-900 tracking-tighter uppercase italic">IAM</span>
-                </div>
+                </div> -->
                 <h1 class="text-2xl font-black text-gray-900 tracking-tight">Security Protocol</h1>
                 <p class="text-gray-500 font-medium">Multi-Factor Authentication Required</p>
+            </div>
+
+            <!-- Error Registry -->
+            <div v-if="challengeError" class="animate-in fade-in slide-in-from-top-2 duration-300 mb-8 px-1">
+                <Alert type="error" title="Access Denied" @close="challengeError = null">
+                    {{ challengeError }}
+                </Alert>
             </div>
 
             <!-- Challenge Box -->
@@ -126,6 +133,7 @@
 
 <script setup>
 import Navigation from '../Navigation.vue'
+import Alert from '../Form/Alert.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
@@ -144,6 +152,7 @@ const loading = ref(false)
 const showRecovery = ref(false)
 const authType = ref(route.query.type || 'app')
 const email = ref(route.query.email || '')
+const challengeError = ref(null)
 
 const challenge = ref({
     email: email.value,
@@ -153,6 +162,7 @@ const challenge = ref({
 
 const verify = async () => {
     loading.value = true
+    challengeError.value = null
     try {
         const result = await authStore.verifyTwoFactor({
             email: challenge.value.email,
@@ -160,13 +170,13 @@ const verify = async () => {
         })
 
         if (result.success) {
-            if (window.notify) window.notify.success('Identity Confrmed', 'MFA challenge successful. Access established.')
+            if (window.notify) window.notify.success('Identity Confirmed', 'MFA challenge successful. Access established.')
             router.push('/dashboard')
         } else {
-            if (window.notify) window.notify.error('Access Failure', result.message || 'Verification code failed.')
+            challengeError.value = result.message || 'The verification code provided is invalid.'
         }
     } catch (error) {
-        if (window.notify) window.notify.error('Protocol Error', 'Verification service unreachable.')
+        challengeError.value = 'The security protocol encountered a connection error. Please try again.'
     } finally {
         loading.value = false
     }
@@ -174,6 +184,7 @@ const verify = async () => {
 
 const verifyRecovery = async () => {
     loading.value = true
+    challengeError.value = null
     try {
         const result = await authStore.verifyTwoFactor({
             email: challenge.value.email,
@@ -184,10 +195,10 @@ const verifyRecovery = async () => {
             if (window.notify) window.notify.success('Identity Overridden', 'Recovery code accepted. Access established.')
             router.push('/dashboard')
         } else {
-            if (window.notify) window.notify.error('Access Failure', result.message || 'Recovery code failed.')
+            challengeError.value = result.message || 'The recovery code provided is invalid or has been used.'
         }
     } catch (error) {
-        if (window.notify) window.notify.error('Protocol Error', 'Verification service unreachable.')
+        challengeError.value = 'Security verification failed due to a system reachability issue.'
     } finally {
         loading.value = false
     }
