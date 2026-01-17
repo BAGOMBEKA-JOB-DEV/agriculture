@@ -109,15 +109,35 @@
             <p style="font-weight: 600; color: #475569; margin-top: 30px;">What you can find on IAM:</p>
             <div class="showcase">
                 <div class="product-card">
-                    <img src="{{ $message->embed('/Users/job/.gemini/antigravity/brain/d3cfe9bd-58f9-4e8d-8be2-1b4dc532dd63/maize_harvest_detailed_1767884352769.png') }}" class="product-img">
+                    <div style="width: 100%; height: 120px; background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%); border-radius: 8px; border: 1px solid #edf2f7; display: flex; align-items: center; justify-content: center;">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L12 22M12 2C10 2 8 4 8 6L8 18C8 20 10 22 12 22M12 2C14 2 16 4 16 6L16 18C16 20 14 22 12 22M9 8C8 8 7 9 7 10C7 11 8 12 9 12M15 8C16 8 17 9 17 10C17 11 16 12 15 12M9 14C8 14 7 15 7 16C7 17 8 18 9 18M15 14C16 14 17 15 17 16C17 17 16 18 15 18" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
                     <div class="product-label">Golden Maize</div>
                 </div>
                 <div class="product-card">
-                    <img src="{{ $message->embed('/Users/job/.gemini/antigravity/brain/d3cfe9bd-58f9-4e8d-8be2-1b4dc532dd63/coffee_beans_premium_1767884368666.png') }}" class="product-img">
+                    <div style="width: 100%; height: 120px; background: linear-gradient(135deg, #451a03 0%, #78350f 100%); border-radius: 8px; border: 1px solid #edf2f7; display: flex; align-items: center; justify-content: center;">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="12" cy="12" rx="4" ry="6" fill="#a16207" opacity="0.8"/>
+                            <ellipse cx="8" cy="10" rx="3" ry="5" fill="#92400e" opacity="0.9"/>
+                            <ellipse cx="16" cy="14" rx="3" ry="5" fill="#92400e" opacity="0.9"/>
+                            <circle cx="12" cy="8" r="2" fill="#d97706"/>
+                            <circle cx="10" cy="14" r="2" fill="#b45309"/>
+                            <circle cx="14" cy="11" r="2" fill="#b45309"/>
+                        </svg>
+                    </div>
                     <div class="product-label">Premium Coffee</div>
                 </div>
                 <div class="product-card">
-                    <img src="{{ $message->embed('/Users/job/.gemini/antigravity/brain/d3cfe9bd-58f9-4e8d-8be2-1b4dc532dd63/cassava_tubers_commercial_1767884389422.png') }}" class="product-img">
+                    <div style="width: 100%; height: 120px; background: linear-gradient(135deg, #f5f5dc 0%, #d2b48c 100%); border-radius: 8px; border: 1px solid #edf2f7; display: flex; align-items: center; justify-content: center;">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C12 2 10 6 10 10C10 12 11 14 12 14C13 14 14 12 14 10C14 6 12 2 12 2Z" fill="#8b4513" opacity="0.7"/>
+                            <ellipse cx="12" cy="16" rx="5" ry="3" fill="#a0522d"/>
+                            <ellipse cx="12" cy="19" rx="4" ry="2.5" fill="#8b4513"/>
+                            <path d="M9 15C9 15 8 16 8 17C8 18 9 19 10 19M15 15C15 15 16 16 16 17C16 18 15 19 14 19" stroke="#654321" stroke-width="1" stroke-linecap="round"/>
+                        </svg>
+                    </div>
                     <div class="product-label">Quality Cassava</div>
                 </div>
             </div>
