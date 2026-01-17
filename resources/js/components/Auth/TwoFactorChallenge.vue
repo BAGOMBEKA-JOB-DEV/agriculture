@@ -1,6 +1,7 @@
 <template>
+    <Navigation />
     <div
-        class="min-h-screen bg-gray-50 flex items-center justify-center p-6 bg-gradient-to-br from-agri-sand/30 to-white">
+        class="min-h-[90vh] bg-gray-50 flex items-center justify-center p-6 bg-gradient-to-br from-agri-sand/30 to-white">
         <div class="max-w-md w-full">
             <!-- Brand Identity -->
             <div class="mb-10 text-center">
@@ -124,6 +125,7 @@
 </template>
 
 <script setup>
+import Navigation from '../Navigation.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
