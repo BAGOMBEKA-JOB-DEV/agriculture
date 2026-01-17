@@ -62,6 +62,16 @@ export const useAuthStore = defineStore('auth', {
         async login(credentials) {
             try {
                 const response = await axios.post('/api/login', credentials);
+                
+                if (response.data.two_factor_required) {
+                    return { 
+                        success: true, 
+                        twoFactorRequired: true, 
+                        email: response.data.email,
+                        twoFactorType: response.data.two_factor_type
+                    };
+                }
+
                 this.token = response.data.token;
                 this.user = response.data.user;
                 localStorage.setItem('token', this.token);
@@ -71,6 +81,23 @@ export const useAuthStore = defineStore('auth', {
                 return {
                     success: false,
                     message: error.response?.data?.message || 'Login failed',
+                    errors: error.response?.data?.errors || {}
+                };
+            }
+        },
+
+        async verifyTwoFactor(challengeData) {
+            try {
+                const response = await axios.post('/api/two-factor/challenge', challengeData);
+                this.token = response.data.token;
+                this.user = response.data.user;
+                localStorage.setItem('token', this.token);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+                return { success: true };
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error.response?.data?.message || 'Verification failed',
                     errors: error.response?.data?.errors || {}
                 };
             }

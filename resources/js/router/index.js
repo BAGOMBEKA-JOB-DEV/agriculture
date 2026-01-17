@@ -5,6 +5,7 @@ import Register from '../components/Auth/Register.vue';
 import Dashboard from '../components/Dashboard.vue';
 import ForgotPassword from '../components/Auth/ForgotPassword.vue';
 import ResetPassword from '../components/Auth/ResetPassword.vue';
+import TwoFactorChallenge from '../components/Auth/TwoFactorChallenge.vue';
 
 // Agriculture Marketplace Components
 import Products from '../pages/Products.vue';
@@ -54,6 +55,12 @@ const routes = [
     path: '/reset-password',
     name: 'ResetPassword',
     component: ResetPassword,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/2fa-challenge',
+    name: 'TwoFactorChallenge',
+    component: TwoFactorChallenge,
     meta: { requiresAuth: false }
   },
   {

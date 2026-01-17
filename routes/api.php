@@ -8,6 +8,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\NetworkController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,9 @@ Route::get('/user', [AuthController::class, 'user'])->middleware('auth:sanctum')
 Route::put('/user/profile', [AuthController::class, 'updateProfile'])->middleware('auth:sanctum');
 Route::post('/user/avatar', [AuthController::class, 'updateAvatar'])->middleware('auth:sanctum');
 Route::post('/user/change-password', [AuthController::class, 'changePassword'])->middleware('auth:sanctum');
+
+// 2FA Routes
+Route::post('/two-factor/challenge', [AuthController::class, 'twoFactorChallenge']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -137,5 +141,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vendors', [NetworkController::class, 'vendors']);
         Route::get('/traders', [NetworkController::class, 'traders']);
         Route::get('/buyers', [NetworkController::class, 'buyers']);
+    });
+
+    // 2FA Internal Management
+    Route::prefix('two-factor')->group(function () {
+        Route::post('/setup-app', [TwoFactorController::class, 'setupApp']);
+        Route::post('/confirm-app', [TwoFactorController::class, 'confirmApp']);
+        Route::post('/enable-email', [TwoFactorController::class, 'enableEmail']);
+        Route::post('/disable', [TwoFactorController::class, 'disable']);
+        Route::get('/recovery-codes', [TwoFactorController::class, 'getRecoveryCodes']);
+        Route::post('/regenerate-recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes']);
     });
 });
