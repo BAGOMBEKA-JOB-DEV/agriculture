@@ -101,7 +101,41 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Log Successful Login
+        // --- 2FA Check ---
+        if ($user->two_factor_confirmed_at) {
+            // Log 2FA Requirement
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'event' => '2FA Challenge Initiated',
+                'action' => 'Authentication',
+                'level' => 'info',
+                'user_name' => $user->name,
+                'user_role' => $user->role,
+                'module' => 'Auth',
+                'status' => 'pending_mfa',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent')
+            ]);
+
+            if ($user->two_factor_type === 'email') {
+                $code = rand(100000, 999999);
+                \Illuminate\Support\Facades\Cache::put('2fa_code_' . $user->id, $code, now()->addMinutes(10));
+                \App\Jobs\ProcessTwoFactorMail::dispatch($user, $code);
+            }
+
+            $email = $user->email;
+            $type = $user->two_factor_type;
+
+            Auth::logout();
+
+            return response()->json([
+                'two_factor_required' => true,
+                'email' => $email,
+                'two_factor_type' => $type
+            ]);
+        }
+
+        // Log Successful Login (Immediate if no 2FA)
         ActivityLog::create([
             'user_id' => $user->id,
             'event' => 'User Login',
@@ -307,5 +341,74 @@ class AuthController extends Controller
         ]);
 
         return response()->json(['message' => 'Your password has been reset successfully.']);
+    }
+
+    public function twoFactorChallenge(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'nullable|string',
+            'recovery_code' => 'nullable|string',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !$user->two_factor_confirmed_at) {
+            return response()->json(['message' => 'Invalid request.'], 422);
+        }
+
+        $verified = false;
+
+        // 1. Recovery Code Check
+        if ($request->recovery_code) {
+            $recoveryCodes = json_decode($user->two_factor_recovery_codes, true);
+            if ($recoveryCodes && (($key = array_search($request->recovery_code, $recoveryCodes)) !== false)) {
+                unset($recoveryCodes[$key]);
+                $user->two_factor_recovery_codes = json_encode(array_values($recoveryCodes));
+                $user->save();
+                $verified = true;
+            }
+        } 
+        // 2. TOTP App Check
+        else if ($user->two_factor_type === 'app' && $request->code) {
+            $google2fa = new \PragmaRX\Google2FA\Google2FA();
+            if ($google2fa->verifyKey($user->two_factor_secret, $request->code)) {
+                $verified = true;
+            }
+        }
+        // 3. Email Check
+        else if ($user->two_factor_type === 'email' && $request->code) {
+            $storedCode = \Illuminate\Support\Facades\Cache::get('2fa_code_' . $user->id);
+            if ($storedCode && $storedCode == $request->code) {
+                \Illuminate\Support\Facades\Cache::forget('2fa_code_' . $user->id);
+                $verified = true;
+            }
+        }
+
+        if ($verified) {
+            // Log Successful Verification
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'event' => '2FA Verification Success',
+                'action' => 'Authentication',
+                'level' => 'info',
+                'user_name' => $user->name,
+                'user_role' => $user->role,
+                'module' => 'Auth',
+                'status' => 'success',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent')
+            ]);
+
+            $token = $user->createToken('API Token', ['*'], now()->addMinutes(60))->plainTextToken;
+            return response()->json([
+                'token' => $token,
+                'user' => $user
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'The provided two-factor authentication code was invalid.'
+        ], 422);
     }
 }
