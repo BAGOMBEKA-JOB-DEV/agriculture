@@ -3,6 +3,8 @@ import Home from '../Landing/Home.vue';
 import Login from '../components/Auth/Login.vue';
 import Register from '../components/Auth/Register.vue';
 import Dashboard from '../components/Dashboard.vue';
+import ForgotPassword from '../components/Auth/ForgotPassword.vue';
+import ResetPassword from '../components/Auth/ResetPassword.vue';
 
 // Agriculture Marketplace Components
 import Products from '../pages/Products.vue';
@@ -41,6 +43,18 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: Register,
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword,
+    meta: { requiresAuth: false }
   },
   {
     path: '/',

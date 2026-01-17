@@ -31,7 +31,7 @@ class UserCredentials extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Governance Nexus: Account Credentials',
+            subject: 'IAM: Your Account Credentials',
         );
     }
 

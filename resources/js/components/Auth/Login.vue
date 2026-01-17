@@ -132,7 +132,7 @@
                 <input type="checkbox" class="w-4 h-4 rounded border-gray-200 text-agri-forest focus:ring-agri-forest">
                 <span>Maintain Session</span>
              </label>
-             <a href="#" class="text-agri-earth hover:text-agri-sand transition-colors">Lost Access?</a>
+             <router-link to="/forgot-password" class="text-agri-earth hover:text-agri-forest transition-colors">Lost Access?</router-link>
           </div>
 
           <button
@@ -152,7 +152,7 @@
           <div class="text-center pt-8 border-t border-gray-100">
             <p class="text-sm font-bold text-gray-400">
               New to the Network?
-              <router-link to="/register" class="text-agri-earth hover:text-agri-sand ml-2">Request Account Access</router-link>
+              <router-link to="/register" class="text-agri-earth hover:text-agri-forest transition-colors ml-2">Request Account Access</router-link>
             </p>
           </div>
         </form>
