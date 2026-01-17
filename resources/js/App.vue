@@ -22,7 +22,7 @@ onMounted(() => {
 <template>
   <div id="app" class="font-sans">
     <Notification />
-    <div v-if="isAuthenticatedRoute" class="min-h-screen bg-gray-50">
+    <div v-if="isAuthenticatedRoute" class="min-h-screen bg-gray-50 iam-authenticated-layout">
       <Sidebar>
         <div class="flex flex-col h-screen">
           <!-- Top Navbar -->
@@ -49,19 +49,20 @@ onMounted(() => {
   IAM Global Layout "Premium Stretch"
   Allows content to fill the screen while maintaining 
   elegant horizontal gutters for professional aesthetics.
+  SCOPED: Only applies to authenticated routes.
 */
 
-/* Target ALL Tailwind width-limiting containers in the authenticated area */
-#app .min-h-screen.bg-gray-50 .container,
-#app .min-h-screen.bg-gray-50 .max-w-7xl,
-#app .min-h-screen.bg-gray-50 .max-w-6xl,
-#app .min-h-screen.bg-gray-50 .max-w-5xl,
-#app .min-h-screen.bg-gray-50 .max-w-4xl,
-#app .min-h-screen.bg-gray-50 .max-w-3xl,
-#app .min-h-screen.bg-gray-50 .max-w-2xl,
-#app .min-h-screen.bg-gray-50 .max-w-xl,
-#app nav .max-w-7xl,
-#app nav .container {
+/* Target ALL Tailwind width-limiting containers ONLY in the authenticated area */
+#app .iam-authenticated-layout .container,
+#app .iam-authenticated-layout .max-w-7xl,
+#app .iam-authenticated-layout .max-w-6xl,
+#app .iam-authenticated-layout .max-w-5xl,
+#app .iam-authenticated-layout .max-w-4xl,
+#app .iam-authenticated-layout .max-w-3xl,
+#app .iam-authenticated-layout .max-w-2xl,
+#app .iam-authenticated-layout .max-w-xl,
+#app .iam-authenticated-layout nav .max-w-7xl,
+#app .iam-authenticated-layout nav .container {
   max-width: 100% !important;
   width: 100% !important;
   margin-left: 0 !important;
@@ -72,17 +73,17 @@ onMounted(() => {
   transition: all 0.2s ease-in-out;
 }
 
-/* Force left-alignment without aggressive edge-touching */
-#app .min-h-screen.bg-gray-50 .mx-auto {
+/* Force left-alignment without aggressive edge-touching for auth layout */
+#app .iam-authenticated-layout .mx-auto {
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
 
-/* Limit stretch on extremely wide monitors for readability */
+/* Limit stretch on extremely wide monitors for readability in auth layout */
 @media (min-width: 1920px) {
 
-  #app .min-h-screen.bg-gray-50 .container,
-  #app .min-h-screen.bg-gray-50 .max-w-7xl {
+  #app .iam-authenticated-layout .container,
+  #app .iam-authenticated-layout .max-w-7xl {
     max-width: 1600px !important;
   }
 }
