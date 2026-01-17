@@ -101,12 +101,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Governance Nexus</h1>
+            <h1 style="color: white">IAM</h1>
         </div>
         <div class="content">
             <h2>New Login Detected</h2>
             <p>Hi {{ $user->name }},</p>
-            <p>We noticed a new login to your account. To help keep your account secure, we're letting you know about this activity.</p>
+            <p>We noticed a new login to your International Agro Marketplace (IAM) account. We are sending this email to help keep your account safe.</p>
             
             <div class="alert-box">
                 <div class="alert-item">
@@ -124,19 +124,19 @@
             </div>
 
             <p class="warning-text">Wasn't this you?</p>
-            <p>If you don't recognize this activity, please change your password immediately and contact our security team.</p>
+            <p>If you don't recognize this activity, please change your password immediately and contact our team.</p>
             
             <center>
-                <a href="#" class="cta-button">Report Unauthorized Access</a>
+                <a href="{{ url('/forgot-password') }}" class="cta-button">Secure My Account</a>
             </center>
 
             <p style="margin-top: 40px; font-size: 13px; color: #94a3b8;">
-                If you have any questions, feel free to call our support line at: <strong>+1 (800) AGRI-SAFE</strong> or email us at <strong>security@agrimarketplace.io</strong>
+                If you have questions, please email us at <strong>support@agrimarketplace.io</strong>
             </p>
         </div>
         <div class="footer">
-            &copy; 2026 International Agriculture Marketplace. All rights reserved.<br>
-            Secure Identity Protocol • IAM Center
+            &copy; 2026 INTERNATIONAL AGRO MARKETPLACE (IAM).<br>
+            Connecting Farmers and Buyers Globally.
         </div>
     </div>
 </body>

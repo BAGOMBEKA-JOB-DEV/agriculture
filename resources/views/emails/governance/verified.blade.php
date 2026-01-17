@@ -1,25 +1,24 @@
 <x-mail::message>
-# Identity Authorization: Registry Verification Complete
+# Account Verified
 
 Dear {{ $user->name }},
 
-Following a comprehensive audit of your documentation, the **Governance Nexus** has successfully authorized your identity.
+We have finished checking your documents, and your account on the **International Agro Marketplace (IAM)** is now **Verified**.
 
-Your participant profile is now marked as **Verified** within the Global Trade Registry. This authorization enhances your node's reputation and visibility across the network, signaling sovereign compliance to all trade partners.
+A verified account helps you build trust with other users and makes your profile stand out.
 
 <x-mail::panel>
-**Authorization Type: Advanced Identity Verification**
-Registry Token: Verified Participant
+**Status: Verified Participant**  
 Network Visibility: Global Tier
 </x-mail::panel>
 
-Thank you for maintaining high compliance standards in our marketplace.
+Thank you for being part of our safe and trusted marketplace.
 
 <x-mail::button :url="config('app.url') . '/dashboard'">
-View Verified Profile
+View Your Profile
 </x-mail::button>
 
 Best regards,<br>
-Sovereign Identity Bureau<br>
+The IAM Team<br>
 {{ config('app.name') }}
 </x-mail::message>

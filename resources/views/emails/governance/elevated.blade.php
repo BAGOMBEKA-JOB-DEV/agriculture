@@ -1,25 +1,24 @@
 <x-mail::message>
-# Authority Protocol: Sovereign Elevation Authorized
+# Super Admin Access Granted
 
 Dear {{ $user->name }},
 
-This formal notification confirms your elevation to the rank of **Super Admin** within the **Governance Nexus**.
+You have been granted **Super Admin** access to the **International Agro Marketplace (IAM)**.
 
-You have been granted system-wide sovereign access, enabling full oversight and management of the marketplace's regulatory framework, participant registries, and trade asset classes. Please exercise this authority with the highest standards of governance.
+As a Super Admin, you can manage the entire marketplace, including users, products, and system settings. Please use this access responsibly.
 
 <x-mail::panel>
-**Protocol Level: Sovereign Authority**
-Account Role: Super Admin
-Access Scope: System-Wide Unrestricted
+**Role: Super Admin**  
+Access: Full System Management
 </x-mail::panel>
 
-Your new administrative capabilities are now active in your dashboard.
+You can now access your admin dashboard to begin.
 
 <x-mail::button :url="config('app.url') . '/super-admin'">
-Enter Governance Nexus
+Go to Admin Dashboard
 </x-mail::button>
 
-Issued by,<br>
-Central Administration Board<br>
+Thanks,<br>
+The IAM Team<br>
 {{ config('app.name') }}
 </x-mail::message>

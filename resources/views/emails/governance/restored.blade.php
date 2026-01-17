@@ -1,28 +1,23 @@
 <x-mail::message>
-# Identity Restoration: Access Protocols Re-established
+# Account Access Restored
 
 Dear {{ $user->name }},
 
-We are pleased to inform you that your profile has been successfully audited and your access to the **Governance Nexus: Global Trade Hub** has been fully restored.
+We are happy to let you know that your access to the **International Agro Marketplace (IAM)** has been restored.
 
-The suspension on your account has been lifted, and your node is once again active in the global registry. You may now:
-- Access all marketplace discovery suites.
-- Manage your trade inventory and RFQs.
-- Initiate sovereign settlements.
+Your account is now fully active, and you can resume trading, managing your products, and updating your profile.
 
 <x-mail::panel>
-**Status Update: Restoration Complete**
-Node State: Active
-Privileges: Full Participant Access
+**Status: Fully Restored**
 </x-mail::panel>
 
-Welcome back to the global trade floor. Please log in to synchronize your workspace.
+You can now sign in to your account and continue your trade activities.
 
 <x-mail::button :url="config('app.url') . '/login'">
-Access Trade Floor
+Go to Marketplace
 </x-mail::button>
 
-Regards,<br>
-Governance Nexus Administration<br>
+Thanks,<br>
+The IAM Team<br>
 {{ config('app.name') }}
 </x-mail::message>

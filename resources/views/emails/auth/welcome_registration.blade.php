@@ -98,15 +98,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 style="color: white">Governance Nexus</h1>
-            <p style="color: #e9c46a; font-weight: 700; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;">Identity Hub • Global Trade</p>
+            <h1 style="color: white">IAM</h1>
+            <p style="color: #e9c46a; font-weight: 700; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;">INTERNATIONAL AGRO MARKETPLACE</p>
         </div>
         
         <div class="content">
-            <div class="greeting">Welcome to the Network, {{ $user->name }}!</div>
-            <p>Your trade identity has been recorded on the Governance Nexus. You are now part of a global ecosystem connecting verified producers, buyers, and trade brokers across borders.</p>
+            <div class="greeting">Welcome, {{ $user->name }}!</div>
+            <p>You are now part of the International Agro Marketplace (IAM). We connect farmers, buyers, and traders from all over the world.</p>
             
-            <p style="font-weight: 600; color: #475569; margin-top: 30px;">Direct Access to Global Inventory:</p>
+            <p style="font-weight: 600; color: #475569; margin-top: 30px;">What you can find on IAM:</p>
             <div class="showcase">
                 <div class="product-card">
                     <img src="{{ $message->embed('/Users/job/.gemini/antigravity/brain/d3cfe9bd-58f9-4e8d-8be2-1b4dc532dd63/maize_harvest_detailed_1767884352769.png') }}" class="product-img">
@@ -122,19 +122,19 @@
                 </div>
             </div>
 
-            <p>Our platform ensures that every transaction is settled through encrypted pathways, maintaining the highest standards of agricultural trade integrity.</p>
+            <p>We make sure that all trades are safe and easy for everyone involved.</p>
 
             <div class="cta-box">
                 <center>
-                    <a href="http://localhost:8000/login" class="cta-button">Access Your Trade Center</a>
+                    <a href="{{ url('/login') }}" class="cta-button">Go to Your Account</a>
                 </center>
-                <p style="font-size: 12px; color: #94a3b8; margin-top: 20px;">Use your registered credentials to sign in and begin listing or sourcing products.</p>
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 20px;">Sign in with your email to start buying or selling.</p>
             </div>
         </div>
 
         <div class="footer">
-            &copy; 2026 International Agro Marketplace. Sent via IAM Protocol.<br>
-            Secure Supply Chain Management • Headquarters Center
+            &copy; 2026 INTERNATIONAL AGRO MARKETPLACE (IAM).<br>
+            Connecting Farmers and Buyers Globally.
         </div>
     </div>
 </body>

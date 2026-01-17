@@ -29,7 +29,7 @@ class WelcomeRegistration extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to the Governance Nexus: Global Trade Hub',
+            subject: 'Welcome to the INTERNATIONAL AGRO MARKETPLACE (IAM)',
         );
     }
 

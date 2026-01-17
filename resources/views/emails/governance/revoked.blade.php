@@ -1,28 +1,26 @@
 <x-mail::message>
-# Sovereign Access Revocation
+# Account Access Update
 
 Dear {{ $user->name }},
 
-We are writing to formally notify you that your access to the **Governance Nexus: Global Trade Hub** has been suspended.
+We are writing to let you know that your access to the **International Agro Marketplace (IAM)** has been suspended.
 
-This action has been taken by the Sovereign Administration in accordance with marketplace protocol and security compliance requirements. During this period:
-- Your access to the trading floor is restricted.
-- All active listings have been moved to a pending classification.
-- Profile authorization has been temporarily locked.
+This was done to comply with our security and marketplace rules. While your account is suspended:
+- You cannot access the trading floor.
+- Your products are no longer visible to others.
+- You cannot make any changes to your profile.
 
 <x-mail::panel>
-**Protocol ID: #REVOKED**
-Status: Suspended
-Jurisdiction: Nexus Compliance Registry
+**Status: Suspended**
 </x-mail::panel>
 
-If you believe this action was taken in error or if you wish to provide additional documentation for identity verification, please contact our senior administrative support team.
+If you think this is a mistake or need help getting back in, please contact our support team.
 
 <x-mail::button :url="config('app.url') . '/login'">
 Contact Support
 </x-mail::button>
 
-Sincerely,<br>
-Sovereign Administration Office<br>
+Thanks,<br>
+The IAM Team<br>
 {{ config('app.name') }}
 </x-mail::message>
