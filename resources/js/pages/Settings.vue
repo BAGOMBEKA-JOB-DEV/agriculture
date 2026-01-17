@@ -524,12 +524,49 @@
           </div>
         </div>
       </transition>
+
+      <!-- Custom Method Switch Confirmation Modal -->
+      <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0"
+        enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100"
+        leave-to-class="opacity-0">
+        <div v-if="mfaState.showMethodSwitchConfirm"
+          class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-sm">
+          <div class="bg-white max-w-md w-full rounded-[2.5rem] shadow-2xl p-10 space-y-8 text-center">
+            <div class="w-20 h-20 bg-amber-50 text-amber-600 rounded-3xl flex items-center justify-center mx-auto">
+              <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-2xl font-black text-gray-900 tracking-tight">Switch Method?</h3>
+              <p class="text-sm text-gray-500 font-medium leading-relaxed mt-4">
+                You already have <span class="text-agri-forest font-bold">{{ currentMethodName }}</span> active.
+              </p>
+              <p class="text-sm text-gray-500 font-medium leading-relaxed mt-2">
+                Setting up <span class="text-indigo-600 font-bold">{{ pendingMethodName }}</span> will replace your
+                current method.
+              </p>
+            </div>
+            <div class="space-y-3">
+              <button @click="confirmMethodSwitch"
+                class="w-full py-4 bg-agri-forest text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-agri-lush transition-all shadow-lg shadow-agri-forest/20">
+                Yes, Continue
+              </button>
+              <button @click="cancelMethodSwitch"
+                class="w-full py-4 bg-gray-50 text-gray-500 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-100 transition-all">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
@@ -589,8 +626,13 @@ const mfaState = ref({
   recoveryCodes: [],
   step: 'overview', // overview, setup_app, show_recovery
   loading: false,
-  showDisableConfirm: false // For custom modal
+  showDisableConfirm: false, // For custom modal
+  showMethodSwitchConfirm: false, // For method switch confirmation
+  pendingMethod: null // The method user wants to switch to
 })
+
+const currentMethodName = computed(() => mfaState.value.type === 'app' ? 'Authenticator App' : 'Email Verification')
+const pendingMethodName = computed(() => mfaState.value.pendingMethod === 'app' ? 'Authenticator App' : 'Email Verification')
 
 const fetchRecoveryCodes = async () => {
   if (!mfaState.value.active) return
@@ -602,7 +644,15 @@ const fetchRecoveryCodes = async () => {
   }
 }
 
-const initiateAppSetup = async () => {
+const initiateAppSetup = async (option = false) => {
+  const bypass = option === true
+  // Check if another method is already active (Email)
+  if (!bypass && mfaState.value.active && mfaState.value.type === 'email') {
+    mfaState.value.pendingMethod = 'app'
+    mfaState.value.showMethodSwitchConfirm = true
+    return
+  }
+
   mfaState.value.loading = true
   try {
     const { data } = await axios.post('/api/two-factor/setup-app')
@@ -637,7 +687,15 @@ const confirmAppSetup = async () => {
   }
 }
 
-const enableEmailMfa = async () => {
+const enableEmailMfa = async (option = false) => {
+  const bypass = option === true
+  // Check if another method is already active (App)
+  if (!bypass && mfaState.value.active && mfaState.value.type === 'app') {
+    mfaState.value.pendingMethod = 'email'
+    mfaState.value.showMethodSwitchConfirm = true
+    return
+  }
+
   mfaState.value.loading = true
   try {
     const { data } = await axios.post('/api/two-factor/enable-email')
@@ -686,6 +744,23 @@ const regenerateRecovery = async () => {
   } finally {
     mfaState.value.loading = false
   }
+}
+
+const confirmMethodSwitch = async () => {
+  mfaState.value.showMethodSwitchConfirm = false
+  const target = mfaState.value.pendingMethod
+  mfaState.value.pendingMethod = null
+
+  if (target === 'app') {
+    await initiateAppSetup(true)
+  } else if (target === 'email') {
+    await enableEmailMfa(true)
+  }
+}
+
+const cancelMethodSwitch = () => {
+  mfaState.value.showMethodSwitchConfirm = false
+  mfaState.value.pendingMethod = null
 }
 
 const profileData = ref({
