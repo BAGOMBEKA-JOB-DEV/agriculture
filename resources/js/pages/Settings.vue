@@ -529,7 +529,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
@@ -565,8 +565,12 @@ const CameraIcon = {
 
 const authStore = useAuthStore()
 const router = useRouter()
-const activeTab = ref('profile')
+const activeTab = ref(localStorage.getItem('iam_settings_active_tab') || 'profile')
 const loading = ref(false)
+
+watch(activeTab, (newTab) => {
+  localStorage.setItem('iam_settings_active_tab', newTab)
+})
 
 const showCurrent = ref(false)
 const showNew = ref(false)
