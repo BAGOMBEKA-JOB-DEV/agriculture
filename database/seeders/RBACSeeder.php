@@ -13,7 +13,7 @@ class RBACSeeder extends Seeder
     {
         // Define Permissions
         $permissions = [
-            'access_super_admin' => 'Access Global Governance Nexus',
+            'access_super_admin' => 'Access User Management',
             'access_admin' => 'Access Regulator Suite',
             'access_vendor' => 'Access Sales Suite',
             
