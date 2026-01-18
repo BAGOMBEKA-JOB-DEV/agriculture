@@ -180,7 +180,8 @@ class SuperAdminController extends Controller
             }
         }
 
-        $users = $query->latest()->get();
+        $perPage = $request->input('per_page', 15);
+        $users = $query->latest()->paginate($perPage);
         return response()->json($users);
     }
 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import axios from 'axios';
 import Notification from '../../components/Notification.vue';
 import Modal from '../../components/Modal.vue';
@@ -14,6 +14,47 @@ const stats_cards = ref([]);
 const isDrawerOpen = ref(false);
 const inspectedUser = ref(null);
 const activeDropdownId = ref(null);
+
+// Pagination State
+const currentPage = ref(1);
+const lastPage = ref(1);
+const total = ref(0);
+const perPage = ref(15);
+const from = ref(0);
+const to = ref(0);
+
+const visiblePages = computed(() => {
+  const delta = 2;
+  const range = [];
+  const rangeWithDots = [];
+  let l;
+
+  for (let i = 1; i <= lastPage.value; i++) {
+    if (i === 1 || i === lastPage.value || (i >= currentPage.value - delta && i <= currentPage.value + delta)) {
+      range.push(i);
+    }
+  }
+
+  for (let i of range) {
+    if (l) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push('...');
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots;
+});
+
+const changePage = (page) => {
+  if (page < 1 || page > lastPage.value || page === currentPage.value) return;
+  currentPage.value = page;
+  fetchData();
+};
 
 // Selection Matrix
 const selectedIds = ref([]);
@@ -111,6 +152,8 @@ const resetFilters = () => {
   filters.status = '';
   filters.location = '';
   filters.verified = '';
+  filters.verified = '';
+  currentPage.value = 1;
   fetchData();
 };
 
@@ -151,11 +194,25 @@ const fetchData = async () => {
   try {
     const [statsRes, usersRes, rolesRes] = await Promise.all([
       axios.get('/api/super-admin/stats'),
-      axios.get('/api/super-admin/users', { params: filters }),
+      axios.get('/api/super-admin/users', {
+        params: {
+          ...filters,
+          page: currentPage.value,
+          per_page: perPage.value
+        }
+      }),
       axios.get('/api/super-admin/roles')
     ]);
     stats.value = statsRes.data;
-    users.value = usersRes.data;
+
+    // Handle Paginated Response
+    users.value = usersRes.data.data;
+    currentPage.value = usersRes.data.current_page;
+    lastPage.value = usersRes.data.last_page;
+    total.value = usersRes.data.total;
+    from.value = usersRes.data.from;
+    to.value = usersRes.data.to;
+
     roles.value = rolesRes.data.roles || rolesRes.data;
 
     stats_cards.value = [
@@ -188,9 +245,10 @@ const debounce = (fn, delay) => {
 
 const debouncedFetch = debounce(fetchData, 500);
 
-watch(() => filters.q, () => debouncedFetch());
-watch(() => filters.location, () => debouncedFetch());
-watch(() => [filters.role, filters.status, filters.verified], () => fetchData());
+watch(() => filters.q, () => { currentPage.value = 1; debouncedFetch(); });
+watch(() => filters.location, () => { currentPage.value = 1; debouncedFetch(); });
+watch(() => [filters.role, filters.status, filters.verified], () => { currentPage.value = 1; fetchData(); });
+watch(perPage, () => { currentPage.value = 1; fetchData(); });
 
 import { useAuthStore } from '../../stores/auth'; // Import Store
 const authStore = useAuthStore(); // Init Store
@@ -1017,6 +1075,52 @@ onUnmounted(() => {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="px-10 py-6 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-xs text-gray-500 font-medium">
+              Showing {{ from }} to {{ to }} of {{ total }} results
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1"
+                class="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-agri-forest/5 hover:border-agri-forest/30 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <div class="flex items-center space-x-1">
+                <button v-for="page in visiblePages" :key="page" @click="page !== '...' ? changePage(page) : null"
+                  :disabled="page === '...'" class="min-w-[2.5rem] h-10 rounded-xl text-xs font-black transition-all"
+                  :class="page === currentPage
+                    ? 'bg-agri-forest text-white shadow-lg shadow-agri-forest/20'
+                    : page === '...'
+                      ? 'text-gray-400 cursor-default'
+                      : 'text-gray-600 hover:bg-agri-forest/5 border border-gray-200'">
+                  {{ page }}
+                </button>
+              </div>
+
+              <button @click="changePage(currentPage + 1)" :disabled="currentPage === lastPage"
+                class="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-agri-forest/5 hover:border-agri-forest/30 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            <select v-model="perPage"
+              class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 focus:ring-2 focus:ring-agri-forest/20 outline-none">
+              <option :value="10">10 / page</option>
+              <option :value="15">15 / page</option>
+              <option :value="25">25 / page</option>
+              <option :value="50">50 / page</option>
+              <option :value="100">100 / page</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
