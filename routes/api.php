@@ -42,6 +42,10 @@ Route::post('/user/change-password', [AuthController::class, 'changePassword'])-
 Route::post('/two-factor/challenge', [AuthController::class, 'twoFactorChallenge']);
 
 // Protected routes
+Route::get('/super-admin/users/export/download/{filename}', [\App\Http\Controllers\SuperAdminController::class, 'downloadExport'])
+    ->name('super-admin.download-export')
+    ->middleware('signed');
+
 Route::middleware('auth:sanctum')->group(function () {
     // Products
     Route::apiResource('products', ProductController::class)->except(['index', 'show']);
@@ -120,10 +124,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('permission:access_super_admin')->prefix('super-admin')->group(function () {
         Route::get('/stats', [\App\Http\Controllers\SuperAdminController::class, 'stats']);
         Route::get('/users', [\App\Http\Controllers\SuperAdminController::class, 'users']);
+        Route::post('/users/bulk', [\App\Http\Controllers\SuperAdminController::class, 'bulkAction']);
+        Route::post('/users/export/{format}', [\App\Http\Controllers\SuperAdminController::class, 'initiateExport']);
+        // Download route moved to signed middleware
         Route::post('/users/{id}/promote', [\App\Http\Controllers\SuperAdminController::class, 'promoteToSuperAdmin']);
         Route::post('/users/{id}/verify', [\App\Http\Controllers\SuperAdminController::class, 'verifyUser']);
         Route::post('/users/{id}/suspend', [\App\Http\Controllers\SuperAdminController::class, 'suspendUser']);
         Route::post('/users/{id}/activate', [\App\Http\Controllers\SuperAdminController::class, 'activateUser']);
+        Route::post('/users', [\App\Http\Controllers\SuperAdminController::class, 'store']);
+        Route::put('/users/{id}', [\App\Http\Controllers\SuperAdminController::class, 'update']);
+        Route::post('/users/invite', [\App\Http\Controllers\SuperAdminController::class, 'invite']);
+        Route::post('/users/{id}/impersonate', [\App\Http\Controllers\SuperAdminController::class, 'impersonate']);
+        Route::post('/users/{id}/reset-password', [\App\Http\Controllers\SuperAdminController::class, 'resetPassword']);
+        Route::get('/users/{id}/activity-log', [\App\Http\Controllers\SuperAdminController::class, 'activityLog']);
+        Route::delete('/users/{id}', [\App\Http\Controllers\SuperAdminController::class, 'deleteUser']);
     });
     
     // Category Management (requires manage_categories permission)
