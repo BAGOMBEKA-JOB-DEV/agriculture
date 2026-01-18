@@ -69,11 +69,22 @@ class ExportUsersJob implements ShouldQueue
         }
 
         // Notify User
+        // Notify User
         $user = User::find($this->userId);
         if ($user) {
-            // Check if there is a common notification system
-            $user->notify(new \App\Notifications\SystemAlert(
-                "Export Ready: Your governance data ({$this->format}) is prepared. [Click to download](/api/super-admin/users/export/download/{$filename})",
+            $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                'super-admin.download-export',
+                now()->addHours(24),
+                ['filename' => $filename]
+            );
+            
+            // 1. Send Email (using new Mailable)
+            \Illuminate\Support\Facades\Mail::to($user)->send(new \App\Mail\ExportReadyMail($user, $url, $this->format));
+
+            // 2. Send In-App Notification (Database)
+            $user->notify(new \App\Notifications\ExportReady(
+                "Export Ready: Your governance data ({$this->format}) is prepared. [Click to download]({$url})",
+                $url,
                 'success'
             ));
         }
