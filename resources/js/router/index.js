@@ -29,6 +29,7 @@ import AdminUsers from '../pages/admin/Users.vue';
 import SuperAdminDashboard from '../pages/super-admin/Dashboard.vue';
 import SuperAdminCategories from '../pages/super-admin/Categories.vue';
 import RoleManagement from '../pages/super-admin/RoleManagement.vue';
+import AgriPulse from '../pages/AgriPulse/Index.vue';
 
 import Marketplace from '../pages/Marketplace.vue';
 import MarketplaceDetail from '../pages/MarketplaceDetail.vue';
@@ -133,6 +134,36 @@ const routes = [
       // No permission required - dashboard is accessible to all authenticated users
       // Content displayed is based on user's permissions
       breadcrumb: { label: 'Dashboard' }
+    },
+  },
+  {
+    path: '/agripulse',
+    name: 'AgriPulse',
+    component: AgriPulse,
+    meta: {
+      requiresAuth: true,
+      permission: 'access_agripulse',
+      breadcrumb: { label: 'AgriPulse' }
+    },
+  },
+  {
+    path: '/agripulse/post/:id',
+    name: 'AgriPulsePostDetail',
+    component: () => import('../pages/AgriPulse/PostDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'access_agripulse',
+      breadcrumb: { label: 'Post Detail' }
+    },
+  },
+  {
+    path: '/agripulse/profile/:id',
+    name: 'AgriPulseProfile',
+    component: () => import('../pages/UserProfile.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'access_agripulse',
+      breadcrumb: { label: 'Profile' }
     },
   },
   {

@@ -100,6 +100,36 @@ class User extends Authenticatable
         return $this->subscriptions()->where('status', 'active')->where('ends_at', '>', now())->first();
     }
 
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function postReactions(): HasMany
+    {
+        return $this->hasMany(PostReaction::class);
+    }
+
+    public function postComments(): HasMany
+    {
+        return $this->hasMany(PostComment::class);
+    }
+
+    public function savedPosts(): HasMany
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
+    public function profileViewsGiven(): HasMany
+    {
+        return $this->hasMany(ProfileView::class, 'viewer_id');
+    }
+
+    public function profileViewsReceived(): HasMany
+    {
+        return $this->hasMany(ProfileView::class, 'viewed_user_id');
+    }
+
     public function getPermissionsListAttribute()
     {
         return $this->roles->flatMap->permissions->pluck('slug')->unique()->values();

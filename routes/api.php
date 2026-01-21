@@ -166,4 +166,33 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/recovery-codes', [TwoFactorController::class, 'getRecoveryCodes']);
         Route::post('/regenerate-recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes']);
     });
+
+    // AgriPulse Social Feed
+    Route::middleware('permission:access_agripulse')->prefix('agripulse')->group(function () {
+        Route::get('/feed', [\App\Http\Controllers\AgriPulseController::class, 'index']);
+        Route::get('/posts/{id}', [\App\Http\Controllers\AgriPulseController::class, 'showPost']);
+        Route::post('/posts', [\App\Http\Controllers\AgriPulseController::class, 'store'])->middleware('permission:create_post');
+        Route::post('/posts/{id}/react', [\App\Http\Controllers\AgriPulseController::class, 'react']);
+        Route::post('/posts/{id}/repost', [\App\Http\Controllers\AgriPulseController::class, 'store'])->middleware('permission:create_post');
+        Route::delete('/posts/{id}', [\App\Http\Controllers\AgriPulseController::class, 'destroy']);
+        
+        // Comments
+        Route::get('/posts/{id}/comments', [\App\Http\Controllers\AgriPulseController::class, 'getComments']);
+        Route::post('/posts/{id}/comments', [\App\Http\Controllers\AgriPulseController::class, 'storeComment']);
+        Route::delete('/comments/{id}', [\App\Http\Controllers\AgriPulseController::class, 'destroyComment']);
+        
+        // Saved Posts
+        Route::post('/posts/{id}/save', [\App\Http\Controllers\AgriPulseController::class, 'savePost']);
+        Route::get('/saved-posts', [\App\Http\Controllers\AgriPulseController::class, 'getSavedPosts']);
+        
+        // View Tracking
+        Route::post('/posts/{id}/view', [\App\Http\Controllers\AgriPulseController::class, 'trackPostView']);
+        Route::post('/users/{id}/view', [\App\Http\Controllers\AgriPulseController::class, 'trackProfileView']);
+        
+        // User Stats & Profile
+        Route::get('/my-stats', [\App\Http\Controllers\AgriPulseController::class, 'getMyStats']);
+        Route::get('/super-admin-posts', [\App\Http\Controllers\AgriPulseController::class, 'getSuperAdminPosts']);
+        Route::get('/users/{id}/profile', [\App\Http\Controllers\AgriPulseController::class, 'getUserProfile']);
+        Route::get('/suggested-users', [\App\Http\Controllers\AgriPulseController::class, 'getSuggestedUsers']);
+    });
 });
