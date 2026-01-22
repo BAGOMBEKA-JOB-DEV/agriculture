@@ -167,6 +167,16 @@ const routes = [
     },
   },
   {
+    path: '/agripulse/saved',
+    name: 'AgriPulseSaved',
+    component: () => import('../pages/AgriPulse/SavedPosts.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'access_agripulse',
+      breadcrumb: { label: 'Saved Posts' }
+    },
+  },
+  {
     path: '/rfqs/create',
     name: 'RfqCreate',
     component: RfqCreate,

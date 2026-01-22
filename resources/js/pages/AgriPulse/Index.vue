@@ -284,6 +284,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -291,6 +292,8 @@ import PostComposer from './Components/PostComposer.vue'
 import PostCard from './Components/PostCard.vue'
 
 dayjs.extend(relativeTime)
+
+const router = useRouter()
 
 const user = ref(null)
 const posts = ref([])
@@ -457,8 +460,7 @@ const prepareRepost = (post) => {
 }
 
 const navigateToSavedPosts = () => {
-    // TODO: Navigate to saved posts page
-    alert('Saved posts page coming soon!')
+    router.push('/agripulse/saved')
 }
 
 const loadMore = () => fetchFeed(true)

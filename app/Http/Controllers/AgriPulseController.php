@@ -262,28 +262,43 @@ class AgriPulseController extends Controller
      */
     public function getSavedPosts(Request $request)
     {
-        $savedPosts = SavedPost::where('user_id', auth()->id())
-            ->with(['post.user', 'post.product', 'post.originalPost.user'])
+        $user = auth()->user();
+        
+        $savedPosts = SavedPost::where('user_id', $user->id)
+            ->with([
+                'post' => function ($query) {
+                    $query->with(['user', 'product', 'originalPost.user', 'originalPost.product'])
+                          ->withCount(['reactions', 'reposts', 'comments', 'views']);
+                }
+            ])
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
 
-        $posts = $savedPosts->map(function ($savedPost) {
+        $posts = $savedPosts->getCollection()->map(function ($savedPost) use ($user) {
             $post = $savedPost->post;
+            
+            if (!$post) {
+                return null; // Skip if post was deleted
+            }
+            
             $post->is_saved = true;
             
             // Add reaction check
-            $post->user_reaction = $post->reactions()
-                ->where('user_id', auth()->id())
+            $userReaction = PostReaction::where('post_id', $post->id)
+                ->where('user_id', $user->id)
                 ->first();
                 
+            $post->user_reaction = $userReaction ? $userReaction->type : null;
+                
             return $post;
-        });
+        })->filter(); // Remove nulls
 
         return response()->json([
-            'data' => $posts,
+            'data' => $posts->values(),
             'current_page' => $savedPosts->currentPage(),
             'last_page' => $savedPosts->lastPage(),
-            'next_page_url' => $savedPosts->nextPageUrl(),
+            'per_page' => $savedPosts->perPage(),
+            'total' => $savedPosts->total(),
         ]);
     }
 
