@@ -26,6 +26,10 @@ class AgriPulseController extends Controller
             'originalPost.product'
         ])
         ->withCount(['reactions', 'reposts', 'comments', 'views'])
+        ->with(['originalPost' => function ($query) {
+            $query->with(['user', 'product', 'originalPost.user', 'originalPost.product'])
+                  ->withCount(['reactions', 'reposts', 'comments', 'views']);
+        }])
         ->latest()
         ->paginate(15);
 
@@ -40,6 +44,10 @@ class AgriPulseController extends Controller
                 $post->is_saved = SavedPost::where('user_id', $user->id)
                     ->where('post_id', $post->id)
                     ->exists();
+
+                $post->is_reposted = Post::where('user_id', $user->id)
+                    ->where('original_post_id', $post->id)
+                    ->exists();
             });
         }
 
@@ -49,18 +57,30 @@ class AgriPulseController extends Controller
     /**
      * Store a newly created post.
      */
-    public function store(Request $request)
+    public function store(Request $request, $id = null)
     {
+        // If coming from the /posts/{id}/repost route, set the original_post_id
+        if ($id && !$request->has('original_post_id')) {
+            $request->merge(['original_post_id' => $id]);
+        }
+
         $validator = Validator::make($request->all(), [
-            'content' => 'required_without:image|string|nullable',
+            'content' => 'nullable|string',
             'product_id' => 'nullable|exists:products,id',
             'image' => 'nullable|image|max:5120', // 5MB max
             'type' => 'nullable|in:post,repost',
-            'original_post_id' => 'nullable|required_if:type,repost|exists:posts,id',
+            'original_post_id' => 'nullable|exists:posts,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Additional validation logic for non-reposts
+        if ($request->type !== 'repost' && !$request->content && !$request->hasFile('image')) {
+            return response()->json([
+                'errors' => ['content' => ['The content field is required when no image is provided.']]
+            ], 422);
         }
 
         $imageUrl = null;
@@ -68,6 +88,7 @@ class AgriPulseController extends Controller
             $path = $request->file('image')->store('posts', 'public');
             $imageUrl = asset('storage/' . $path);
         }
+
 
         $post = Post::create([
             'user_id' => auth()->id(),
@@ -78,7 +99,12 @@ class AgriPulseController extends Controller
             'original_post_id' => $request->original_post_id,
         ]);
 
-        return response()->json($post->load(['user', 'product', 'originalPost.user', 'originalPost.product']), 201);
+        return response()->json($post->load([
+            'user',
+            'product',
+            'originalPost.user',
+            'originalPost.product'
+        ])->loadCount(['reactions', 'reposts', 'comments', 'views']), 201);
     }
 
     /**
@@ -150,6 +176,10 @@ class AgriPulseController extends Controller
             'originalPost.product'
         ])
         ->withCount(['reactions', 'reposts', 'comments', 'views'])
+        ->with(['originalPost' => function ($query) {
+            $query->with(['user', 'product', 'originalPost.user', 'originalPost.product'])
+                  ->withCount(['reactions', 'reposts', 'comments', 'views']);
+        }])
         ->findOrFail($postId);
 
         // Get current user's reaction and saved status
@@ -161,6 +191,10 @@ class AgriPulseController extends Controller
             
             $post->is_saved = SavedPost::where('user_id', $user->id)
                 ->where('post_id', $post->id)
+                ->exists();
+
+            $post->is_reposted = Post::where('user_id', $user->id)
+                ->where('original_post_id', $post->id)
                 ->exists();
         }
 
@@ -268,7 +302,11 @@ class AgriPulseController extends Controller
             ->with([
                 'post' => function ($query) {
                     $query->with(['user', 'product', 'originalPost.user', 'originalPost.product'])
-                          ->withCount(['reactions', 'reposts', 'comments', 'views']);
+                          ->withCount(['reactions', 'reposts', 'comments', 'views'])
+                          ->with(['originalPost' => function ($query) {
+                              $query->with(['user', 'product', 'originalPost.user', 'originalPost.product'])
+                                    ->withCount(['reactions', 'reposts', 'comments', 'views']);
+                          }]);
                 }
             ])
             ->latest()
@@ -403,6 +441,10 @@ class AgriPulseController extends Controller
         $posts = Post::where('user_id', $userId)
             ->with(['user', 'product', 'originalPost.user'])
             ->withCount(['reactions', 'reposts', 'comments', 'views'])
+            ->with(['originalPost' => function ($query) {
+                $query->with(['user', 'product', 'originalPost.user', 'originalPost.product'])
+                      ->withCount(['reactions', 'reposts', 'comments', 'views']);
+            }])
             ->latest()
             ->paginate(10);
 

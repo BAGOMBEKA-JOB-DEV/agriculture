@@ -89,28 +89,55 @@
                 class="w-full h-auto max-h-[600px] object-cover border-y border-gray-100 shadow-inner">
         </div>
 
-        <!-- Original Post (Inside Repost) -->
-        <div v-if="post.type === 'repost' && post.original_post"
-            class="mx-4 mb-4 p-4 border border-gray-100 rounded-xl bg-gray-50/50">
-            <router-link :to="`/agripulse/profile/${post.original_post.user.id}`"
-                class="flex items-center space-x-3 mb-2 group">
-                <div
-                    class="h-8 w-8 rounded-lg bg-agri-earth flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:ring-2 group-hover:ring-agri-forest transition-all">
-                    <img v-if="post.original_post.user.avatar_url" :src="post.original_post.user.avatar_url"
-                        class="w-full h-full object-cover">
-                    <span v-else class="text-xs font-bold text-agri-forest">{{
-                        post.original_post.user.name.charAt(0).toUpperCase() }}</span>
+        <!-- Original Post (LinkedIn Style Preview) -->
+        <div v-if="post.type === 'repost' && post.original_post" @click.stop="viewOriginalPost"
+            class="mx-4 mb-4 border border-gray-200 rounded-xl overflow-hidden bg-gray-50 hover:bg-gray-100/80 transition-all cursor-pointer group/share">
+
+            <!-- Original Author Header -->
+            <div class="p-3 flex items-center justify-between border-b border-gray-100">
+                <div class="flex items-center space-x-2">
+                    <div @click.stop="viewOriginalAuthorProfile"
+                        class="h-9 w-9 rounded-lg bg-agri-earth flex items-center justify-center overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-agri-forest transition-all">
+                        <img v-if="post.original_post.user.avatar_url" :src="post.original_post.user.avatar_url"
+                            class="w-full h-full object-cover">
+                        <span v-else class="text-xs font-bold text-agri-forest">{{
+                            post.original_post.user.name.charAt(0).toUpperCase() }}</span>
+                    </div>
+                    <div @click.stop="viewOriginalAuthorProfile" class="hover:underline">
+                        <h5
+                            class="text-xs font-black text-gray-900 group-hover/share:text-agri-forest transition-colors">
+                            {{
+                                post.original_post.user.name }}</h5>
+                        <p class="text-[9px] text-gray-500 font-medium truncate max-w-[150px]">{{
+                            post.original_post.user.role }} at IAM</p>
+                    </div>
                 </div>
-                <div>
-                    <h5 class="text-xs font-black text-gray-900 group-hover:text-agri-forest transition-colors">{{
-                        post.original_post.user.name }}</h5>
-                    <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{{
-                        formatTime(post.original_post.created_at) }}</p>
+                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{{
+                    formatTime(post.original_post.created_at) }}</p>
+            </div>
+
+            <div class="p-3">
+                <!-- Immediate shared post's content (Commentary) -->
+                <p class="text-xs text-gray-700 whitespace-pre-wrap line-clamp-4">{{ post.original_post.content }}</p>
+
+                <!-- Root content preview (if nested) - Simplified for LinkedIn style -->
+                <div v-if="post.original_post.original_post"
+                    class="mt-2 text-[10px] text-gray-500 italic flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                    </svg>
+                    <span>Shared from {{ post.original_post.original_post.user.name }}'s post</span>
                 </div>
-            </router-link>
-            <p class="text-xs text-gray-700 whitespace-pre-wrap">{{ post.original_post.content }}</p>
+            </div>
+
+            <!-- Media Preview -->
             <img v-if="post.original_post.image_url" :src="post.original_post.image_url"
-                class="mt-2 w-full h-auto rounded-lg border border-gray-200 shadow-sm">
+                class="w-full h-auto border-t border-gray-100 max-h-96 object-cover">
+            <img v-else-if="post.original_post.original_post?.image_url"
+                :src="post.original_post.original_post.image_url"
+                class="w-full h-auto border-t border-gray-100 max-h-72 object-cover opacity-90">
+
         </div>
 
         <!-- Interaction Bar (Counts) -->
@@ -182,15 +209,61 @@
                 <span class="text-xs font-black uppercase tracking-widest group-hover:text-gray-900">Comment</span>
             </button>
 
-            <button @click="handleRepost"
-                class="flex items-center space-x-2 px-6 py-2.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-all group">
-                <svg class="w-5 h-5 text-gray-400 group-hover:text-agri-forest" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                </svg>
-                <span class="text-xs font-black uppercase tracking-widest group-hover:text-gray-900">Repost</span>
-            </button>
+            <!-- Repost Button with Dropdown -->
+            <div class="relative">
+                <button @click="toggleRepostDropdown"
+                    :class="post.is_reposted ? 'text-agri-forest bg-agri-sand/10' : 'text-gray-500 hover:bg-gray-100'"
+                    class="flex items-center space-x-2 px-6 py-2.5 rounded-lg transition-all group">
+                    <svg class="w-5 h-5"
+                        :class="post.is_reposted ? 'text-agri-forest' : 'text-gray-400 group-hover:text-agri-forest'"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                    <span class="text-xs font-black uppercase tracking-widest"
+                        :class="post.is_reposted ? 'text-agri-forest' : 'group-hover:text-gray-900'">Repost</span>
+                    <svg class="w-3 h-3 text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': showRepostDropdown }" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div v-if="showRepostDropdown"
+                    class="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-slideUp">
+                    <button @click="handleInstantRepost"
+                        class="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start space-x-3 group">
+                        <svg class="w-5 h-5 text-agri-forest mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                            </path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-sm font-black text-gray-900 group-hover:text-agri-forest">Repost instantly
+                            </p>
+                            <p class="text-xs text-gray-500 mt-0.5">Share immediately to your network</p>
+                        </div>
+                    </button>
+                    <button @click="handleRepostWithThoughts"
+                        class="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start space-x-3 group border-t border-gray-100">
+                        <svg class="w-5 h-5 text-agri-forest mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                            </path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-sm font-black text-gray-900 group-hover:text-agri-forest">Repost with your
+                                thoughts
+                            </p>
+                            <p class="text-xs text-gray-500 mt-0.5">Add your own commentary</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
 
             <button @click="handleSend"
                 class="flex items-center space-x-2 px-6 py-2.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-all group">
@@ -299,6 +372,7 @@ const comments = ref([])
 const loadingComments = ref(false)
 const newComment = ref('')
 const submittingComment = ref(false)
+const showRepostDropdown = ref(false)
 
 // Delete confirmation modals
 const showDeletePostModal = ref(false)
@@ -355,7 +429,35 @@ const confirmDeletePost = async () => {
     }
 }
 
-const handleRepost = () => {
+const toggleRepostDropdown = (e) => {
+    e.stopPropagation()
+    showRepostDropdown.value = !showRepostDropdown.value
+    if (showRepostDropdown.value) {
+        document.addEventListener('click', closeRepostDropdown)
+    }
+}
+
+const closeRepostDropdown = () => {
+    showRepostDropdown.value = false
+    document.removeEventListener('click', closeRepostDropdown)
+}
+
+const handleInstantRepost = async () => {
+    try {
+        await axios.post(`/api/agripulse/posts/${props.post.id}/repost`, {
+            type: 'repost',
+            original_post_id: props.post.id
+        })
+        showRepostDropdown.value = false
+        emit('refresh')
+    } catch (error) {
+        console.error('Instant repost failed:', error)
+        alert('Failed to repost. Please try again.')
+    }
+}
+
+const handleRepostWithThoughts = () => {
+    showRepostDropdown.value = false
     emit('repost', props.post)
 }
 
@@ -372,6 +474,18 @@ const viewProduct = () => {
 const viewPost = () => {
     // Navigate to post detail page
     window.location.href = `/agripulse/post/${props.post.id}`
+}
+
+const viewOriginalPost = () => {
+    if (props.post.original_post) {
+        window.location.href = `/agripulse/post/${props.post.original_post.id}`
+    }
+}
+
+const viewOriginalAuthorProfile = () => {
+    if (props.post.original_post?.user) {
+        window.location.href = `/agripulse/profile/${props.post.original_post.user.id}`
+    }
 }
 
 const toggleComments = async () => {
@@ -461,5 +575,21 @@ onMounted(async () => {
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slideUp {
+    animation: slideUp 0.2s ease-out;
 }
 </style>
