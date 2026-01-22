@@ -121,7 +121,7 @@
 
                         <div v-else-if="superAdminPosts.length > 0" class="space-y-4">
                             <router-link v-for="post in superAdminPosts" :key="post.id"
-                                :to="`/agripulse?post=${post.id}`" class="group cursor-pointer block">
+                                :to="`/agripulse/post/${post.id}`" class="group cursor-pointer block">
                                 <h4
                                     class="text-xs font-black text-gray-800 group-hover:text-agri-forest transition-colors leading-snug line-clamp-2">
                                     {{ post.content || 'New update from leadership' }}
@@ -229,7 +229,7 @@
                                     newPost.original_post.user.name.charAt(0) }}</span>
                             </div>
                             <span class="text-[10px] font-black text-gray-900">{{ newPost.original_post.user.name
-                            }}</span>
+                                }}</span>
                         </div>
                         <p class="text-[10px] text-gray-600 truncate">{{ newPost.original_post.content }}</p>
                     </div>
