@@ -42,7 +42,7 @@
                             <div class="flex items-center justify-between text-xs font-black uppercase tracking-widest">
                                 <span class="text-gray-400">Saved Posts</span>
                                 <span class="bg-agri-forest text-white px-3 py-1 rounded-full text-[10px]">{{ totalSaved
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
                     </div>
@@ -90,7 +90,7 @@
                     <!-- Saved Posts List -->
                     <div v-else-if="posts.length > 0" class="space-y-4">
                         <PostCard v-for="post in posts" :key="post.id" :post="post" :currentUser="user"
-                            @refresh="fetchSavedPosts" />
+                            @refresh="refreshPost(post.id)" />
 
                         <!-- Load More Button -->
                         <button v-if="pagination.nextPage" @click="loadMore"
@@ -257,6 +257,23 @@ const fetchSavedPosts = async (page = 1) => {
     } finally {
         loading.value = false
         loadingMore.value = false
+    }
+}
+
+const refreshPost = async (postId) => {
+    try {
+        const response = await axios.get(`/api/agripulse/posts/${postId}`)
+        const updatedPost = response.data
+        updatedPost.is_saved = true // Ensure it stays marked as saved
+
+        const index = posts.value.findIndex(p => p.id === postId)
+        if (index !== -1) {
+            posts.value[index] = updatedPost
+        }
+    } catch (error) {
+        console.error('Failed to refresh post:', error)
+        // Fallback to full fetch if single post fetch fails
+        fetchSavedPosts(pagination.value.currentPage)
     }
 }
 

@@ -7,8 +7,10 @@
                 <div class="hidden lg:block lg:col-span-3">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden sticky top-6">
                         <div class="h-16 bg-agri-forest"></div>
-                        <div class="px-4 pb-4 -mt-8 flex flex-col items-center border-b border-gray-100">
-                            <div class="h-16 w-16 rounded-xl bg-white p-1 shadow-md mb-3">
+                        <router-link :to="`/agripulse/profile/${user?.id}`"
+                            class="px-4 pb-4 -mt-8 flex flex-col items-center border-b border-gray-100 group/profile">
+                            <div
+                                class="h-16 w-16 rounded-xl bg-white p-1 shadow-md mb-3 group-hover/profile:ring-2 group-hover/profile:ring-agri-forest transition-all">
                                 <div
                                     class="w-full h-full rounded-lg bg-agri-earth flex items-center justify-center overflow-hidden">
                                     <img v-if="user?.avatar_url" :src="user.avatar_url"
@@ -16,11 +18,16 @@
                                     <span v-else class="text-xl font-bold text-agri-forest">{{ userInitial }}</span>
                                 </div>
                             </div>
-                            <h3 class="text-sm font-black text-gray-900">{{ user?.name }}</h3>
+                            <h3
+                                class="text-sm font-black text-gray-900 group-hover/profile:text-agri-forest transition-colors">
+                                {{ user?.name }}</h3>
                             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 text-center">
                                 {{ user?.role }} at International Agro Marketplace
                             </p>
-                        </div>
+                            <span
+                                class="mt-3 text-[10px] font-black text-agri-forest uppercase tracking-widest hover:underline cursor-pointer">View
+                                Profile</span>
+                        </router-link>
 
                         <div class="p-4 space-y-3">
                             <div
@@ -72,7 +79,7 @@
 
                     <div v-else-if="posts.length > 0" class="space-y-4">
                         <PostCard v-for="post in posts" :key="post.id" :post="post" :currentUser="user"
-                            @refresh="fetchFeed" @preview-image="previewImage" @repost="prepareRepost" />
+                            @refresh="refreshPost(post.id)" @preview-image="previewImage" @repost="prepareRepost" />
 
                         <button v-if="pagination.nextPage" @click="loadMore"
                             class="w-full py-3 bg-white border border-gray-200 rounded-xl text-sm font-black text-gray-500 hover:bg-gray-50 transition-colors uppercase tracking-widest"
@@ -102,63 +109,72 @@
 
                 <!-- Right Sidebar: Super Admin Posts -->
                 <div class="hidden lg:block lg:col-span-3 space-y-4">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sticky top-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-black text-gray-900 tracking-tight">Market Pulse News</h3>
-                            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </div>
-
-                        <div v-if="loadingSuperAdminPosts" class="space-y-4">
-                            <div v-for="i in 3" :key="i" class="animate-pulse">
-                                <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
-                                <div class="h-2 bg-gray-200 rounded w-2/3"></div>
+                    <div class="sticky top-6 space-y-4">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-black text-gray-900 tracking-tight">Market Pulse News</h3>
+                                <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                        clip-rule="evenodd" />
+                                </svg>
                             </div>
+
+                            <div v-if="loadingSuperAdminPosts" class="space-y-4">
+                                <div v-for="i in 3" :key="i" class="animate-pulse">
+                                    <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
+                                    <div class="h-2 bg-gray-200 rounded w-2/3"></div>
+                                </div>
+                            </div>
+
+                            <div v-else-if="superAdminPosts.length > 0" class="space-y-4">
+                                <router-link v-for="post in superAdminPosts" :key="post.id"
+                                    :to="`/agripulse/post/${post.id}`" class="group cursor-pointer block text-left">
+                                    <h4
+                                        class="text-xs font-black text-gray-800 group-hover:text-agri-forest transition-colors leading-snug line-clamp-2">
+                                        {{ post.content || 'New update from leadership' }}
+                                    </h4>
+                                    <p class="text-[10px] text-gray-400 mt-1 font-bold">
+                                        {{ formatTime(post.created_at) }} • {{ post.views_count || 0 }} views
+                                    </p>
+                                </router-link>
+                            </div>
+
+                            <div v-else class="text-center py-6">
+                                <p class="text-xs text-gray-400 font-medium">No leadership updates yet</p>
+                            </div>
+
+
                         </div>
 
-                        <div v-else-if="superAdminPosts.length > 0" class="space-y-4">
-                            <router-link v-for="post in superAdminPosts" :key="post.id"
-                                :to="`/agripulse/post/${post.id}`" class="group cursor-pointer block">
-                                <h4
-                                    class="text-xs font-black text-gray-800 group-hover:text-agri-forest transition-colors leading-snug line-clamp-2">
-                                    {{ post.content || 'New update from leadership' }}
-                                </h4>
-                                <p class="text-[10px] text-gray-400 mt-1 font-bold">
-                                    {{ formatTime(post.created_at) }} • {{ post.views_count || 0 }} views
-                                </p>
-                            </router-link>
+                        <div
+                            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 transition-all duration-500">
+                            <p
+                                class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center justify-between">
+                                Promoted Asset
+                                <span class="flex space-x-1">
+                                    <span v-for="(img, idx) in promotedImages" :key="idx"
+                                        class="w-1.5 h-1.5 rounded-full transition-all duration-300"
+                                        :class="currentPromotedIdx === idx ? 'bg-agri-forest' : 'bg-gray-200'"></span>
+                                </span>
+                            </p>
+                            <div
+                                class="h-32 bg-agri-sand/20 rounded-xl overflow-hidden mb-3 border border-agri-sand/50 relative group">
+                                <transition name="fade">
+                                    <img :key="currentPromotedIdx" :src="promotedImages[currentPromotedIdx]"
+                                        class="absolute inset-0 w-full h-full object-cover transition-all duration-700">
+                                </transition>
+                                <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all">
+                                </div>
+                            </div>
+                            <p class="text-xs font-bold text-gray-700 text-center px-1">Get the leading Market
+                                Intelligence
+                                Report 2026</p>
+                            <button
+                                class="w-full mt-3 py-2 bg-white border-2 border-agri-forest text-agri-forest rounded-full text-xs font-black hover:bg-agri-forest hover:text-white transition-all uppercase tracking-widest active:scale-95 shadow-sm">
+                                Learn More
+                            </button>
                         </div>
-
-                        <div v-else class="text-center py-6">
-                            <p class="text-xs text-gray-400 font-medium">No leadership updates yet</p>
-                        </div>
-
-                        <button
-                            class="w-full mt-4 py-1.5 text-[10px] font-black text-gray-500 hover:bg-gray-100 rounded-lg transition-colors uppercase tracking-widest flex items-center justify-center">
-                            Show more
-                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Promoted Asset
-                        </p>
-                        <div class="h-32 bg-agri-sand/20 rounded-xl overflow-hidden mb-3 border border-agri-sand/50">
-                            <img src="https://images.unsplash.com/photo-1595147321092-239618580628?q=80&w=1000&auto=format&fit=crop"
-                                class="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700">
-                        </div>
-                        <p class="text-xs font-bold text-gray-700 text-center">Get the leading Market Intelligence
-                            Report 2026</p>
-                        <button
-                            class="w-full mt-3 py-2 bg-white border-2 border-agri-forest text-agri-forest rounded-full text-xs font-black hover:bg-agri-forest hover:text-white transition-all uppercase tracking-widest">
-                            Learn More
-                        </button>
                     </div>
                 </div>
             </div>
@@ -312,6 +328,24 @@ const userStats = ref({
 const superAdminPosts = ref([])
 const loadingSuperAdminPosts = ref(true)
 
+
+const promotedImages = [
+    // 'https://images.unsplash.com/photo-1595147321092-239618580628?q=80&w=1000&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1000&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1000&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=1000&auto=format&fit=crop'
+]
+const currentPromotedIdx = ref(0)
+const promotedTimer = ref(null)
+
+
+
+const startPromotedRotation = () => {
+    promotedTimer.value = setInterval(() => {
+        currentPromotedIdx.value = (currentPromotedIdx.value + 1) % promotedImages.length
+    }, 5000)
+}
+
 const pagination = ref({
     currentPage: 1,
     nextPage: null
@@ -383,6 +417,21 @@ const fetchFeed = async (append = false) => {
     } finally {
         loading.value = false
         loadingMore.value = false
+    }
+}
+
+const refreshPost = async (postId) => {
+    try {
+        const response = await axios.get(`/api/agripulse/posts/${postId}`)
+        const updatedPost = response.data
+
+        const index = posts.value.findIndex(p => p.id === postId)
+        if (index !== -1) {
+            posts.value[index] = updatedPost
+        }
+    } catch (error) {
+        console.error('Failed to refresh post:', error)
+        fetchFeed()
     }
 }
 
@@ -470,6 +519,7 @@ onMounted(() => {
     fetchFeed()
     fetchUserStats()
     fetchSuperAdminPosts()
+    startPromotedRotation()
 })
 </script>
 
@@ -521,5 +571,15 @@ onMounted(() => {
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 1s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>

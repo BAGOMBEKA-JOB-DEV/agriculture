@@ -159,7 +159,7 @@ const routes = [
   {
     path: '/agripulse/profile/:id',
     name: 'AgriPulseProfile',
-    component: () => import('../pages/UserProfile.vue'),
+    component: () => import('../pages/AgriPulse/Profile.vue'),
     meta: {
       requiresAuth: true,
       permission: 'access_agripulse',

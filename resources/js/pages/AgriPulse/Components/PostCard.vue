@@ -19,7 +19,7 @@
                     class="h-12 w-12 rounded-lg bg-agri-earth flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:ring-2 group-hover:ring-agri-forest transition-all">
                     <img v-if="post.user.avatar_url" :src="post.user.avatar_url" class="w-full h-full object-cover">
                     <span v-else class="text-lg font-bold text-agri-forest">{{ post.user.name.charAt(0).toUpperCase()
-                        }}</span>
+                    }}</span>
                 </div>
                 <div>
                     <h4
@@ -185,16 +185,16 @@
 
                 <button @click="handleReact('like')"
                     :class="['flex items-center space-x-2 px-6 py-2.5 rounded-lg transition-all duration-200 group-active:scale-95',
-                        userReaction ? reactionTypes.find(r => r.id === userReaction.type)?.colorClass : 'text-gray-500 hover:bg-gray-100']">
+                        userReaction ? reactionTypes.find(r => r.id === (userReaction.type || userReaction))?.colorClass : 'text-gray-500 hover:bg-gray-100']">
                     <div v-if="userReaction" class="text-xl -mt-1">{{reactionTypes.find(r => r.id ===
-                        userReaction.type)?.emoji}}</div>
+                        (userReaction.type || userReaction))?.emoji}}</div>
                     <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5">
                         </path>
                     </svg>
                     <span class="text-xs font-black uppercase tracking-widest">{{userReaction ? reactionTypes.find(r =>
-                        r.id === userReaction.type)?.label : 'Like'}}</span>
+                        r.id === (userReaction.type || userReaction))?.label : 'Like'}}</span>
                 </button>
             </div>
 

@@ -321,12 +321,15 @@ class AgriPulseController extends Controller
             
             $post->is_saved = true;
             
-            // Add reaction check
-            $userReaction = PostReaction::where('post_id', $post->id)
+            // Add reaction check (consistent with Home feed)
+            $post->user_reaction = PostReaction::where('post_id', $post->id)
                 ->where('user_id', $user->id)
                 ->first();
-                
-            $post->user_reaction = $userReaction ? $userReaction->type : null;
+
+            // Check if reposted by current user
+            $post->is_reposted = Post::where('user_id', $user->id)
+                ->where('original_post_id', $post->id)
+                ->exists();
                 
             return $post;
         })->filter(); // Remove nulls
@@ -424,7 +427,6 @@ class AgriPulseController extends Controller
         ->with(['user', 'reactions', 'comments'])
         ->withCount(['reactions', 'comments', 'views'])
         ->latest()
-        ->limit(5)
         ->get();
 
         return response()->json($superAdminPosts);
@@ -446,7 +448,7 @@ class AgriPulseController extends Controller
                       ->withCount(['reactions', 'reposts', 'comments', 'views']);
             }])
             ->latest()
-            ->paginate(10);
+            ->paginate(12);
 
         // Check if current user has reacted to each post and if they saved it
         $currentUser = auth()->user();
@@ -458,6 +460,10 @@ class AgriPulseController extends Controller
                 
                 $post->is_saved = SavedPost::where('user_id', $currentUser->id)
                     ->where('post_id', $post->id)
+                    ->exists();
+
+                $post->is_reposted = Post::where('user_id', $currentUser->id)
+                    ->where('original_post_id', $post->id)
                     ->exists();
             });
         }
@@ -473,14 +479,35 @@ class AgriPulseController extends Controller
             $query->where('user_id', $userId);
         })->count();
 
+        // Enhanced Activity Tracking for LinkedIn style
+        $recentComments = PostComment::where('user_id', $userId)
+            ->with(['post.user', 'post.originalPost.user'])
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        if ($currentUser) {
+            $recentComments->each(function ($comment) use ($currentUser) {
+                if ($comment->post) {
+                    $comment->post->user_reaction = $comment->post->reactions()
+                        ->where('user_id', $currentUser->id)
+                        ->first();
+                    
+                    $comment->post->loadCount(['reactions', 'reposts', 'comments', 'views']);
+                }
+            });
+        }
+
         return response()->json([
             'user' => $user,
             'posts' => $posts,
+            'recent_comments' => $recentComments,
             'stats' => [
                 'post_views' => $postViews,
                 'profile_views' => $profileViews,
                 'total_posts' => $totalPosts,
                 'total_reactions' => $totalReactions,
+                'followers_count' => 13215, // Mock data for enterprise aesthetic
             ],
         ]);
     }
