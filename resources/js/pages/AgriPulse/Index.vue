@@ -182,7 +182,7 @@
 
         <!-- Composer Modal -->
         <div v-if="showComposer" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-agri-forest/40 backdrop-blur-md" @click="closeComposer"></div>
+            <div class="absolute inset-0 bg-agri-forest/10 backdrop-blur-[2px]" @click="closeComposer"></div>
             <div
                 class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative z-10 overflow-hidden transform transition-all scale-100 opacity-100 animate-modal-in">
                 <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -245,7 +245,7 @@
                                     newPost.original_post.user.name.charAt(0) }}</span>
                             </div>
                             <span class="text-[10px] font-black text-gray-900">{{ newPost.original_post.user.name
-                                }}</span>
+                            }}</span>
                         </div>
                         <p class="text-[10px] text-gray-600 truncate">{{ newPost.original_post.content }}</p>
                     </div>
@@ -291,7 +291,7 @@
         <!-- Image Preview Modal -->
         <div v-if="activePreviewImage" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
             @click="activePreviewImage = null">
-            <div class="absolute inset-0 bg-black/90 backdrop-blur-xl"></div>
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-[4px]"></div>
             <img :src="activePreviewImage"
                 class="max-w-full max-h-full object-contain relative z-10 shadow-2xl animate-scale-in">
         </div>
