@@ -8,6 +8,7 @@ use App\Models\PostComment;
 use App\Models\SavedPost;
 use App\Models\PostView;
 use App\Models\ProfileView;
+use App\Models\AgriPulsePostReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -19,19 +20,21 @@ class AgriPulseController extends Controller
      */
     public function index(Request $request)
     {
-        $posts = Post::with([
-            'user',
-            'product',
-            'originalPost.user',
-            'originalPost.product'
-        ])
-        ->withCount(['reactions', 'reposts', 'comments', 'views'])
-        ->with(['originalPost' => function ($query) {
-            $query->with(['user', 'product', 'originalPost.user', 'originalPost.product'])
-                  ->withCount(['reactions', 'reposts', 'comments', 'views']);
-        }])
-        ->latest()
-        ->paginate(15);
+        $posts = Post::published()
+            ->with([
+                'user',
+                'product',
+                'originalPost.user',
+                'originalPost.product'
+            ])
+            ->withCount(['reactions', 'reposts', 'comments', 'views'])
+            ->with(['originalPost' => function ($query) {
+                $query->published()
+                      ->with(['user', 'product', 'originalPost.user', 'originalPost.product'])
+                      ->withCount(['reactions', 'reposts', 'comments', 'views']);
+            }])
+            ->latest()
+            ->paginate(15);
 
         // Check if current user has reacted to each post and if they saved it
         $user = auth()->user();
@@ -539,5 +542,34 @@ class AgriPulseController extends Controller
             });
 
         return response()->json($suggestedUsers);
+    }
+    /**
+     * Report a post.
+     */
+    public function reportPost(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'reason' => 'required|in:spam,harassment,inappropriate,misinformation,other',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $post = Post::findOrFail($id);
+
+        $report = AgriPulsePostReport::create([
+            'post_id' => $post->id,
+            'reporter_id' => auth()->id(),
+            'reason' => $request->reason,
+            'description' => $request->description,
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'message' => 'Post reported successfully. Thank you for helping keep the community safe.',
+            'report' => $report
+        ]);
     }
 }

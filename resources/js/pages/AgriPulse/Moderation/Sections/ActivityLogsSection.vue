@@ -1,0 +1,373 @@
+<template>
+    <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden flex flex-col h-full relative">
+        <!-- Header -->
+        <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-20">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">Activity Logs</h2>
+                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mt-1.5">Audit trail of all
+                    moderation actions</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Search -->
+                <div class="relative group">
+                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-agri-forest transition-colors"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input v-model="search" type="text" placeholder="Search moderator..."
+                        class="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-agri-forest/10 focus:bg-white text-[10px] font-bold text-gray-700 w-48 transition-all placeholder:font-medium placeholder:text-gray-400"
+                        @input="debouncedFetch">
+                </div>
+
+                <!-- Action Filter -->
+                <select v-model="filterAction"
+                    class="bg-gray-50 border border-gray-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-agri-forest/10"
+                    @change="fetchLogs">
+                    <option value="">All Actions</option>
+                    <option value="hide_post">Hide Post</option>
+                    <option value="delete_post">Delete Post</option>
+                    <option value="warn_user">Warn User</option>
+                    <option value="resolve_report">Resolve Report</option>
+                    <option value="suspend_user">Suspend User</option>
+                </select>
+
+                <button @click="fetchLogs"
+                    class="p-2.5 text-gray-400 hover:text-agri-forest hover:bg-gray-50 rounded-xl transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="flex-1 overflow-auto">
+            <table class="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                    <tr class="bg-white border-b border-gray-50 sticky top-0 z-10">
+                        <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Moderator
+                        </th>
+                        <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] w-1/2">
+                            Action Detail</th>
+                        <th
+                            class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">
+                            Date</th>
+                        <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] w-20"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    <tr v-if="loading" v-for="i in 10" :key="i" class="animate-pulse">
+                        <td colspan="4" class="px-8 py-6">
+                            <div class="h-4 bg-gray-100 rounded-full w-full"></div>
+                        </td>
+                    </tr>
+                    <tr v-else-if="logs.length === 0">
+                        <td colspan="4"
+                            class="px-8 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No
+                            activity found</td>
+                    </tr>
+                    <tr v-else v-for="log in logs" :key="log.id" @click="selectedLog = log"
+                        class="group hover:bg-gray-50/50 transition-colors cursor-pointer">
+                        <td class="px-8 py-5">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-agri-forest/10 flex items-center justify-center text-agri-forest font-bold text-xs uppercase">
+                                    {{ log.moderator?.name?.[0] || '?' }}
+                                </div>
+                                <div>
+                                    <span class="block text-xs font-bold text-gray-900">{{ log.moderator?.name ||
+                                        'Unknown' }}</span>
+                                    <span class="text-[9px] text-gray-400 uppercase tracking-widest">Moderator</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5">
+                            <p class="text-sm text-gray-700 font-medium leading-relaxed" v-html="formatAction(log)"></p>
+                        </td>
+                        <td class="px-8 py-5 text-right text-[10px] font-bold text-gray-400">
+                            {{ dayjs(log.created_at).format('MMM D, YY • h:mm A') }}
+                        </td>
+                        <td class="px-8 py-5 text-right relative">
+                            <button class="p-2 text-gray-300 hover:text-agri-forest transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-8 py-4 border-t border-gray-50 flex items-center justify-between bg-white text-[10px] font-black uppercase tracking-widest text-gray-400"
+            v-if="pagination.links">
+            <div>{{ pagination.from || 0 }}-{{ pagination.to || 0 }} / {{ pagination.total || 0 }}</div>
+            <div class="flex items-center gap-1">
+                <button v-for="link in pagination.links" :key="link.label" @click="fetchLogs(link.url)"
+                    v-html="link.label"
+                    class="min-w-[32px] h-8 flex items-center justify-center rounded-lg transition-all border" :class="link.active
+                        ? 'bg-agri-forest text-white border-agri-forest'
+                        : 'bg-white text-gray-400 border-gray-100 hover:text-agri-forest hover:border-agri-forest'"
+                    :disabled="!link.url"></button>
+            </div>
+        </div>
+
+        <!-- Log Detail Slide-over (Expanded) -->
+        <div v-if="selectedLog" class="fixed inset-0 z-[100] flex justify-end overflow-hidden"
+            @click="selectedLog = null">
+            <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity"></div>
+
+            <main
+                class="relative w-full max-w-4xl bg-white border-l border-gray-100 h-full flex flex-col animate-slide-in"
+                @click.stop>
+                <!-- Header -->
+                <div class="p-8 border-b border-gray-50 flex items-center justify-between shrink-0 bg-gray-50/50">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Action Detail</p>
+                        <h3 class="text-xl font-bold text-gray-900 leading-tight">Log #{{ selectedLog.id }}</h3>
+                    </div>
+                    <button @click="selectedLog = null"
+                        class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Left Column -->
+                        <div class="space-y-8">
+                            <!-- Action Summary -->
+                            <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-agri-forest/10 flex items-center justify-center text-agri-forest shrink-0">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-900 mb-1">Action Summary</h4>
+                                        <p class="text-sm text-gray-600 leading-relaxed"
+                                            v-html="formatAction(selectedLog)"></p>
+                                        <p class="text-xs text-gray-400 font-medium mt-2">{{
+                                            dayjs(selectedLog.created_at).format('MMMM D, YYYY [at] h:mm:ss A') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Moderator Info -->
+                            <div>
+                                <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Executed By
+                                </h4>
+                                <div class="flex items-center gap-4 bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                    <div
+                                        class="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center font-bold text-gray-400">
+                                        {{ selectedLog.moderator?.name?.[0] }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900">{{ selectedLog.moderator?.name }}</p>
+                                        <p class="text-[10px] text-gray-500 uppercase tracking-widest">Moderator ID: {{
+                                            selectedLog.moderator_id }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content Author Info (New) -->
+                            <div v-if="selectedLog.subject?.user">
+                                <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Content
+                                    Author</h4>
+                                <div
+                                    class="flex items-center gap-4 bg-blue-50/50 rounded-2xl p-4 border border-blue-100">
+                                    <div
+                                        class="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center font-bold text-blue-500">
+                                        {{ selectedLog.subject.user.name?.[0] }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900">{{ selectedLog.subject.user.name }}
+                                        </p>
+                                        <p class="text-[10px] text-gray-500 uppercase tracking-widest">{{
+                                            selectedLog.subject.user.email }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="space-y-8">
+                            <!-- Target/Subject Info -->
+                            <div v-if="selectedLog.metadata">
+                                <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Target
+                                    Information</h4>
+                                <div
+                                    class="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
+                                    <div class="p-4 flex flex-col gap-1">
+                                        <span
+                                            class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Type</span>
+                                        <span class="text-xs font-bold text-gray-900">{{
+                                            selectedLog.subject_type?.split('\\').pop() || 'Unknown' }}</span>
+                                    </div>
+                                    <div class="p-4 flex flex-col gap-1" v-if="selectedLog.metadata.subject_name">
+                                        <span
+                                            class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Name</span>
+                                        <span class="text-xs font-bold text-gray-900">{{
+                                            selectedLog.metadata.subject_name }}</span>
+                                    </div>
+                                    <div class="p-4 flex flex-col gap-1" v-if="selectedLog.subject?.created_at">
+                                        <span
+                                            class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Created
+                                            At</span>
+                                        <span class="text-xs font-bold text-gray-900">{{
+                                            dayjs(selectedLog.subject.created_at).format('MMM D, YYYY h:mm A') }}</span>
+                                    </div>
+                                    <div class="p-4 flex flex-col gap-1" v-if="selectedLog.metadata.report_reason">
+                                        <span
+                                            class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Reason</span>
+                                        <span class="text-xs font-bold text-red-600 uppercase">{{
+                                            selectedLog.metadata.report_reason }}</span>
+                                    </div>
+                                    <div class="p-4 flex flex-col gap-1">
+                                        <span
+                                            class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Subject
+                                            ID</span>
+                                        <span class="text-xs font-mono text-gray-500">#{{ selectedLog.subject_id
+                                        }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Content Display (Full Width) -->
+                    <div v-if="selectedLog.metadata.content_full || selectedLog.subject?.content" class="mt-8">
+                        <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Full Content
+                            Context</h4>
+                        <div
+                            class="p-6 bg-gray-50 rounded-3xl text-sm text-gray-700 leading-relaxed whitespace-pre-wrap font-medium border border-gray-100">
+                            {{ selectedLog.metadata.content_full || selectedLog.subject?.content }}
+                        </div>
+                    </div>
+                    <!-- Fallback Snippet -->
+                    <div v-else-if="selectedLog.metadata.content_snippet" class="mt-8">
+                        <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Content Snippet
+                        </h4>
+                        <div class="p-6 bg-gray-50 rounded-3xl text-sm text-gray-600 italic border border-gray-100">
+                            "{{ selectedLog.metadata.content_snippet }}"
+                            <p class="text-[10px] text-gray-400 mt-2 not-italic font-bold uppercase tracking-widest">*
+                                Full content unavailable for this log</p>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import dayjs from 'dayjs'
+
+const loading = ref(true)
+const logs = ref([])
+const filterAction = ref('')
+const search = ref('')
+const pagination = ref({})
+const selectedLog = ref(null)
+
+const debounce = (fn, delay) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
+const fetchLogs = async (url) => {
+    if (typeof url !== 'string') {
+        url = '/api/agripulse/moderation/logs'
+    }
+    loading.value = true
+    try {
+        const params = {
+            action: filterAction.value,
+            search: search.value
+        }
+        const response = await axios.get(url, { params })
+        logs.value = response.data.data
+        pagination.value = { from: response.data.from, to: response.data.to, total: response.data.total, links: response.data.links }
+    } catch (error) {
+        console.error('Failed to fetch logs:', error)
+    } finally {
+        loading.value = false
+    }
+}
+
+const debouncedFetch = debounce(() => fetchLogs(), 500)
+
+const formatAction = (log) => {
+    const metadata = log.metadata || {}
+    const subjectName = metadata.subject_name || log.subject_id
+    const snippet = metadata.content_snippet ? `"${metadata.content_snippet}"` : ''
+    const reason = metadata.report_reason ? `for <strong>${metadata.report_reason}</strong>` : ''
+
+    const actions = {
+        'hide_post': `Hid post ${snippet}`,
+        'delete_post': `Soft-deleted post ${snippet}`,
+        'restore_post': `Restored post ${snippet}`,
+        'pin_post': `Pinned post ${snippet}`,
+        'unpin_post': `Unpinned post ${snippet}`,
+        'flag_post': `Flagged post ${snippet}`,
+        'delete_comment': `Deleted comment ${snippet}`,
+        'hide_comment': `Hid comment ${snippet}`,
+        'restore_comment': `Restored comment`,
+        'resolve_report': `Resolved report on ${subjectName}`,
+        'dismiss_report': `Dismissed report on ${subjectName}`,
+        'warn_user': `Issued warning to <strong>${subjectName}</strong> ${reason}`,
+        'suspend_user': `Suspended user <strong>${subjectName}</strong>`
+    }
+
+    return actions[log.action] || log.action.replace(/_/g, ' ')
+}
+
+onMounted(() => fetchLogs())
+</script>
+
+<style scoped>
+.animate-slide-in {
+    animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(200, 200, 200, 0.3);
+    border-radius: 20px;
+}
+</style>

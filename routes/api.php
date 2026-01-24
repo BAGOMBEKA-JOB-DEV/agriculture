@@ -9,6 +9,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\NetworkController;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\AgriPulseModerationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -194,5 +195,68 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/super-admin-posts', [\App\Http\Controllers\AgriPulseController::class, 'getSuperAdminPosts']);
         Route::get('/users/{id}/profile', [\App\Http\Controllers\AgriPulseController::class, 'getUserProfile']);
         Route::get('/suggested-users', [\App\Http\Controllers\AgriPulseController::class, 'getSuggestedUsers']);
+
+        // User Reporting
+        Route::post('/posts/{id}/report', [\App\Http\Controllers\AgriPulseController::class, 'reportPost']);
+    });
+
+    // AgriPulse Moderation Hub
+    Route::middleware('auth:sanctum')->prefix('agripulse/moderation')->group(function () {
+        Route::get('/dashboard', [AgriPulseModerationController::class, 'dashboard'])
+            ->middleware('permission:agripulse.moderate.posts');
+
+        // Posts Management
+        Route::get('/posts', [AgriPulseModerationController::class, 'getPosts'])
+            ->middleware('permission:agripulse.moderate.posts');
+        Route::post('/posts/{id}/hide', [AgriPulseModerationController::class, 'hidePost'])
+            ->middleware('permission:agripulse.moderate.posts');
+        Route::post('/posts/{id}/delete', [AgriPulseModerationController::class, 'deletePost'])
+            ->middleware('permission:agripulse.moderate.posts');
+        Route::post('/posts/{id}/restore', [AgriPulseModerationController::class, 'restorePost'])
+            ->middleware('permission:agripulse.moderate.posts');
+        Route::post('/posts/{id}/pin', [AgriPulseModerationController::class, 'pinPost'])
+            ->middleware('permission:agripulse.moderate.posts');
+        Route::post('/posts/{id}/flag', [AgriPulseModerationController::class, 'flagPost'])
+            ->middleware('permission:agripulse.moderate.posts');
+        Route::get('/posts/{id}/details', [AgriPulseModerationController::class, 'getPostDetails'])
+            ->middleware('permission:agripulse.moderate.posts');
+
+        // Comments Management
+        Route::get('/comments', [AgriPulseModerationController::class, 'getComments'])
+            ->middleware('permission:agripulse.moderate.comments');
+        Route::delete('/comments/{id}', [AgriPulseModerationController::class, 'deleteComment'])
+            ->middleware('permission:agripulse.moderate.comments');
+        Route::post('/comments/{id}/hide', [AgriPulseModerationController::class, 'hideComment'])
+            ->middleware('permission:agripulse.moderate.comments');
+        Route::post('/comments/{id}/restore', [AgriPulseModerationController::class, 'restoreComment'])
+            ->middleware('permission:agripulse.moderate.comments');
+        Route::get('/comments/{id}/details', [AgriPulseModerationController::class, 'getCommentDetails'])
+            ->middleware('permission:agripulse.moderate.comments');
+
+        // Reports Management
+        Route::get('/reports', [AgriPulseModerationController::class, 'getReports'])
+            ->middleware('permission:agripulse.moderate.reports');
+        Route::post('/reports/{id}/resolve', [AgriPulseModerationController::class, 'resolveReport'])
+            ->middleware('permission:agripulse.moderate.reports');
+        Route::post('/reports/{id}/dismiss', [AgriPulseModerationController::class, 'dismissReport'])
+            ->middleware('permission:agripulse.moderate.reports');
+
+        // User Management
+        Route::get('/users', [AgriPulseModerationController::class, 'getUsers'])
+            ->middleware('permission:agripulse.moderate.users');
+        Route::get('/users/{id}/history', [AgriPulseModerationController::class, 'getUserModerationHistory'])
+            ->middleware('permission:agripulse.moderate.users');
+        Route::post('/users/{id}/warn', [AgriPulseModerationController::class, 'warnUser'])
+            ->middleware('permission:agripulse.moderate.users');
+        Route::post('/users/{id}/suspend', [AgriPulseModerationController::class, 'suspendUser'])
+            ->middleware('permission:agripulse.moderate.users');
+
+        // Activity Logs
+        Route::get('/logs', [AgriPulseModerationController::class, 'getLogs'])
+            ->middleware('permission:agripulse.moderate.users');
+            
+        // Analytics
+        Route::get('/analytics', [AgriPulseModerationController::class, 'getAnalytics'])
+            ->middleware('permission:agripulse.moderate.analytics');
     });
 });

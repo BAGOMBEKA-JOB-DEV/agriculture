@@ -1,0 +1,603 @@
+<template>
+  <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden flex flex-col h-full relative">
+    <!-- Header -->
+    <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-20">
+      <div>
+        <h2 class="text-xl font-bold text-gray-900 tracking-tight">Comments</h2>
+        <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Monitor and manage user interactions
+        </p>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="relative group">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input v-model="search" type="text" placeholder="Search..."
+            class="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-agri-forest/10 focus:bg-white text-xs font-medium w-64 transition-all"
+            @input="debouncedFetch">
+        </div>
+        <button @click="fetchComments"
+          class="p-2.5 text-gray-400 hover:text-agri-forest hover:bg-gray-50 rounded-xl transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="flex-1 overflow-auto">
+      <table class="w-full text-left border-collapse min-w-[1000px]">
+        <thead>
+          <tr class="bg-white border-b border-gray-50 sticky top-0 z-10">
+            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] w-24">ID</th>
+            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Comment</th>
+            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Author</th>
+            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Parent Post</th>
+            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Status
+            </th>
+            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right w-20">
+              Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          <tr v-if="loading" v-for="i in 10" :key="i" class="animate-pulse">
+            <td colspan="6" class="px-8 py-6">
+              <div class="h-4 bg-gray-100 rounded-full w-full"></div>
+            </td>
+          </tr>
+          <tr v-else-if="comments.length === 0">
+            <td colspan="6" class="px-8 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No
+              comments found matching your criteria</td>
+          </tr>
+          <tr v-else v-for="comment in comments" :key="comment.id" @click="viewDetails(comment)"
+            class="group hover:bg-gray-50/50 transition-colors cursor-pointer">
+            <td class="px-8 py-5">
+              <span class="font-mono text-[10px] text-gray-400 font-bold">#{{ comment.id }}</span>
+            </td>
+            <td class="px-8 py-5">
+              <p class="text-xs text-gray-600 font-medium truncate max-w-sm italic">
+                "{{ comment.content }}"
+              </p>
+            </td>
+            <td class="px-8 py-5">
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-6 h-6 rounded-lg bg-agri-sand flex items-center justify-center text-[10px] font-black text-agri-forest">
+                  {{ comment.user.name[0] }}
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-gray-900 leading-none">{{ comment.user.name }}</span>
+                  <span class="text-[9px] text-gray-400 mt-1">{{ dayjs(comment.created_at).fromNow() }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="px-8 py-5">
+              <div v-if="comment.post" class="flex items-center gap-2 text-agri-forest/60">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path>
+                </svg>
+                <span class="text-[10px] font-black uppercase tracking-widest truncate max-w-[120px]">Post #{{
+                  comment.post.id }}</span>
+              </div>
+            </td>
+            <td class="px-8 py-5 text-center">
+              <span class="inline-flex px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border"
+                :class="statusClasses(comment)">
+                {{ comment.deleted_at ? 'Deleted' : (comment.status || 'Live') }}
+              </span>
+            </td>
+            <td class="px-8 py-5 text-right relative" @click.stop>
+              <button @click="toggleMenu(comment.id)"
+                class="p-2 text-gray-400 hover:text-gray-900 h-8 w-8 flex items-center justify-center rounded-lg bg-gray-50 border-gray-100 hover:border-gray-300 border transition-all">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                </svg>
+              </button>
+
+              <!-- Dropdown Menu -->
+              <div v-if="openMenuId === comment.id"
+                class="absolute right-8 top-12 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2"
+                v-click-outside="() => openMenuId = null">
+                <div class="p-1.5 space-y-0.5 text-left">
+                  <button @click="viewDetails(comment)"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                      </path>
+                    </svg>
+                    View details
+                  </button>
+                  <div class="h-px bg-gray-50 my-1 mx-2"></div>
+                  <button v-if="comment.status !== 'hidden' && !comment.deleted_at" @click="initAction(comment, 'hide')"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-xs font-bold text-orange-600 hover:bg-orange-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.046m4.596-4.596A10.001 10.001 0 0112 4.5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21l-3-3m-3-3l-3-3m2-2a3 3 0 11-4.243 4.243M9.878 9.878L12 12">
+                      </path>
+                    </svg>
+                    Hide comment
+                  </button>
+                  <button v-if="comment.status === 'hidden' || comment.deleted_at"
+                    @click="initAction(comment, 'restore')"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-xs font-bold text-green-600 hover:bg-green-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                      </path>
+                    </svg>
+                    Restore comment
+                  </button>
+                  <button @click="warnAuthor(comment)"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-xs font-bold text-gray-900 hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                      </path>
+                    </svg>
+                    Warn author
+                  </button>
+                  <button v-if="!comment.deleted_at" @click="initAction(comment, 'delete')"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-xs font-bold text-red-600 hover:bg-red-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                      </path>
+                    </svg>
+                    Delete comment
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div
+      class="px-8 py-4 border-t border-gray-50 flex items-center justify-between bg-white text-[10px] font-black uppercase tracking-widest text-gray-400"
+      v-if="pagination.links">
+      <div>{{ pagination.from || 0 }}-{{ pagination.to || 0 }} / {{ pagination.total || 0 }}</div>
+      <div class="flex items-center gap-1">
+        <button v-for="link in pagination.links" :key="link.label" @click="fetchComments(link.url)" v-html="link.label"
+          class="min-w-[32px] h-8 flex items-center justify-center rounded-lg transition-all border" :class="link.active
+            ? 'bg-agri-forest text-white border-agri-forest'
+            : 'bg-white text-gray-400 border-gray-100 hover:text-agri-forest hover:border-agri-forest'"
+          :disabled="!link.url"></button>
+      </div>
+    </div>
+
+    <!-- Comment Detail Slide-over (EXPANDED) -->
+    <div v-if="selectedComment" class="fixed inset-0 z-[100] flex justify-end overflow-hidden"
+      @click="selectedComment = null">
+      <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity"></div>
+
+      <main class="relative w-full max-w-5xl bg-white border-l border-gray-100 h-full flex flex-col animate-slide-in"
+        @click.stop>
+        <div class="px-10 py-8 border-b border-gray-50 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-4">
+            <div
+              class="w-16 h-16 rounded-2xl bg-agri-sand flex items-center justify-center text-2xl font-black text-agri-forest">
+              {{ selectedComment.user.name[0] }}
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-900 leading-tight">Comment #{{ selectedComment.id }}</h3>
+              <p
+                class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.1em] mt-1.5 flex items-center gap-2">
+                <span>By {{ selectedComment.user.name }}</span>
+                <span>&bull;</span>
+                <span>{{ dayjs(selectedComment.created_at).fromNow() }}</span>
+              </p>
+            </div>
+          </div>
+          <button @click="selectedComment = null"
+            class="p-3 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-2xl transition-all">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="p-10 flex-1 overflow-y-auto space-y-8 custom-scrollbar">
+          <!-- Comment Content -->
+          <div class="space-y-4">
+            <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Comment Text</h4>
+            <div
+              class="bg-gray-50 p-8 rounded-3xl border border-gray-100 text-gray-700 leading-relaxed text-lg font-medium italic">
+              "{{ selectedComment.content }}"
+            </div>
+          </div>
+
+          <!-- Parent Post Context -->
+          <div v-if="selectedComment.post" class="space-y-4">
+            <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Parent Post Context</h4>
+            <div class="p-8 bg-agri-forest/5 rounded-3xl border border-agri-forest/10 space-y-6">
+              <!-- Parent Author -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-8 h-8 rounded-lg bg-white border border-agri-forest/10 flex items-center justify-center text-[10px] font-bold text-agri-forest">
+                    {{ selectedComment.post.user?.name[0] || '?' }}
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-bold text-gray-900 leading-none mb-1">{{ selectedComment.post.user?.name
+                      || 'Unknown Author' }}</p>
+                    <p class="text-[9px] font-medium text-gray-500 uppercase tracking-widest">{{
+                      dayjs(selectedComment.post.created_at).fromNow() }}</p>
+                  </div>
+                </div>
+                <div
+                  class="bg-white px-3 py-1 rounded-full border border-agri-forest/10 text-[9px] font-bold text-agri-forest uppercase tracking-widest">
+                  Post #{{ selectedComment.post.id }}
+                </div>
+              </div>
+
+              <!-- Content -->
+              <p class="text-sm text-gray-600 font-medium italic leading-relaxed border-l-2 border-agri-forest/20 pl-4">
+                "{{ selectedComment.post.content || 'Image/Product post' }}"
+              </p>
+
+              <!-- Parent Stats -->
+              <div class="grid grid-cols-3 gap-3 pt-2">
+                <div class="bg-white p-3 rounded-2xl border border-agri-forest/10 text-center">
+                  <p class="text-xs font-bold text-gray-900">{{ selectedComment.post.reactions_count ?? 0 }}</p>
+                  <p class="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Reactions</p>
+                </div>
+                <div class="bg-white p-3 rounded-2xl border border-agri-forest/10 text-center">
+                  <p class="text-xs font-bold text-gray-900">{{ selectedComment.post.comments_count ?? 0 }}</p>
+                  <p class="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Comments</p>
+                </div>
+                <div class="bg-white p-3 rounded-2xl border border-agri-forest/10 text-center">
+                  <p class="text-xs font-bold text-red-600">{{ selectedComment.post.reports_count ?? 0 }}</p>
+                  <p class="text-[8px] font-bold text-red-400 uppercase tracking-tighter">Reports</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Author Statistics -->
+          <div class="space-y-4" v-if="commentDetails.author_stats">
+            <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Author Statistics</h4>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="p-6 bg-purple-50 border border-purple-100 rounded-3xl text-center">
+                <p class="text-3xl font-black text-purple-600">{{ commentDetails.author_stats.total_comments || 0 }}</p>
+                <p class="text-[9px] font-black text-purple-400 uppercase tracking-widest mt-2">Total Comments</p>
+              </div>
+              <div class="p-6 bg-blue-50 border border-blue-100 rounded-3xl text-center">
+                <p class="text-3xl font-black text-blue-600">{{ commentDetails.author_stats.total_posts || 0 }}</p>
+                <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mt-2">Posts Created</p>
+              </div>
+              <div class="p-6 bg-gray-50 border border-gray-100 rounded-3xl text-center">
+                <p class="text-3xl font-black text-gray-900">{{ commentDetails.author_stats.account_age_days || 0 }}</p>
+                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-2">Days Active</p>
+              </div>
+              <div class="p-6 bg-green-50 border border-green-100 rounded-3xl text-center">
+                <p class="text-3xl font-black text-green-600">{{ commentDetails.author_stats.account_age_hours || 0 }}
+                </p>
+                <p class="text-[9px] font-black text-green-400 uppercase tracking-widest mt-2">Hours Active</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Author's Recent Comments -->
+          <div class="space-y-4"
+            v-if="commentDetails.author_recent_comments && commentDetails.author_recent_comments.length > 0">
+            <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Author's Recent Comments ({{
+              commentDetails.author_recent_comments.length }})</h4>
+            <div class="bg-white rounded-3xl border border-gray-50 overflow-hidden divide-y divide-gray-50">
+              <div v-for="comment in commentDetails.author_recent_comments" :key="comment.id"
+                class="p-4 hover:bg-gray-50/50 transition-colors">
+                <div class="flex items-start gap-3">
+                  <div class="flex-1">
+                    <p class="text-xs text-gray-700 italic mb-2 line-clamp-2">"{{ comment.content }}"</p>
+                    <div class="flex items-center gap-3 text-[9px] font-bold text-gray-400">
+                      <span class="flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Post #{{ comment.post?.id }}
+                      </span>
+                      <span class="text-gray-300">|</span>
+                      <span>{{ dayjs(comment.created_at).fromNow() }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Related Comments on Same Post -->
+          <div class="space-y-4" v-if="commentDetails.related_comments && commentDetails.related_comments.length > 0">
+            <h4 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Other Comments on This Post ({{
+              commentDetails.related_comments.length }})</h4>
+            <div class="bg-white rounded-3xl border border-gray-50 overflow-hidden divide-y divide-gray-50">
+              <div v-for="comment in commentDetails.related_comments" :key="comment.id"
+                class="p-4 hover:bg-gray-50/50 transition-colors">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-lg bg-agri-sand flex items-center justify-center text-[10px] font-black text-agri-forest shrink-0">
+                    {{ comment.user?.name[0] || '?' }}
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-xs font-bold text-gray-900 mb-1">{{ comment.user?.name || 'Unknown' }}</p>
+                    <p class="text-xs text-gray-600 italic line-clamp-2">"{{ comment.content }}"</p>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase mt-2 inline-block">
+                      {{ dayjs(comment.created_at).fromNow() }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-8 bg-gray-50/50 border-t border-gray-50 flex items-center justify-end gap-3 shrink-0">
+          <button v-if="selectedComment.status !== 'hidden' && !selectedComment.deleted_at"
+            @click="initAction(selectedComment, 'hide')"
+            class="h-12 px-6 bg-orange-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-orange-700 transition-colors">
+            Hide
+          </button>
+          <button v-if="selectedComment.status === 'hidden' || selectedComment.deleted_at"
+            @click="initAction(selectedComment, 'restore')"
+            class="h-12 px-6 bg-green-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-green-700 transition-colors">
+            Restore
+          </button>
+          <button @click="initAction(selectedComment, 'delete')"
+            class="h-12 px-6 bg-red-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-colors">
+            Delete
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <!-- Confirm Modal -->
+    <Modal :is-open="confirmModal.isOpen" :title="confirmModal.title" :message="confirmModal.message"
+      :type="confirmModal.type" confirm-text="Confirm" @confirm="executeAction" @cancel="confirmModal.isOpen = false"
+      :loading="confirmModal.loading" />
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import Modal from '@/components/Modal.vue'
+
+dayjs.extend(relativeTime)
+
+const vClickOutside = {
+  mounted(el, binding) {
+    el.clickOutsideEvent = (event) => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event);
+      }
+    };
+    document.addEventListener('click', el.clickOutsideEvent);
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el.clickOutsideEvent);
+  },
+};
+
+const debounce = (fn, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+};
+
+const loading = ref(true)
+const comments = ref([])
+const search = ref('')
+const pagination = ref({})
+const openMenuId = ref(null)
+const selectedComment = ref(null)
+
+const confirmModal = ref({
+  isOpen: false,
+  title: '',
+  message: '',
+  type: 'primary',
+  action: null,
+  target: null,
+  loading: false
+})
+
+const fetchComments = async (url) => {
+  if (typeof url !== 'string') {
+    url = '/api/agripulse/moderation/comments'
+  }
+  loading.value = true
+  openMenuId.value = null
+  try {
+    const response = await axios.get(url, { params: { search: search.value } })
+    comments.value = response.data.data
+    pagination.value = { from: response.data.from, to: response.data.to, total: response.data.total, links: response.data.links }
+  } catch (error) {
+    console.error('Failed to fetch comments:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const debouncedFetch = debounce(() => fetchComments(), 500)
+
+const statusClasses = (comment) => {
+  if (comment.deleted_at) return 'bg-gray-100 text-gray-500 border-gray-200'
+  if (comment.status === 'hidden') return 'bg-orange-50 text-orange-600 border-orange-200'
+  return 'bg-green-50 text-green-600 border-green-200'
+}
+
+const toggleMenu = (id) => {
+  openMenuId.value = openMenuId.value === id ? null : id
+}
+
+const commentDetails = ref({
+  author_stats: null,
+  author_recent_comments: [],
+  related_comments: []
+})
+
+const viewDetails = async (comment) => {
+  selectedComment.value = comment
+  openMenuId.value = null
+
+  // Fetch detailed information
+  try {
+    const response = await axios.get(`/api/agripulse/moderation/comments/${comment.id}/details`)
+    commentDetails.value = {
+      author_stats: response.data.author_stats,
+      author_recent_comments: response.data.author_recent_comments,
+      related_comments: response.data.related_comments
+    }
+  } catch (error) {
+    console.error('Failed to fetch comment details:', error)
+  }
+}
+
+const initAction = (comment, action) => {
+  const configs = {
+    hide: { title: 'Hide comment', message: 'Do you want to hide this comment from others?', type: 'primary' },
+    delete: { title: 'Delete comment', message: 'Are you sure you want to delete this comment permanently?', type: 'danger' },
+    restore: { title: 'Restore comment', message: 'Do you want to restore this comment and make it visible again?', type: 'success' }
+  }
+
+  confirmModal.value = {
+    ...configs[action],
+    isOpen: true,
+    action,
+    target: comment,
+    loading: false
+  }
+  openMenuId.value = null
+}
+
+const executeAction = async () => {
+  confirmModal.value.loading = true
+  const { target, action } = confirmModal.value
+  try {
+    if (action === 'delete') {
+      await axios.delete(`/api/agripulse/moderation/comments/${target.id}`)
+    } else {
+      await axios.post(`/api/agripulse/moderation/comments/${target.id}/${action}`)
+    }
+    confirmModal.value.isOpen = false
+
+    if (window.notify) {
+      window.notify.success('Action successful', `Comment #${target.id} has been ${action}ed.`)
+    }
+
+    if (selectedComment.value && selectedComment.value.id === target.id) {
+      selectedComment.value = null
+    }
+    fetchComments()
+  } catch (error) {
+    if (window.notify) {
+      window.notify.error('Action failed', 'The server could not complete the request.')
+    } else {
+      alert('Action failed. Please try again.')
+    }
+  } finally {
+    confirmModal.value.loading = false
+  }
+}
+
+const warnAuthor = async (comment) => {
+  const reason = prompt(`Reason for warning ${comment.user.name}:`)
+  if (!reason) return
+
+  try {
+    await axios.post(`/api/agripulse/moderation/users/${comment.user.id}/warn`, { reason })
+    if (window.notify) {
+      window.notify.success('Warning Sent', `A warning has been issued to ${comment.user.name}.`)
+    }
+  } catch (error) {
+    if (window.notify) {
+      window.notify.error('Warning failed', 'Could not send the warning signal.')
+    }
+  }
+}
+
+onMounted(() => fetchComments())
+</script>
+
+<style scoped>
+.animate-in {
+  animation: fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-top-2 {
+  from {
+    transform: translateY(-0.5rem);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+.slide-in-from-top-2 {
+  animation-name: slide-in-from-top-2;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(200, 200, 200, 0.3);
+  border-radius: 20px;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use App\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -128,6 +129,16 @@ class User extends Authenticatable
     public function profileViewsReceived(): HasMany
     {
         return $this->hasMany(ProfileView::class, 'viewed_user_id');
+    }
+
+    public function moderationActions(): HasMany
+    {
+        return $this->hasMany(AgriPulseUserModerationAction::class);
+    }
+
+    public function receivedReports(): HasManyThrough
+    {
+        return $this->hasManyThrough(AgriPulsePostReport::class, Post::class);
     }
 
     public function getPermissionsListAttribute()

@@ -177,6 +177,19 @@ const routes = [
     },
   },
   {
+    path: '/agripulse/moderation',
+    name: 'AgriPulseModeration',
+    component: () => import('../pages/AgriPulse/Moderation/Index.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'agripulse.moderate.posts',
+      breadcrumb: [
+        { label: 'AgriPulse', path: '/agripulse' },
+        { label: 'Moderation Hub' }
+      ]
+    },
+  },
+  {
     path: '/rfqs/create',
     name: 'RfqCreate',
     component: RfqCreate,
