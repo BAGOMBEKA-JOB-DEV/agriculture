@@ -19,7 +19,7 @@
                     class="h-12 w-12 rounded-lg bg-agri-earth flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:ring-2 group-hover:ring-agri-forest transition-all">
                     <img v-if="post.user.avatar_url" :src="post.user.avatar_url" class="w-full h-full object-cover">
                     <span v-else class="text-lg font-bold text-agri-forest">{{ post.user.name.charAt(0).toUpperCase()
-                    }}</span>
+                        }}</span>
                 </div>
                 <div>
                     <h4
@@ -31,10 +31,11 @@
                 </div>
             </router-link>
 
-            <!-- More Options (Delete & Save) -->
-            <div class="flex items-center space-x-2">
+            <!-- More Options (Delete & Save & Menu) -->
+            <div class="flex items-center space-x-1">
                 <button @click="toggleSave"
-                    class="p-2 text-gray-400 hover:text-agri-forest hover:bg-agri-sand/20 rounded-lg transition-all">
+                    class="p-2 text-gray-400 hover:text-agri-forest hover:bg-agri-sand/20 rounded-lg transition-all"
+                    title="Save Post">
                     <svg v-if="post.is_saved" class="w-5 h-5 fill-current text-agri-forest" fill="currentColor"
                         viewBox="0 0 24 24">
                         <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
@@ -46,13 +47,57 @@
                 </button>
 
                 <button v-if="post.user_id === currentUser.id" @click="handleDelete"
-                    class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                    class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    title="Delete Post">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
                         </path>
                     </svg>
                 </button>
+
+                <!-- Options Menu -->
+                <div class="relative">
+                    <button @click="toggleOptionsDropdown"
+                        class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+                        title="More Options">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                    </button>
+
+                    <div v-if="showOptionsDropdown"
+                        class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 animate-slideUp origin-top-right overflow-hidden">
+                        <button @click="handleReportClick"
+                            class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center space-x-2 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z">
+                                </path>
+                            </svg>
+                            <span>Report Post</span>
+                        </button>
+                        <button @click="handleCopyLink"
+                            class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-agri-forest flex items-center space-x-2 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            <span>Copy Link</span>
+                        </button>
+                        <button @click="handleNotInterested"
+                            class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 flex items-center space-x-2 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636">
+                                </path>
+                            </svg>
+                            <span>Not Interested</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -342,6 +387,28 @@
     <Modal :isOpen="showDeleteCommentModal" title="Delete Comment"
         message="Are you sure you want to delete this comment?" confirmText="Delete" cancelText="Cancel" type="danger"
         @confirm="confirmDeleteComment" @cancel="showDeleteCommentModal = false" />
+
+    <!-- Report Modal -->
+    <Modal :isOpen="showReportModal" title="Report Post" message="Please select a reason for reporting this post."
+        confirmText="Report" cancelText="Cancel" type="danger" :loading="reporting" @confirm="submitReport"
+        @cancel="showReportModal = false">
+
+        <div class="space-y-3 mt-4">
+            <label v-for="reason in reportReasons" :key="reason.value"
+                class="flex items-center space-x-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                :class="{ 'bg-red-50 border-red-200 ring-1 ring-red-200': reportReason === reason.value }">
+                <input type="radio" v-model="reportReason" :value="reason.value"
+                    class="text-red-600 focus:ring-red-500 w-4 h-4">
+                <span class="text-sm font-medium text-gray-900">{{ reason.label }}</span>
+            </label>
+
+            <div v-if="reportReason === 'other'" class="pt-2 animate-fadeIn">
+                <textarea v-model="customReportMessage"
+                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-none"
+                    rows="3" placeholder="Please tell us more about the issue..."></textarea>
+            </div>
+        </div>
+    </Modal>
 </template>
 
 <script setup>
@@ -365,7 +432,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['refresh', 'preview-image', 'repost', 'send'])
+const emit = defineEmits(['refresh', 'preview-image', 'repost', 'send', 'hide'])
 
 const showComments = ref(false)
 const comments = ref([])
@@ -373,6 +440,19 @@ const loadingComments = ref(false)
 const newComment = ref('')
 const submittingComment = ref(false)
 const showRepostDropdown = ref(false)
+const showOptionsDropdown = ref(false)
+const showReportModal = ref(false)
+const reportReason = ref('')
+const customReportMessage = ref('')
+const reporting = ref(false)
+
+const reportReasons = [
+    { label: 'Spam or misleading', value: 'spam' },
+    { label: 'Inappropriate content', value: 'inappropriate' },
+    { label: 'Harassment or hate speech', value: 'harassment' },
+    { label: 'Misinformation', value: 'misinformation' },
+    { label: 'Other', value: 'other' }
+]
 
 // Delete confirmation modals
 const showDeletePostModal = ref(false)
@@ -555,6 +635,64 @@ const confirmDeleteComment = async () => {
     } catch (error) {
         console.error('Delete comment failed:', error)
     }
+}
+
+const toggleOptionsDropdown = (e) => {
+    e?.stopPropagation()
+    showOptionsDropdown.value = !showOptionsDropdown.value
+    if (showOptionsDropdown.value) {
+        document.addEventListener('click', closeOptionsDropdown)
+    }
+}
+
+const closeOptionsDropdown = () => {
+    showOptionsDropdown.value = false
+    document.removeEventListener('click', closeOptionsDropdown)
+}
+
+const handleReportClick = () => {
+    showOptionsDropdown.value = false
+    showReportModal.value = true
+}
+
+const submitReport = async () => {
+    if (!reportReason.value) return
+
+    // Validate if 'Other' is selected but no message
+    if (reportReason.value === 'other' && !customReportMessage.value.trim()) {
+        window.notify.error('Details Required', 'Please provide details for your report.')
+        return
+    }
+
+    reporting.value = true
+    try {
+        await axios.post(`/api/agripulse/posts/${props.post.id}/report`, {
+            reason: reportReason.value,
+            description: customReportMessage.value
+        })
+        showReportModal.value = false
+        reportReason.value = ''
+        customReportMessage.value = ''
+        window.notify.success('Report Submitted', 'Thank you. We will review this post shortly.')
+    } catch (error) {
+        console.error('Report failed:', error)
+        window.notify.error('Report Failed', 'Could not submit report. Please try again.')
+    } finally {
+        reporting.value = false
+    }
+}
+
+const handleCopyLink = () => {
+    showOptionsDropdown.value = false
+    const url = `${window.location.origin}/agripulse/post/${props.post.id}`
+    navigator.clipboard.writeText(url)
+    window.notify.success('Link Copied', 'Post URL copied to clipboard.')
+}
+
+const handleNotInterested = () => {
+    showOptionsDropdown.value = false
+    window.notify.success('Feedback Received', 'We will show fewer posts like this.')
+    emit('hide', props.post.id)
 }
 
 // Track view on mount

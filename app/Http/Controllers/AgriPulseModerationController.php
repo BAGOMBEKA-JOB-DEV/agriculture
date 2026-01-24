@@ -21,7 +21,7 @@ class AgriPulseModerationController extends Controller
         return response()->json([
             'stats' => [
                 'total_posts' => Post::count(),
-                'active_posts' => Post::where('status', 'active')->count(),
+                'active_posts' => Post::where('status', 'published')->count(),
                 'total_comments' => PostComment::count(),
                 'pending_reports' => AgriPulsePostReport::where('status', 'pending')->count(),
                 'resolved_reports' => AgriPulsePostReport::whereIn('status', ['resolved', 'dismissed'])->count(),
@@ -42,7 +42,7 @@ class AgriPulseModerationController extends Controller
                 ->latest()
                 ->limit(10)
                 ->get(),
-            'latest_reports' => AgriPulsePostReport::with(['user', 'post.user'])
+            'latest_reports' => AgriPulsePostReport::with(['reporter', 'post.user'])
                 ->where('status', 'pending')
                 ->latest()
                 ->limit(5)

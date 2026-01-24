@@ -79,7 +79,8 @@
 
                     <div v-else-if="posts.length > 0" class="space-y-4">
                         <PostCard v-for="post in posts" :key="post.id" :post="post" :currentUser="user"
-                            @refresh="refreshPost(post.id)" @preview-image="previewImage" @repost="prepareRepost" />
+                            @refresh="refreshPost(post.id)" @preview-image="previewImage" @repost="prepareRepost"
+                            @hide="handleHidePost" />
 
                         <button v-if="pagination.nextPage" @click="loadMore"
                             class="w-full py-3 bg-white border border-gray-200 rounded-xl text-sm font-black text-gray-500 hover:bg-gray-50 transition-colors uppercase tracking-widest"
@@ -245,7 +246,7 @@
                                     newPost.original_post.user.name.charAt(0) }}</span>
                             </div>
                             <span class="text-[10px] font-black text-gray-900">{{ newPost.original_post.user.name
-                            }}</span>
+                                }}</span>
                         </div>
                         <p class="text-[10px] text-gray-600 truncate">{{ newPost.original_post.content }}</p>
                     </div>
@@ -513,6 +514,10 @@ const navigateToSavedPosts = () => {
 }
 
 const loadMore = () => fetchFeed(true)
+
+const handleHidePost = (postId) => {
+    posts.value = posts.value.filter(p => p.id !== postId)
+}
 
 onMounted(() => {
     fetchUser()
