@@ -20,9 +20,11 @@ export default defineConfig({
         },
     },
     server: {
-        hmr: {
-            overlay: false
-        }
+        // host: '0.0.0.0', // Listen on all network interfaces
+        // hmr: {
+        //     host: '192.168.1.139', // YOUR local IP address
+        //     overlay: false
+        // },
     },
     assetsInclude: ['**/*.jpg', '**/*.png', '**/*.svg', '**/*.gif']
 });
