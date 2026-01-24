@@ -86,7 +86,7 @@
               </div>
             </td>
             <td class="px-8 py-5 text-right text-[10px] font-bold text-gray-400">
-              {{ dayjs(report.created_at).format('MMM D, YY') }}
+              {{ dayjs(report.created_at).format('MMM D, YY h:mm A') }}
             </td>
             <td class="px-8 py-5 text-right relative" @click.stop>
               <button @click="toggleMenu(report.id)"
@@ -156,14 +156,16 @@
     <!-- Report Detail Slide-over -->
     <div v-if="selectedReport" class="fixed inset-0 z-[100] flex justify-end overflow-hidden"
       @click="selectedReport = null">
-      <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity"></div>
+      <div class="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity"></div>
 
-      <main class="relative w-full max-w-xl bg-white border-l border-gray-100 h-full flex flex-col animate-slide-in"
+      <main
+        class="relative w-full max-w-5xl bg-white border-l border-gray-100 h-full flex flex-col animate-slide-in shadow-2xl"
         @click.stop>
-        <div class="p-8 border-b border-gray-50 flex items-center justify-between shrink-0">
+        <!-- Header -->
+        <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between shrink-0 bg-white z-10">
           <div class="flex items-center gap-4">
-            <div
-              class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center border transition-colors"
+              :class="severityDetailClass(selectedReport.reason)">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
@@ -171,58 +173,196 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-gray-900 tracking-tighter">Report details</h3>
-              <p
-                class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.1em] mt-1.5 flex items-center gap-2">
-                <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">ID: #{{ selectedReport.id }}</span>
-                <span>&bull;</span>
-                <span>Reason: {{ selectedReport.reason }}</span>
+              <h3 class="text-xl font-bold text-gray-900 tracking-tight">Investigation Case #{{ selectedReport.id }}
+              </h3>
+              <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                Opened {{ dayjs(selectedReport.created_at).fromNow() }}
               </p>
             </div>
           </div>
           <button @click="selectedReport = null"
-            class="p-3 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-2xl transition-all">
+            class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
         </div>
 
-        <div class="p-10 flex-1 overflow-y-auto space-y-10 custom-scrollbar">
-          <div class="space-y-4">
-            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">REPORTER'S NOTES</h4>
-            <div class="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 italic text-gray-600 text-lg font-medium">
-              "{{ selectedReport.description || 'No additional notes provided by the reporter.' }}"
-            </div>
-          </div>
+        <!-- Body Grid -->
+        <div class="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-12 bg-gray-50/50">
+          <!-- Left Sidebar: Context & Reporter -->
+          <div class="md:col-span-4 bg-white border-r border-gray-100 overflow-y-auto custom-scrollbar p-8 space-y-8">
 
-          <div v-if="selectedReport.post" class="space-y-4">
-            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">REPORTED CONTENT</h4>
-            <div class="p-8 bg-red-50/50 rounded-[2rem] border border-red-100/50 space-y-6">
-              <p class="text-lg font-medium text-gray-900 leading-relaxed italic">"{{ selectedReport.post.content ||
-                '[Image/Product content]' }}"</p>
-              <div class="flex items-center gap-4 pt-4 border-t border-red-100 italic">
-                <div class="text-[9px] font-bold uppercase tracking-widest text-red-500">OWNER ID #{{
-                  selectedReport.post.user_id }}</div>
-                <div class="w-1 h-1 rounded-full bg-red-200"></div>
-                <div class="text-[9px] font-bold uppercase tracking-widest text-red-500">Status: {{
-                  selectedReport.post.status }}</div>
+            <!-- Status Card -->
+            <div>
+              <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Current Status</h4>
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider" :class="{
+                  'bg-yellow-100 text-yellow-700': selectedReport.status === 'pending',
+                  'bg-green-100 text-green-700': selectedReport.status === 'resolved',
+                  'bg-gray-100 text-gray-600': selectedReport.status === 'dismissed'
+                }">
+                  {{ selectedReport.status }}
+                </span>
+                <span v-if="selectedReport.resolver" class="text-xs font-medium text-gray-500">
+                  by {{ selectedReport.resolver.name }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Reporter Profile -->
+            <div class="pt-6 border-t border-gray-50">
+              <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Reporter Intelligence</h4>
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden border border-gray-200">
+                  <img v-if="selectedReport.reporter?.avatar_url" :src="selectedReport.reporter.avatar_url"
+                    class="w-full h-full object-cover">
+                  <span v-else class="w-full h-full flex items-center justify-center text-xs font-bold text-gray-400">{{
+                    selectedReport.reporter?.name?.[0] || '?' }}</span>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-900 leading-tight">{{ selectedReport.reporter?.name || 'Unknown  User' }}</h3>
+                  <span class="text-[10px] font-bold text-gray-400 block mt-0.5">{{ selectedReport.reporter?.email ||
+                    'No email' }}</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <span class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Role</span>
+                  <span class="text-xs font-bold text-gray-700">{{ selectedReport.reporter?.roles?.[0]?.name || 'User'
+                  }}</span>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <span class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">User ID</span>
+                  <span class="font-mono text-xs font-bold text-gray-700">#{{ selectedReport.reporter_id }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Report Reason -->
+            <div class="pt-6 border-t border-gray-50">
+              <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Report Context</h4>
+              <div class="space-y-4">
+                <div>
+                  <span class="text-xs font-medium text-gray-500">Primary Reason</span>
+                  <p class="text-sm font-bold text-gray-900 mt-1 capitalize">{{ selectedReport.reason.replace('_', ' ')
+                  }}</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-xl border border-red-100">
+                  <span class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-2 block">Reporter's
+                    Note</span>
+                  <p class="text-sm font-medium text-gray-700 italic">"{{ selectedReport.description || 'No additional details provided.' }}"</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resolution Verdict -->
+            <div v-if="selectedReport.status !== 'pending'" class="pt-6 border-t border-gray-50">
+              <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Resolution Verdict</h4>
+              <div class="p-4 bg-green-50 rounded-xl border border-green-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[9px] font-black text-green-600 uppercase tracking-widest">Final Note</span>
+                  <span class="text-[9px] text-green-400 font-bold ml-auto" v-if="selectedReport.resolved_at">
+                    {{ dayjs(selectedReport.resolved_at).format('MMM D, h:mm A') }}
+                  </span>
+                </div>
+                <p class="text-xs font-semibold text-gray-700 italic">"{{ selectedReport.resolution_note || 'No resolution note provided.' }}"</p>
+                <div class="mt-3 pt-3 border-t border-green-100 flex items-center justify-between">
+                  <span class="text-[9px] font-black text-green-600 uppercase tracking-widest">Moderator</span>
+                  <span class="text-[10px] font-bold text-gray-900">{{ selectedReport.resolver?.name || 'System'
+                    }}</span>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Right: Content -->
+          <div class="md:col-span-8 overflow-y-auto custom-scrollbar p-8">
+            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Red Flagged Content</h4>
+
+            <div v-if="selectedReport.post"
+              class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+              <!-- Post Header -->
+              <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-gray-100 overflow-hidden border border-gray-200">
+                    <img v-if="selectedReport.post.user?.avatar_url" :src="selectedReport.post.user.avatar_url"
+                      class="w-full h-full object-cover">
+                    <span v-else
+                      class="w-full h-full flex items-center justify-center text-xs font-bold text-gray-400">{{
+                        selectedReport.post.user?.name?.[0] }}</span>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-gray-900">{{ selectedReport.post.user?.name || 'Unknown Author' }}
+                    </h3>
+                    <p class="text-[10px] text-gray-500 font-bold">Posted {{
+                      dayjs(selectedReport.post.created_at).format('MMM D, h:mm A') }}</p>
+                  </div>
+                </div>
+                <span class="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-600 uppercase tracking-wider">
+                  {{ selectedReport.post.status }}
+                </span>
+              </div>
+
+              <!-- Post Content -->
+              <div class="p-6 space-y-4">
+                <p class="text-base text-gray-800 leading-relaxed whitespace-pre-line">{{ selectedReport.post.content }}
+                </p>
+
+                <div v-if="selectedReport.post.image_url"
+                  class="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50">
+                  <img :src="selectedReport.post.image_url" class="w-full max-h-80 object-cover">
+                </div>
+              </div>
+
+              <!-- Stats -->
+              <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center gap-6">
+                <div class="flex items-center gap-2 text-gray-500">
+                  <span class="font-bold text-gray-900">{{ selectedReport.post.reactions_count || 0 }}</span>
+                  <span class="text-xs font-bold uppercase tracking-wider">Reactions</span>
+                </div>
+                <div class="flex items-center gap-2 text-gray-500">
+                  <span class="font-bold text-gray-900">{{ selectedReport.post.comments_count || 0 }}</span>
+                  <span class="text-xs font-bold uppercase tracking-wider">Comments</span>
+                </div>
+                <div class="flex items-center gap-2 text-gray-500">
+                  <span class="font-bold text-gray-900">{{ selectedReport.post.reposts_count || 0 }}</span>
+                  <span class="text-xs font-bold uppercase tracking-wider">Reposts</span>
+                </div>
+                <!-- View Post Button -->
+                <a :href="`/agripulse/post/${selectedReport.post.id}`" target="_blank"
+                  class="ml-auto text-xs font-black text-agri-forest uppercase tracking-widest hover:underline flex items-center gap-1">
+                  Open on Feed
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div v-else class="p-12 text-center bg-gray-100 rounded-3xl border border-gray-200 border-dashed">
+              <p class="text-sm font-bold text-gray-500 italic">Content has been deleted or is unavailable.</p>
+            </div>
+          </div>
         </div>
 
+        <!-- Footer -->
         <div v-if="selectedReport.status === 'pending'"
-          class="p-8 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
-          <button @click="initResolve(selectedReport, 'dismiss')"
-            class="px-8 h-12 bg-white text-gray-400 hover:text-gray-900 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-gray-200 transition-all">Dismiss</button>
-          <button @click="initResolve(selectedReport, 'resolve')"
-            class="px-10 h-12 bg-green-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">Resolve</button>
-        </div>
-        <div v-else class="p-8 bg-gray-100/50 border-t border-gray-50 text-center shrink-0">
-          <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Resolved by {{
-            selectedReport.resolver?.name || 'System' }} on {{ dayjs(selectedReport.resolved_at).format('MMM D, YYYY')
-            }}</p>
+          class="p-6 bg-white border-t border-gray-100 flex items-center justify-between shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+          <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            Action Required
+          </p>
+          <div class="flex items-center gap-3">
+            <button @click="initResolve(selectedReport, 'dismiss')"
+              class="px-6 h-11 bg-white hover:bg-gray-50 text-gray-500 hover:text-gray-900 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 transition-all shadow-sm">
+              Dismiss Report
+            </button>
+            <button @click="initResolve(selectedReport, 'resolve')"
+              class="px-8 h-11 bg-agri-forest hover:bg-agri-lush text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-agri-forest/20 transition-all">
+              Take Action / Resolve
+            </button>
+          </div>
         </div>
       </main>
     </div>
@@ -242,10 +382,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import Modal from '@/components/Modal.vue'
+
+dayjs.extend(relativeTime)
+
+const props = defineProps({
+  selectedReportId: {
+    type: [Number, String],
+    default: null
+  }
+})
 
 const vClickOutside = {
   mounted(el, binding) {
@@ -315,6 +465,12 @@ const severityColor = (reason) => {
   return 'bg-blue-500'
 }
 
+const severityDetailClass = (reason) => {
+  if (['harassment', 'hate_speech', 'violence'].includes(reason)) return 'bg-red-50 text-red-600 border-red-100'
+  if (['spam', 'scam'].includes(reason)) return 'bg-orange-50 text-orange-600 border-orange-100'
+  return 'bg-blue-50 text-blue-600 border-blue-100'
+}
+
 const toggleMenu = (id) => {
   openMenuId.value = openMenuId.value === id ? null : id
 }
@@ -361,7 +517,24 @@ const executeResolve = async () => {
   }
 }
 
-onMounted(() => fetchReports())
+onMounted(async () => {
+  await fetchReports()
+  if (props.selectedReportId) {
+    const report = reports.value.find(r => r.id == props.selectedReportId)
+    if (report) {
+      viewDetails(report)
+    }
+  }
+})
+
+watch(() => props.selectedReportId, (newId) => {
+  if (newId) {
+    const report = reports.value.find(r => r.id == newId)
+    if (report) {
+      viewDetails(report)
+    }
+  }
+})
 </script>
 
 <style scoped>

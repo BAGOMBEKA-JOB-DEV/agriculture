@@ -178,7 +178,13 @@ class AgriPulseModerationController extends Controller
      */
     public function getReports(Request $request)
     {
-        $query = AgriPulsePostReport::with(['post', 'reporter', 'resolver']);
+        $query = AgriPulsePostReport::with([
+            'post' => function($q) {
+                $q->withCount(['reactions', 'comments', 'reposts'])->with('user.roles');
+            },
+            'reporter.roles',
+            'resolver'
+        ]);
 
         if ($request->status) {
             $query->where('status', $request->status);
@@ -405,6 +411,8 @@ class AgriPulseModerationController extends Controller
     {
         $user = User::findOrFail($userId);
         
+        $user->update(['status' => 'suspended']);
+
         $action = AgriPulseUserModerationAction::create([
             'user_id' => $userId,
             'moderator_id' => auth()->id(),
