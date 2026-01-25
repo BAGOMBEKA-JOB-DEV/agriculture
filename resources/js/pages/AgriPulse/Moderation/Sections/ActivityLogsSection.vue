@@ -106,10 +106,8 @@
                             class="group hover:bg-gray-50/50 transition-colors cursor-pointer">
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-8 h-8 rounded-full bg-agri-forest/10 flex items-center justify-center text-agri-forest font-bold text-xs uppercase">
-                                        {{ log.moderator?.name?.[0] || '?' }}
-                                    </div>
+                                    <img :src="log.moderator?.avatar_url" :alt="log.moderator?.name"
+                                        class="w-8 h-8 rounded-full object-cover bg-agri-forest/10">
                                     <div>
                                         <span class="block text-xs font-bold text-gray-900">{{ log.moderator?.name ||
                                             'Unknown' }}</span>
@@ -210,10 +208,8 @@
                                     </h4>
                                     <div
                                         class="flex items-center gap-4 bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                                        <div
-                                            class="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center font-bold text-gray-400">
-                                            {{ selectedLog.moderator?.name?.[0] }}
-                                        </div>
+                                        <img :src="selectedLog.moderator?.avatar_url" :alt="selectedLog.moderator?.name"
+                                            class="w-10 h-10 rounded-xl object-cover bg-white border border-gray-100">
                                         <div>
                                             <p class="text-sm font-bold text-gray-900">{{ selectedLog.moderator?.name }}
                                             </p>
@@ -230,13 +226,12 @@
                                         Author</h4>
                                     <div
                                         class="flex items-center gap-4 bg-blue-50/50 rounded-2xl p-4 border border-blue-100">
-                                        <div
-                                            class="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center font-bold text-blue-500">
-                                            {{ selectedLog.subject.user.name?.[0] }}
-                                        </div>
+                                        <img :src="selectedLog.subject.user?.avatar_url"
+                                            :alt="selectedLog.subject.user?.name"
+                                            class="w-10 h-10 rounded-xl object-cover bg-white border border-blue-100">
                                         <div>
                                             <p class="text-sm font-bold text-gray-900">{{ selectedLog.subject.user.name
-                                                }}
+                                            }}
                                             </p>
                                             <p class="text-[10px] text-gray-500 uppercase tracking-widest">{{
                                                 selectedLog.subject.user.email }}</p>
@@ -271,7 +266,7 @@
                                                 At</span>
                                             <span class="text-xs font-bold text-gray-900">{{
                                                 dayjs(selectedLog.subject.created_at).format('MMM D, YYYY h:mm A')
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                         <div class="p-4 flex flex-col gap-1" v-if="selectedLog.metadata.report_reason">
                                             <span
@@ -284,7 +279,7 @@
                                                 class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Subject
                                                 ID</span>
                                             <span class="text-xs font-mono text-gray-500">#{{ selectedLog.subject_id
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                     </div>
                                 </div>

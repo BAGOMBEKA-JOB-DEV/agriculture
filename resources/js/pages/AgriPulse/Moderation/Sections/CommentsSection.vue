@@ -98,10 +98,7 @@
               </td>
               <td class="px-8 py-5">
                 <div class="flex items-center gap-2">
-                  <div
-                    class="w-6 h-6 rounded-lg bg-agri-sand flex items-center justify-center text-[10px] font-black text-agri-forest">
-                    {{ comment.user.name[0] }}
-                  </div>
+                  <img :src="comment.user.avatar_url" :alt="comment.user.name" class="w-6 h-6 rounded-lg object-cover">
                   <div class="flex flex-col">
                     <span class="text-xs font-bold text-gray-900 leading-none">{{ comment.user.name }}</span>
                     <span class="text-[9px] text-gray-400 mt-1">{{ dayjs(comment.created_at).fromNow() }}</span>
@@ -220,10 +217,8 @@
           @click.stop>
           <div class="px-10 py-8 border-b border-gray-50 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-4">
-              <div
-                class="w-16 h-16 rounded-2xl bg-agri-sand flex items-center justify-center text-2xl font-black text-agri-forest">
-                {{ selectedComment.user.name[0] }}
-              </div>
+              <img :src="selectedComment.user.avatar_url" :alt="selectedComment.user.name"
+                class="w-16 h-16 rounded-2xl object-cover shadow-sm bg-gray-50">
               <div>
                 <h3 class="text-2xl font-bold text-gray-900 leading-tight">Comment #{{ selectedComment.id }}</h3>
                 <p
@@ -259,10 +254,8 @@
                 <!-- Parent Author -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
-                    <div
-                      class="w-8 h-8 rounded-lg bg-white border border-agri-forest/10 flex items-center justify-center text-[10px] font-bold text-agri-forest">
-                      {{ selectedComment.post.user?.name[0] || '?' }}
-                    </div>
+                    <img :src="selectedComment.post.user?.avatar_url" :alt="selectedComment.post.user?.name || 'User'"
+                      class="w-8 h-8 rounded-lg object-cover bg-white border border-agri-forest/10">
                     <div>
                       <p class="text-[10px] font-bold text-gray-900 leading-none mb-1">{{
                         selectedComment.post.user?.name
@@ -363,10 +356,8 @@
                 <div v-for="comment in commentDetails.related_comments" :key="comment.id"
                   class="p-4 hover:bg-gray-50/50 transition-colors">
                   <div class="flex items-start gap-3">
-                    <div
-                      class="w-8 h-8 rounded-lg bg-agri-sand flex items-center justify-center text-[10px] font-black text-agri-forest shrink-0">
-                      {{ comment.user?.name[0] || '?' }}
-                    </div>
+                    <img :src="comment.user?.avatar_url" :alt="comment.user?.name || 'User'"
+                      class="w-8 h-8 rounded-lg object-cover shrink-0 bg-agri-sand">
                     <div class="flex-1">
                       <p class="text-xs font-bold text-gray-900 mb-1">{{ comment.user?.name || 'Unknown' }}</p>
                       <p class="text-xs text-gray-600 italic line-clamp-2">"{{ comment.content }}"</p>

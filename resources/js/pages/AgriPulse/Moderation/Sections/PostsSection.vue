@@ -129,10 +129,7 @@
               </td>
               <td class="px-8 py-5">
                 <div class="flex items-center gap-2">
-                  <div
-                    class="w-6 h-6 rounded-lg bg-agri-sand flex items-center justify-center text-[10px] font-black text-agri-forest">
-                    {{ post.user.name[0] }}
-                  </div>
+                  <img :src="post.user.avatar_url" :alt="post.user.name" class="w-6 h-6 rounded-lg object-cover">
                   <span class="text-xs font-bold text-gray-900">{{ post.user.name }}</span>
                 </div>
               </td>
@@ -244,10 +241,8 @@
           @click.stop>
           <div class="p-8 border-b border-gray-50 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-4">
-              <div
-                class="w-16 h-16 rounded-2xl bg-agri-sand flex items-center justify-center text-2xl font-black text-agri-forest">
-                {{ selectedPost.user.name[0] }}
-              </div>
+              <img :src="selectedPost.user.avatar_url" :alt="selectedPost.user.name"
+                class="w-16 h-16 rounded-2xl object-cover shadow-sm bg-gray-50">
               <div>
                 <h3 class="text-2xl font-bold text-gray-900 leading-tight">Post #{{ selectedPost.id }}</h3>
                 <p
@@ -322,7 +317,7 @@
                 <div class="p-5 bg-purple-50 border border-purple-100 rounded-3xl text-center">
                   <p class="text-2xl font-black text-purple-600">{{ postDetails.author_stats.total_comments_received ||
                     0
-                  }}</p>
+                    }}</p>
                   <p class="text-[9px] font-black text-purple-400 uppercase tracking-widest mt-1">Comments Received</p>
                 </div>
                 <div class="p-5 bg-red-50 border border-red-100 rounded-3xl text-center">
@@ -340,10 +335,8 @@
                 <div v-for="comment in postDetails.top_comments.slice(0, 5)" :key="comment.id"
                   class="p-4 hover:bg-gray-50/50 transition-colors">
                   <div class="flex items-start gap-3">
-                    <div
-                      class="w-8 h-8 rounded-lg bg-agri-sand flex items-center justify-center text-[10px] font-black text-agri-forest shrink-0">
-                      {{ comment.user?.name[0] || '?' }}
-                    </div>
+                    <img :src="comment.user?.avatar_url" :alt="comment.user?.name || 'User'"
+                      class="w-8 h-8 rounded-lg object-cover shrink-0 bg-gray-50">
                     <div class="flex-1">
                       <p class="text-xs font-bold text-gray-900 mb-1">{{ comment.user?.name || 'Unknown' }}</p>
                       <p class="text-xs text-gray-600 italic line-clamp-2">"{{ comment.content }}"</p>
@@ -374,7 +367,7 @@
                     <tr v-for="report in postDetails.post_reports" :key="report.id">
                       <td class="px-6 py-4">
                         <span class="text-[10px] font-black uppercase tracking-tight text-red-500">{{ report.reason
-                        }}</span>
+                          }}</span>
                       </td>
                       <td class="px-6 py-4 text-xs font-bold text-gray-900">{{ report.reporter?.name || 'Unknown' }}
                       </td>
@@ -402,7 +395,7 @@
                   <div class="flex items-start gap-3">
                     <div class="flex-1">
                       <p class="text-xs text-gray-700 italic mb-2 line-clamp-2">"{{ post.content || 'Image/Product post'
-                      }}"</p>
+                        }}"</p>
                       <div class="flex items-center gap-4 text-[9px] font-bold text-gray-400">
                         <span class="flex items-center gap-1">
                           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -430,7 +423,7 @@
                       </div>
                     </div>
                     <span class="text-[9px] font-bold text-gray-400 uppercase">{{ dayjs(post.created_at).fromNow()
-                    }}</span>
+                      }}</span>
                   </div>
                 </div>
               </div>

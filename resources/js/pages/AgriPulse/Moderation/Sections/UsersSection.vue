@@ -93,10 +93,7 @@
               </td>
               <td class="px-8 py-5">
                 <div class="flex items-center gap-3">
-                  <div
-                    class="w-8 h-8 rounded-xl bg-agri-sand flex items-center justify-center text-[10px] font-black text-agri-forest">
-                    {{ user.name[0] }}
-                  </div>
+                  <img :src="user.avatar_url" :alt="user.name" class="w-8 h-8 rounded-xl object-cover bg-agri-sand">
                   <div class="flex flex-col">
                     <span class="text-xs font-bold text-gray-900 leading-none">{{ user.name }}</span>
                     <span class="text-[9px] text-gray-400 mt-1">{{ user.email }}</span>
@@ -197,10 +194,8 @@
           <!-- Header -->
           <div class="p-8 border-b border-gray-50 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-4">
-              <div
-                class="w-16 h-16 rounded-2xl bg-agri-sand flex items-center justify-center text-2xl font-black text-agri-forest">
-                {{ selectedUser.name[0] }}
-              </div>
+              <img :src="selectedUser.avatar_url" :alt="selectedUser.name"
+                class="w-16 h-16 rounded-2xl object-cover bg-agri-sand">
               <div>
                 <h3 class="text-2xl font-bold text-gray-900 leading-tight">{{ selectedUser.name }}</h3>
                 <p

@@ -112,9 +112,13 @@
                 </p>
               </td>
               <td class="px-8 py-5">
-                <div class="flex flex-col">
-                  <span class="text-xs font-bold text-gray-900">{{ report.reporter?.name }}</span>
-                  <span class="text-[9px] text-gray-400 uppercase tracking-widest">ID #{{ report.reporter_id }}</span>
+                <div class="flex items-center gap-3">
+                  <img :src="report.reporter?.avatar_url" :alt="report.reporter?.name"
+                    class="w-8 h-8 rounded-lg object-cover bg-gray-50 shrink-0">
+                  <div class="flex flex-col">
+                    <span class="text-xs font-bold text-gray-900">{{ report.reporter?.name }}</span>
+                    <span class="text-[9px] text-gray-400 uppercase tracking-widest">ID #{{ report.reporter_id }}</span>
+                  </div>
                 </div>
               </td>
               <td class="px-8 py-5 text-right text-[10px] font-bold text-gray-400">
