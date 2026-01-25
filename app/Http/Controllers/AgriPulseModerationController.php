@@ -456,18 +456,35 @@ class AgriPulseModerationController extends Controller
         
         $reportStatus = $request->input('status', 'all');
         
+        // Post Trends
         $postTrends = Post::whereBetween('created_at', [$startDate, $endDate])
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get();
 
+        // Report Trends
         $reportQuery = AgriPulsePostReport::whereBetween('created_at', [$startDate, $endDate]);
         if ($reportStatus !== 'all') {
             $reportQuery->where('status', $reportStatus);
         }
         
         $reportTrends = $reportQuery
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+
+        // Comment Trends
+        $commentTrends = PostComment::whereBetween('created_at', [$startDate, $endDate])
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+
+        // Reaction Trends
+        $reactionTrends = \App\Models\PostReaction::where('type', 'like')
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->groupBy('date')
             ->orderBy('date', 'asc')
@@ -492,6 +509,8 @@ class AgriPulseModerationController extends Controller
         return response()->json([
             'post_trends' => $postTrends,
             'report_trends' => $reportTrends,
+            'comment_trends' => $commentTrends,
+            'reaction_trends' => $reactionTrends,
             'top_reported_users' => User::withCount([
                 'posts' => function($q) {
                     $q->whereHas('reports');

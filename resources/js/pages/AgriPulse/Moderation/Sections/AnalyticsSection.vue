@@ -1,10 +1,10 @@
 <template>
   <div class="min-h-screen bg-gray-50/50 pb-12">
     <div class="container mx-auto px-6 relative z-10">
-      <div class="space-y-8 pb-12">
+      <div class="space-y-6 pb-8">
         <!-- Header -->
-        <div class="bg-white p-8 rounded-3xl border border-gray-100">
-          <div class="flex items-center justify-between mb-6">
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div>
               <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Analytics & Insights</h2>
               <p class="text-sm text-gray-500 font-medium mt-1">Real-time overview of community activity and moderation
@@ -65,7 +65,7 @@
                 </select>
               </div>
 
-              <!-- Custom Date Range (visible only when period is 'custom') -->
+              <!-- Custom Date Range -->
               <div v-if="filters.period === 'custom'"
                 class="lg:col-span-2 space-y-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <label class="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">Custom Date
@@ -76,94 +76,172 @@
                   <span class="text-gray-400 font-bold text-sm">TO</span>
                   <input v-model="filters.end_date" @change="fetchData" type="date"
                     class="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-agri-forest/20">
-                  <button @click="resetFilters"
-                    class="px-3 py-2 text-xs font-bold text-red-600 hover:text-red-700 uppercase tracking-widest transition-colors">
-                    Clear
-                  </button>
                 </div>
               </div>
             </div>
           </Transition>
+
+          <!-- Navigation Tabs -->
+          <div class="flex items-center gap-2 mt-8 border-b border-gray-100 overflow-x-auto">
+            <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
+              class="px-6 py-3 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap"
+              :class="activeTab === tab.id ? 'text-agri-forest' : 'text-gray-400 hover:text-gray-600'">
+              {{ tab.label }}
+              <div v-if="activeTab === tab.id"
+                class="absolute bottom-0 left-0 w-full h-0.5 bg-agri-forest rounded-t-full"></div>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="container mx-auto px-6 -mt-8 relative z-20 space-y-8">
-      <!-- Summary Metric Cards (Premium Style) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div v-for="stat in cardStats" :key="stat.label"
-          class="bg-gradient-to-br backdrop-blur-md p-5 rounded-3xl border transition-all duration-500 group cursor-default relative overflow-hidden hover:-translate-y-1"
-          :class="[stat.bgClass, stat.borderClass]">
-          <div
-            class="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-xl transition-all duration-700 group-hover:scale-110"
-            :class="stat.glowClass">
-          </div>
+    <div class="container mx-auto px-6 -mt-4 relative z-20 space-y-8">
+      <!-- DASHBOARD CONTENT BASED ON TAB -->
 
-          <div class="relative z-10 flex flex-col items-start space-y-3">
-            <div
-              class="p-2.5 rounded-xl border border-white/20 transition-all duration-700 shadow-lg group-hover:scale-105"
-              :class="stat.iconBg">
-              <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="stat.iconPath"></path>
-              </svg>
-            </div>
-            <div>
-              <p class="text-2xl font-black tracking-tight group-hover:scale-[1.05] transition-transform duration-500 origin-left"
-                :class="stat.textColor">
-                {{ stat.value }}
-              </p>
-              <h4 class="text-[9px] font-bold uppercase tracking-wider mt-1" :class="stat.labelColor">{{ stat.label }}
-              </h4>
+      <!-- 1. OVERVIEW TAB -->
+      <div v-if="activeTab === 'overview'" class="space-y-6 animate-in">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div v-for="stat in overviewStats" :key="stat.label"
+            class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-2xl font-black tracking-tight text-gray-900 group-hover:scale-105 transition-transform"
+                  :class="stat.textColor">
+                  {{ stat.value }}
+                </p>
+                <h4 class="text-[9px] font-bold uppercase tracking-wider mt-1 text-gray-400">{{ stat.label }}</h4>
+              </div>
+              <div class="p-2.5 rounded-xl transition-all" :class="stat.bgClass">
+                <svg class="w-4 h-4" :class="stat.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="stat.iconPath"></path>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Charts Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Post Trends -->
-        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl">
+        <!-- Post Activity Chart -->
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg">
           <div class="flex items-center justify-between mb-6">
-            <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Post Activity</h3>
-            <span
-              class="text-xs font-bold text-agri-forest bg-agri-forest/5 px-3 py-1 rounded-lg border border-agri-forest/10">Daily
-              Trend</span>
+            <div>
+              <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Post Volume Activity</h3>
+              <p class="text-xs text-gray-400 font-medium mt-1">Daily post creation trends</p>
+            </div>
           </div>
-          <div class="h-80">
+          <div class="h-96">
             <Line v-if="postChartData" :data="postChartData" :options="lineChartOptions" />
-            <div v-else
-              class="h-full flex items-center justify-center bg-gray-50 rounded-2xl animate-pulse text-gray-400 font-bold uppercase tracking-widest text-xs">
-              Loading chart...
-            </div>
-          </div>
-        </div>
-
-        <!-- Report Trends -->
-        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Report Activity</h3>
-            <span class="text-xs font-bold text-red-500 bg-red-50 px-3 py-1 rounded-lg border border-red-100">Daily
-              Trend</span>
-          </div>
-          <div class="h-80">
-            <Bar v-if="reportChartData" :data="reportChartData" :options="barChartOptions" />
-            <div v-else
-              class="h-full flex items-center justify-center bg-gray-50 rounded-2xl animate-pulse text-gray-400 font-bold uppercase tracking-widest text-xs">
-              Loading chart...
+            <div v-else class="h-full flex items-center justify-center bg-gray-50 rounded-2xl animate-pulse">
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Loading data...</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Top Reported Users & Performance -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Top Offenders -->
-        <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 overflow-hidden flex flex-col shadow-xl">
-          <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+      <!-- 2. SAFETY & REPORTS TAB -->
+      <div v-else-if="activeTab === 'safety'" class="space-y-6 animate-in">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <!-- Safety Specific Stats -->
+          <div class="bg-red-50 p-6 rounded-3xl border border-red-100">
+            <p class="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Total Reports</p>
+            <p class="text-3xl font-black text-red-600">{{ metrics.total_reports }}</p>
+          </div>
+          <div class="bg-green-50 p-6 rounded-3xl border border-green-100">
+            <p class="text-xs font-bold text-green-400 uppercase tracking-widest mb-2">Resolved</p>
+            <p class="text-3xl font-black text-green-600">{{ metrics.resolved_reports }}</p>
+          </div>
+          <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+            <p class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">Resolution Rate</p>
+            <p class="text-3xl font-black text-blue-600">{{ metrics.resolution_rate }}%</p>
+          </div>
+        </div>
+
+        <!-- Report Trends Chart -->
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg">
+          <div class="flex items-center justify-between mb-6">
             <div>
-              <h2 class="text-sm font-black text-gray-900 uppercase tracking-widest">Most Reported Users</h2>
-              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Users requiring attention
-              </p>
+              <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Report Frequency</h3>
+              <p class="text-xs text-gray-400 font-medium mt-1">Incoming safety reports over time</p>
+            </div>
+          </div>
+          <div class="h-96">
+            <Bar v-if="reportChartData" :data="reportChartData" :options="barChartOptions" />
+            <div v-else class="h-full flex items-center justify-center bg-gray-50 rounded-2xl animate-pulse">
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Loading data...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ENGAGEMENT TAB -->
+      <div v-else-if="activeTab === 'engagement'" class="space-y-6 animate-in">
+        <!-- New Stats Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Comments</p>
+                <p class="text-3xl font-black text-gray-900 mt-2">{{ metrics.total_comments }}</p>
+              </div>
+              <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                  </path>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Likes</p>
+                <p class="text-3xl font-black text-gray-900 mt-2">{{ metrics.total_likes }}</p>
+              </div>
+              <div class="p-3 bg-pink-50 text-pink-600 rounded-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                  </path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Comment Trends -->
+          <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg">
+            <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Comment Volume</h3>
+            <div class="h-80">
+              <Line v-if="commentChartData" :data="commentChartData" :options="commentChartOptions" />
+              <div v-else class="h-full flex items-center justify-center bg-gray-50 rounded-2xl animate-pulse">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Loading...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Like Trends -->
+          <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg">
+            <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Like/Reaction Volume</h3>
+            <div class="h-80">
+              <Line v-if="reactionChartData" :data="reactionChartData" :options="reactionChartOptions" />
+              <div v-else class="h-full flex items-center justify-center bg-gray-50 rounded-2xl animate-pulse">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. RISK ANALYSIS TAB -->
+      <div v-else-if="activeTab === 'risk'" class="space-y-6 animate-in">
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden flex flex-col shadow-lg">
+          <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-red-50/30">
+            <div>
+              <h2 class="text-sm font-black text-red-900 uppercase tracking-widest">Most Reported Users</h2>
+              <p class="text-[10px] text-red-400 font-bold uppercase tracking-widest mt-1">High priority accounts
+                requiring investigation</p>
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -204,7 +282,7 @@
                           class="text-xs font-bold text-gray-900 leading-none mb-1 group-hover:text-agri-forest transition-colors">{{
                             user.name }}</span>
                         <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ user.email
-                          }}</span>
+                        }}</span>
                       </div>
                     </div>
                   </td>
@@ -223,18 +301,9 @@
                     </div>
                   </td>
                 </tr>
-
-                <!-- Empty State -->
                 <tr v-if="!loadingUsers && topUsers.length === 0">
                   <td colspan="4" class="px-8 py-20 text-center">
                     <div class="flex flex-col items-center justify-center">
-                      <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                          </path>
-                        </svg>
-                      </div>
                       <p class="text-sm font-black text-gray-400 uppercase tracking-widest">No Reported Users</p>
                       <p class="text-xs text-gray-400 mt-1">Community is clean for this period</p>
                     </div>
@@ -244,71 +313,8 @@
             </table>
           </div>
         </div>
-
-        <!-- Performance Metrics -->
-        <div class="space-y-6">
-          <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl">
-            <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Performance Metrics</h3>
-            <div class="space-y-6">
-              <div>
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-xs font-bold text-gray-600">Response Speed</span>
-                  <span class="text-sm font-black text-agri-forest">{{ metrics.response_rate || 94 }}%</span>
-                </div>
-                <div class="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-gradient-to-r from-agri-forest to-green-500 transition-all duration-1000"
-                    :style="{ width: `${metrics.response_rate || 94}%` }"></div>
-                </div>
-              </div>
-              <div>
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-xs font-bold text-gray-600">Resolution Rate</span>
-                  <span class="text-sm font-black text-blue-600">{{ metrics.resolution_rate || 98 }}%</span>
-                </div>
-                <div class="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000"
-                    :style="{ width: `${metrics.resolution_rate || 98}%` }"></div>
-                </div>
-              </div>
-              <div>
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-xs font-bold text-gray-600">Community Health</span>
-                  <span class="text-sm font-black text-green-600">A+</span>
-                </div>
-                <div class="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-gradient-to-r from-green-500 to-green-600 w-[92%]"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="bg-gradient-to-br from-agri-sand/40 to-agri-sand/20 p-8 rounded-3xl border border-agri-sand/50 relative overflow-hidden shadow-xl">
-            <div class="relative z-10">
-              <div class="flex items-center gap-2 mb-3">
-                <div class="w-8 h-8 rounded-lg bg-agri-forest/10 flex items-center justify-center">
-                  <svg class="w-4 h-4 text-agri-forest" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clip-rule="evenodd"></path>
-                  </svg>
-                </div>
-                <h4 class="text-sm font-black text-agri-forest uppercase tracking-widest">Insight</h4>
-              </div>
-              <p class="text-xs text-agri-forest/80 font-bold leading-relaxed">
-                Community engagement is {{ metrics.total_posts > 50 ? 'exceeding' : 'meeting' }} expectations.
-                Moderation response time has improved by 12% this period.
-              </p>
-            </div>
-            <svg class="absolute -bottom-4 -right-4 w-24 h-24 text-agri-forest/5" fill="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-              </path>
-            </svg>
-          </div>
-        </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -323,19 +329,32 @@ import { Line, Bar } from 'vue-chartjs'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler)
 
+const activeTab = ref('overview')
+const tabs = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'safety', label: 'Safety & Reports' },
+  { id: 'engagement', label: 'Engagement' },
+  { id: 'risk', label: 'Risk Analysis' },
+]
+
 const postChartData = ref(null)
 const reportChartData = ref(null)
+const commentChartData = ref(null)
+const reactionChartData = ref(null)
 const topUsers = ref([])
 const showAdvancedFilters = ref(false)
 const loadingUsers = ref(true)
+
 const metrics = ref({
   total_posts: 0,
   total_comments: 0,
+  total_likes: 0,
   total_reports: 0,
   resolved_reports: 0,
   response_rate: 94,
   resolution_rate: 98
 })
+
 const filters = ref({
   period: '30',
   report_status: 'all',
@@ -343,74 +362,58 @@ const filters = ref({
   end_date: ''
 })
 
-const cardStats = computed(() => [
+const overviewStats = computed(() => [
   {
     label: 'Total Posts',
     value: metrics.value.total_posts || 0,
     iconPath: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z',
-    bgClass: 'from-agri-forest/10 to-green-600/5',
-    borderClass: 'border-agri-forest/20',
-    glowClass: 'bg-agri-forest/10',
-    iconBg: 'bg-agri-forest',
-    textColor: 'text-agri-forest',
-    labelColor: 'text-agri-forest/70'
+    bgClass: 'bg-green-50',
+    iconColor: 'text-green-600',
+    textColor: 'text-green-700'
   },
   {
-    label: 'Comments',
-    value: metrics.value.total_comments || 0,
-    iconPath: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
-    bgClass: 'from-yellow-400/10 to-yellow-500/5',
-    borderClass: 'border-yellow-200/30',
-    glowClass: 'bg-yellow-500/10',
-    iconBg: 'bg-yellow-500',
-    textColor: 'text-yellow-700',
-    labelColor: 'text-yellow-600/70'
-  },
-  {
-    label: 'Reports',
+    label: 'Total Reports',
     value: metrics.value.total_reports || 0,
     iconPath: 'M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-7h1',
-    bgClass: 'from-red-400/10 to-red-500/5',
-    borderClass: 'border-red-200/30',
-    glowClass: 'bg-red-500/10',
-    iconBg: 'bg-red-500',
-    textColor: 'text-red-700',
-    labelColor: 'text-red-600/70'
+    bgClass: 'bg-red-50',
+    iconColor: 'text-red-600',
+    textColor: 'text-red-700'
   },
   {
-    label: 'Resolved',
-    value: metrics.value.resolved_reports || 0,
+    label: 'Response Speed',
+    value: `${metrics.value.response_rate}%`,
+    iconPath: 'M13 10V3L4 14h7v7l9-11h-7z',
+    bgClass: 'bg-yellow-50',
+    iconColor: 'text-yellow-600',
+    textColor: 'text-yellow-700'
+  },
+  {
+    label: 'Community Health',
+    value: 'A+',
     iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-    bgClass: 'from-blue-400/10 to-blue-500/5',
-    borderClass: 'border-blue-200/30',
-    glowClass: 'bg-blue-500/10',
-    iconBg: 'bg-blue-500',
-    textColor: 'text-blue-700',
-    labelColor: 'text-blue-600/70'
+    bgClass: 'bg-blue-50',
+    iconColor: 'text-blue-600',
+    textColor: 'text-blue-700'
   }
 ])
 
 const resetFilters = () => {
-  filters.value = {
-    period: '30',
-    report_status: 'all',
-    start_date: '',
-    end_date: ''
-  }
+  filters.value = { period: '30', report_status: 'all', start_date: '', end_date: '' }
   fetchData()
 }
 
-const lineChartOptions = {
+// Chart Options (Reusable logic)
+const commonChartOptions = (colorHex, colorRgbs) => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: 'rgba(17, 75, 49, 0.9)',
+      backgroundColor: colorRgbs,
       padding: 12,
       titleColor: '#fff',
       bodyColor: '#fff',
-      borderColor: '#114B31',
+      borderColor: colorHex,
       borderWidth: 1,
       displayColors: false,
       titleFont: { size: 12, weight: 'bold' },
@@ -418,51 +421,16 @@ const lineChartOptions = {
     }
   },
   scales: {
-    y: {
-      beginAtZero: true,
-      grid: { color: 'rgba(0, 0, 0, 0.03)', drawBorder: false },
-      ticks: { color: '#9CA3AF', font: { size: 11, weight: '600' } }
-    },
-    x: {
-      grid: { display: false, drawBorder: false },
-      ticks: { color: '#9CA3AF', font: { size: 11, weight: '600' } }
-    }
+    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.03)', drawBorder: false }, ticks: { color: '#9CA3AF', font: { size: 11, weight: '600' } } },
+    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#9CA3AF', font: { size: 11, weight: '600' } } }
   },
-  interaction: {
-    mode: 'index',
-    intersect: false
-  }
-}
+  interaction: { mode: 'index', intersect: false }
+})
 
-const barChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: 'rgba(239, 68, 68, 0.9)',
-      padding: 12,
-      titleColor: '#fff',
-      bodyColor: '#fff',
-      borderColor: '#DC2626',
-      borderWidth: 1,
-      displayColors: false,
-      titleFont: { size: 12, weight: 'bold' },
-      bodyFont: { size: 14, weight: 'bold' }
-    }
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: { color: 'rgba(0, 0, 0, 0.03)', drawBorder: false },
-      ticks: { color: '#9CA3AF', font: { size: 11, weight: '600' } }
-    },
-    x: {
-      grid: { display: false, drawBorder: false },
-      ticks: { color: '#9CA3AF', font: { size: 11, weight: '600' } }
-    }
-  }
-}
+const lineChartOptions = commonChartOptions('#114B31', 'rgba(17, 75, 49, 0.9)')
+const barChartOptions = commonChartOptions('#DC2626', 'rgba(239, 68, 68, 0.9)')
+const commentChartOptions = commonChartOptions('#7C3AED', 'rgba(124, 58, 237, 0.9)') // Purple
+const reactionChartOptions = commonChartOptions('#DB2777', 'rgba(219, 39, 119, 0.9)') // Pink
 
 const fetchData = async () => {
   try {
@@ -478,9 +446,8 @@ const fetchData = async () => {
     }
 
     const response = await axios.get('/api/agripulse/moderation/analytics', { params })
-    const { post_trends, report_trends, top_reported_users, summary } = response.data
+    const { post_trends, report_trends, comment_trends, reaction_trends, top_reported_users, summary } = response.data
 
-    // Update metrics
     if (summary) {
       metrics.value = {
         total_posts: summary.total_posts || 0,
@@ -488,53 +455,85 @@ const fetchData = async () => {
         total_reports: summary.total_reports || 0,
         resolved_reports: summary.resolved_reports || 0,
         response_rate: summary.response_rate || 94,
-        resolution_rate: summary.resolution_rate || 98
+        resolution_rate: summary.resolution_rate || 98,
+        total_likes: reaction_trends?.reduce((acc, curr) => acc + curr.count, 0) || 0
       }
     }
 
+    const mapTrends = (trends) => ({
+      labels: trends.map(t => new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+      data: trends.map(t => t.count)
+    })
+
+    const pTrends = mapTrends(post_trends || [])
     postChartData.value = {
-      labels: post_trends.map(t => {
-        const date = new Date(t.date)
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      }),
+      labels: pTrends.labels,
       datasets: [{
         label: 'Posts',
-        data: post_trends.map(t => t.count),
+        data: pTrends.data,
         borderColor: '#114B31',
-        backgroundColor: 'rgba(17, 75, 49, 0.1)',
+        backgroundColor: 'rgba(17, 75, 49, 0.05)',
         fill: true,
         tension: 0.4,
         borderWidth: 3,
-        pointRadius: 4,
+        pointRadius: 3,
         pointHoverRadius: 6,
-        pointBackgroundColor: '#114B31',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointHoverBackgroundColor: '#114B31',
-        pointHoverBorderColor: '#fff'
+        pointBackgroundColor: '#114B31'
       }]
     }
 
+    const rTrends = mapTrends(report_trends || [])
     reportChartData.value = {
-      labels: report_trends.map(t => {
-        const date = new Date(t.date)
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      }),
+      labels: rTrends.labels,
       datasets: [{
         label: 'Reports',
-        data: report_trends.map(t => t.count),
+        data: rTrends.data,
         backgroundColor: '#EF4444',
-        borderRadius: 8,
+        borderRadius: 6,
         borderSkipped: false
       }]
     }
 
+    if (comment_trends) {
+      const cTrends = mapTrends(comment_trends)
+      commentChartData.value = {
+        labels: cTrends.labels,
+        datasets: [{
+          label: 'Comments',
+          data: cTrends.data,
+          borderColor: '#7C3AED',
+          backgroundColor: 'rgba(124, 58, 237, 0.05)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 3,
+          pointBackgroundColor: '#7C3AED'
+        }]
+      }
+    }
+
+    if (reaction_trends) {
+      const lTrends = mapTrends(reaction_trends)
+      reactionChartData.value = {
+        labels: lTrends.labels,
+        datasets: [{
+          label: 'Likes',
+          data: lTrends.data,
+          borderColor: '#DB2777',
+          backgroundColor: 'rgba(219, 39, 119, 0.05)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 3,
+          pointBackgroundColor: '#DB2777'
+        }]
+      }
+    }
+
     topUsers.value = top_reported_users || []
     loadingUsers.value = false
-    console.log('Top users loaded:', topUsers.value.length, topUsers.value)
   } catch (error) {
     console.error('Failed to fetch analytics:', error)
-    topUsers.value = []
     loadingUsers.value = false
   }
 }
@@ -543,7 +542,19 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.tracking-tighter {
-  letter-spacing: -0.05em;
+.animate-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
