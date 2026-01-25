@@ -527,6 +527,8 @@ import Modal from '@/components/Modal.vue'
 
 dayjs.extend(relativeTime)
 
+const emit = defineEmits(['view-report', 'view-logs', 'refresh-stats'])
+
 const props = defineProps({
   globalStats: {
     type: Object,
@@ -709,6 +711,9 @@ const submitModerationAction = async () => {
     }
 
     fetchUsers()
+
+    // Notify parent to refresh stats
+    emit('refresh-stats')
   } catch (error) {
     if (window.notify) {
       window.notify.error('Execution Failed', 'Moderation signal was not accepted.')

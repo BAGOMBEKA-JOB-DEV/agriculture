@@ -322,7 +322,7 @@
                 <div class="p-5 bg-purple-50 border border-purple-100 rounded-3xl text-center">
                   <p class="text-2xl font-black text-purple-600">{{ postDetails.author_stats.total_comments_received ||
                     0
-                    }}</p>
+                  }}</p>
                   <p class="text-[9px] font-black text-purple-400 uppercase tracking-widest mt-1">Comments Received</p>
                 </div>
                 <div class="p-5 bg-red-50 border border-red-100 rounded-3xl text-center">
@@ -374,7 +374,7 @@
                     <tr v-for="report in postDetails.post_reports" :key="report.id">
                       <td class="px-6 py-4">
                         <span class="text-[10px] font-black uppercase tracking-tight text-red-500">{{ report.reason
-                          }}</span>
+                        }}</span>
                       </td>
                       <td class="px-6 py-4 text-xs font-bold text-gray-900">{{ report.reporter?.name || 'Unknown' }}
                       </td>
@@ -402,7 +402,7 @@
                   <div class="flex items-start gap-3">
                     <div class="flex-1">
                       <p class="text-xs text-gray-700 italic mb-2 line-clamp-2">"{{ post.content || 'Image/Product post'
-                        }}"</p>
+                      }}"</p>
                       <div class="flex items-center gap-4 text-[9px] font-bold text-gray-400">
                         <span class="flex items-center gap-1">
                           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -430,7 +430,7 @@
                       </div>
                     </div>
                     <span class="text-[9px] font-bold text-gray-400 uppercase">{{ dayjs(post.created_at).fromNow()
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -478,6 +478,8 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import Modal from '@/components/Modal.vue'
 
 dayjs.extend(relativeTime)
+
+const emit = defineEmits(['view-report', 'view-logs', 'refresh-stats'])
 
 const props = defineProps({
   globalStats: {
@@ -677,7 +679,14 @@ const executeAction = async () => {
     if (selectedPost.value && selectedPost.value.id === target.id) {
       selectedPost.value = null
     }
+    if (selectedPost.value && selectedPost.value.id === target.id) {
+      selectedPost.value = null
+    }
+
     fetchPosts()
+
+    // Notify parent to refresh global stats
+    emit('refresh-stats')
   } catch (error) {
     if (window.notify) {
       window.notify.error('Action failed', 'The server could not complete the request.')

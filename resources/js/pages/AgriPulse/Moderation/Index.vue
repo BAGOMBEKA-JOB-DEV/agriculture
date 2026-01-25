@@ -87,8 +87,8 @@
             leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0"
             leave-to-class="opacity-0 -translate-y-4">
             <component :is="activeComponent" :key="activeSection" @view-report="handleViewReport"
-              :selected-report-id="selectedReportId" :global-stats="dashboardStats"
-              @view-logs="activeSection = 'logs'" />
+              :selected-report-id="selectedReportId" :global-stats="dashboardStats" @view-logs="activeSection = 'logs'"
+              @refresh-stats="fetchDashboardStats" />
           </transition>
         </main>
       </div>

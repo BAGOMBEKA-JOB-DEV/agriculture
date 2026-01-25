@@ -428,6 +428,8 @@ import Modal from '@/components/Modal.vue'
 
 dayjs.extend(relativeTime)
 
+const emit = defineEmits(['view-report', 'view-logs', 'refresh-stats'])
+
 const props = defineProps({
   globalStats: {
     type: Object,
@@ -616,6 +618,9 @@ const executeAction = async () => {
       selectedComment.value = null
     }
     fetchComments()
+
+    // Notify parent to refresh stats
+    emit('refresh-stats')
   } catch (error) {
     if (window.notify) {
       window.notify.error('Action failed', 'The server could not complete the request.')
