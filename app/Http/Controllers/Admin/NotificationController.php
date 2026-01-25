@@ -16,6 +16,39 @@ class NotificationController extends Controller
         return Announcement::with('creator')->latest()->paginate(10);
     }
 
+    public function agriPulseNotifications(Request $request)
+    {
+        $query = \Illuminate\Support\Facades\DB::table('notifications')
+            ->join('users', 'notifications.notifiable_id', '=', 'users.id')
+            ->where('notifications.type', 'App\Notifications\AgriPulse\ModerationNotification')
+            ->where('notifications.notifiable_type', 'App\Models\User');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('users.email', 'like', "%{$search}%")
+                  ->orWhere('notifications.data', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('notifications.data', 'like', '%"priority":"' . $request->priority . '"%');
+        }
+
+        $notifications = $query->select('notifications.*', 'users.name as target_user_name', 'users.email as target_user_email')
+            ->latest('notifications.created_at')
+            ->paginate(15);
+
+        // Parse JSON data for frontend consumption
+        $notifications->getCollection()->transform(function ($n) {
+            $n->data = json_decode($n->data, true);
+            return $n;
+        });
+
+        return $notifications;
+    }
+
     public function store(Request $request)
     {
         $request->validate([

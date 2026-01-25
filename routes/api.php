@@ -89,6 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Broadcast Center (requires broadcast_notifications permission)
     Route::middleware('permission:broadcast_notifications')->group(function () {
         Route::get('/admin/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index']);
+        Route::get('/admin/notifications/agripulse', [\App\Http\Controllers\Admin\NotificationController::class, 'agriPulseNotifications']);
         Route::post('/admin/notifications/broadcast', [\App\Http\Controllers\Admin\NotificationController::class, 'store']);
         Route::get('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'show']);
         Route::put('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'update']);
