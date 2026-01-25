@@ -8,7 +8,7 @@
                     <img v-if="comment.user.avatar_url" :src="comment.user.avatar_url"
                         class="w-full h-full object-cover">
                     <span :class="depth > 2 ? 'text-xs' : 'text-sm'">{{ comment.user.name.charAt(0).toUpperCase()
-                        }}</span>
+                    }}</span>
                 </div>
             </router-link>
 
@@ -97,7 +97,7 @@
                             </path>
                         </svg>
                         <span>Load {{ remainingRepliesCount }} more {{ remainingRepliesCount === 1 ? 'reply' : 'replies'
-                        }}</span>
+                            }}</span>
                     </button>
                 </div>
             </div>
@@ -212,18 +212,33 @@ const cancelReply = () => {
 const submitReply = async () => {
     if (!replyContent.value.trim() || submitting.value) return
 
+    // Permission check for replying
+    if (props.currentUser?.is_restricted) {
+        if (window.notify) window.notify.accessDenied('Replying')
+        return
+    }
+
     submitting.value = true
     try {
         await axios.post(`/api/agripulse/posts/${props.postId}/comments`, {
             content: replyContent.value,
             parent_id: props.comment.id
         })
+
+        if (window.notify) window.notify.success('Reply Posted', 'Your reply has been added to the thread.')
+
         replyContent.value = ''
         showReplyInput.value = false
         emit('refresh')
     } catch (error) {
         console.error('Reply failed:', error)
-        alert('Failed to post reply. Please try again.')
+        if (window.notify) {
+            if (error.response?.status === 403) {
+                window.notify.accessDenied('Replying')
+            } else {
+                window.notify.error('Almost there!', 'We couldn\'t post your reply. Please try again.')
+            }
+        }
     } finally {
         submitting.value = false
     }

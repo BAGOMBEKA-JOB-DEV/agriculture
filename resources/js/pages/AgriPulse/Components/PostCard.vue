@@ -481,8 +481,16 @@ const handleReact = async (type) => {
     try {
         await axios.post(`/api/agripulse/posts/${props.post.id}/react`, { type })
         emit('refresh')
+        // Optional: window.notify.success('Reaction Updated', 'Feedback recorded.')
     } catch (error) {
         console.error('Reaction failed:', error)
+        if (window.notify) {
+            if (error.response?.status === 403) {
+                window.notify.accessDenied('Reactions')
+            } else {
+                window.notify.error('Almost there!', 'Could not process your reaction.')
+            }
+        }
     }
 }
 
@@ -503,9 +511,11 @@ const confirmDeletePost = async () => {
     try {
         await axios.delete(`/api/agripulse/posts/${props.post.id}`)
         showDeletePostModal.value = false
+        if (window.notify) window.notify.success('Post Deleted', 'Your post has been removed.')
         emit('refresh')
     } catch (error) {
         console.error('Delete failed:', error)
+        if (window.notify) window.notify.error('Almost there!', 'We couldn\'t remove your post.')
     }
 }
 
@@ -523,16 +533,29 @@ const closeRepostDropdown = () => {
 }
 
 const handleInstantRepost = async () => {
+    // Permission check for reposting
+    if (props.currentUser?.is_restricted) {
+        if (window.notify) window.notify.accessDenied('Reposting')
+        return
+    }
+
     try {
         await axios.post(`/api/agripulse/posts/${props.post.id}/repost`, {
             type: 'repost',
             original_post_id: props.post.id
         })
         showRepostDropdown.value = false
+        if (window.notify) window.notify.success('Post Reposted', 'The pulse is spreading further!')
         emit('refresh')
     } catch (error) {
         console.error('Instant repost failed:', error)
-        alert('Failed to repost. Please try again.')
+        if (window.notify) {
+            if (error.response?.status === 403) {
+                window.notify.accessDenied('Reposting')
+            } else {
+                window.notify.error('Almost there!', 'Could not share this pulse right now.')
+            }
+        }
     }
 }
 
@@ -602,16 +625,30 @@ const loadMoreComments = () => {
 const submitComment = async () => {
     if (!newComment.value.trim() || submittingComment.value) return
 
+    // Permission check for commenting
+    if (props.currentUser?.is_restricted) {
+        if (window.notify) window.notify.accessDenied('Commenting')
+        return
+    }
+
     submittingComment.value = true
     try {
         await axios.post(`/api/agripulse/posts/${props.post.id}/comments`, {
             content: newComment.value
         })
         newComment.value = ''
+        if (window.notify) window.notify.success('Comment Posted', 'Your thoughts are now part of the conversation.')
         await loadComments(1)
         emit('refresh')
     } catch (error) {
         console.error('Comment failed:', error)
+        if (window.notify) {
+            if (error.response?.status === 403) {
+                window.notify.accessDenied('Commenting')
+            } else {
+                window.notify.error('Almost there!', 'We couldn\'t add your comment. Please try again.')
+            }
+        }
     } finally {
         submittingComment.value = false
     }
@@ -634,6 +671,7 @@ const confirmDeleteComment = async () => {
         emit('refresh')
     } catch (error) {
         console.error('Delete comment failed:', error)
+        if (window.notify) window.notify.error('Almost there!', 'We couldn\'t delete your comment.')
     }
 }
 

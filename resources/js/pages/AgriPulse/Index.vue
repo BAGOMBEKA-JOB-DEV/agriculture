@@ -474,6 +474,12 @@ const removeImage = () => {
 const submitPost = async () => {
     if (!isValidPost.value || submitting.value) return
 
+    // CHECK PERMISSION (Mock logic or check user property)
+    if (user.value?.is_restricted || user.value?.role === 'viewer') {
+        if (window.notify) window.notify.accessDenied('AgriPulse Posting')
+        return
+    }
+
     submitting.value = true
     const formData = new FormData()
     formData.append('content', newPost.value.content)
@@ -489,12 +495,23 @@ const submitPost = async () => {
         await axios.post('/api/agripulse/posts', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         })
+
+        if (window.notify) window.notify.success('Post Published', 'Your pulse has been spread successfully!')
+
         resetComposer()
         showComposer.value = false
         await fetchFeed()
         await fetchUserStats()
     } catch (error) {
         console.error('Post submission failed:', error)
+        if (window.notify) {
+            if (error.response?.status === 403) {
+                window.notify.accessDenied('Posting')
+            } else {
+                const message = 'We couldn\'t share your post right now. Please check your connection and try again.'
+                window.notify.error('Almost there!', message)
+            }
+        }
     } finally {
         submitting.value = false
     }
