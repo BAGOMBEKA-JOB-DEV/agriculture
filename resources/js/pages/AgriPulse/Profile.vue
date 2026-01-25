@@ -91,21 +91,7 @@
                                     }}</button>
                                 </div>
 
-                                <div v-if="isOwnProfile" class="mt-6 flex flex-wrap items-center gap-3">
-                                    <!-- Open to work (Removed per request) -->
-                                    <button
-                                        class="px-6 py-2.5 bg-agri-forest text-white rounded-full font-semibold text-sm hover:bg-agri-lush transition-all shadow-sm">
-                                        Add to profile
-                                    </button>
-                                    <button
-                                        class="px-6 py-2.5 bg-white border-2 border-agri-forest text-agri-forest rounded-full font-semibold text-sm hover:bg-agri-sand/20 transition-all">
-                                        Improve profile
-                                    </button>
-                                    <button
-                                        class="px-6 py-2.5 bg-white border-2 border-gray-100 text-gray-500 rounded-full font-semibold text-sm hover:bg-gray-50 transition-all">
-                                        More
-                                    </button>
-                                </div>
+                                <!-- Action buttons removed per request -->
                             </div>
                         </div>
                     </div>
@@ -224,10 +210,6 @@
                         <div class="flex items-center justify-between mb-2">
                             <div>
                                 <h2 class="text-xl font-semibold text-gray-900 tracking-tight">Activity</h2>
-                                <p
-                                    class="text-[13px] text-blue-600 font-semibold mt-0.5 hover:underline cursor-pointer">
-                                    {{ formatFollowers(stats?.followers_count || 13215) }} followers
-                                </p>
                             </div>
                             <div class="flex items-center space-x-2.5">
                                 <button v-if="isOwnProfile" @click="$router.push('/agripulse')"
