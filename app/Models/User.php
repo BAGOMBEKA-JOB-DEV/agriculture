@@ -136,6 +136,11 @@ class User extends Authenticatable
         return $this->hasMany(AgriPulseUserModerationAction::class);
     }
 
+    public function performedModerationLogs(): HasMany
+    {
+        return $this->hasMany(AgriPulseModerationLog::class, 'moderator_id');
+    }
+
     public function receivedReports(): HasManyThrough
     {
         return $this->hasManyThrough(AgriPulsePostReport::class, Post::class);

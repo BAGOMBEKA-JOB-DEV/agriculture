@@ -23,6 +23,10 @@ class AgriPulseModerationController extends Controller
                 'total_posts' => Post::count(),
                 'active_posts' => Post::where('status', 'published')->count(),
                 'total_comments' => PostComment::count(),
+                'active_comments' => PostComment::where('status', 'published')->count(),
+                'hidden_comments' => PostComment::where('status', 'hidden')->count(),
+                'deleted_comments' => PostComment::onlyTrashed()->count(),
+                'total_reports' => AgriPulsePostReport::count(),
                 'pending_reports' => AgriPulsePostReport::where('status', 'pending')->count(),
                 'resolved_reports' => AgriPulsePostReport::whereIn('status', ['resolved', 'dismissed'])->count(),
                 'new_posts_today' => Post::whereDate('created_at', now()->today())->count(),
@@ -37,6 +41,12 @@ class AgriPulseModerationController extends Controller
                     $q->has('posts')->orHas('postComments');
                 })->where('status', 'suspended')->count(),
                 'total_users' => User::whereHas('posts')->orWhereHas('postComments')->count(),
+                'total_logs' => AgriPulseModerationLog::count(),
+                'logs_today' => AgriPulseModerationLog::whereDate('created_at', now()->today())->count(),
+                'top_moderator' => User::whereHas('performedModerationLogs')
+                    ->withCount('performedModerationLogs')
+                    ->orderBy('performed_moderation_logs_count', 'desc')
+                    ->first()?->name ?? 'None',
             ],
             'recent_logs' => AgriPulseModerationLog::with(['moderator', 'subject'])
                 ->latest()

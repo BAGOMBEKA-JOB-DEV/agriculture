@@ -210,7 +210,10 @@ class AgriPulseController extends Controller
         // Get all comments with nested replies (recursive)
         $post->all_comments = PostComment::where('post_id', $postId)
             ->whereNull('parent_id')
-            ->with(['user', 'replies']) // replies will auto-load recursively via model
+            ->published() // Filter hidden
+            ->with(['user', 'replies' => function($q) {
+                $q->published(); // Filter hidden replies
+            }]) 
             ->latest()
             ->get();
 
@@ -226,7 +229,10 @@ class AgriPulseController extends Controller
         
         $comments = PostComment::where('post_id', $postId)
             ->whereNull('parent_id')
-            ->with(['user', 'replies']) // Load recursively via model
+            ->published() // Filter hidden
+            ->with(['user', 'replies' => function($q) {
+                $q->published(); // Filter hidden replies
+            }]) 
             ->latest()
             ->paginate(10);
 
@@ -484,6 +490,7 @@ class AgriPulseController extends Controller
 
         // Enhanced Activity Tracking for LinkedIn style
         $recentComments = PostComment::where('user_id', $userId)
+            ->published() // Filter hidden
             ->with(['post.user', 'post.originalPost.user'])
             ->latest()
             ->limit(10)

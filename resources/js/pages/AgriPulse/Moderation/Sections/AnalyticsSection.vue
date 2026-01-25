@@ -89,65 +89,33 @@
     </div>
 
     <div class="container mx-auto px-6 -mt-8 relative z-20 space-y-8">
-      <!-- Summary Metric Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div
-          class="bg-agri-forest/5 border border-agri-forest/20 rounded-3xl p-6 hover:border-agri-forest/40 transition-all">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-12 h-12 rounded-2xl bg-agri-forest flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path>
-              </svg>
-            </div>
-            <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Posts</span>
+      <!-- Summary Metric Cards (Premium Style) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div v-for="stat in cardStats" :key="stat.label"
+          class="bg-gradient-to-br backdrop-blur-md p-5 rounded-3xl border transition-all duration-500 group cursor-default relative overflow-hidden hover:-translate-y-1"
+          :class="[stat.bgClass, stat.borderClass]">
+          <div
+            class="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-xl transition-all duration-700 group-hover:scale-110"
+            :class="stat.glowClass">
           </div>
-          <p class="text-4xl font-black text-agri-forest">{{ metrics.total_posts || 0 }}</p>
-          <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">Total This Period</p>
-        </div>
 
-        <div class="bg-agri-sand/30 border border-agri-sand rounded-3xl p-6 hover:border-agri-sand/80 transition-all">
-          <div class="flex items-center justify-between mb-3">
+          <div class="relative z-10 flex flex-col items-start space-y-3">
             <div
-              class="w-12 h-12 rounded-2xl bg-agri-sand flex items-center justify-center border-2 border-agri-forest/10">
-              <svg class="w-6 h-6 text-agri-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-                </path>
+              class="p-2.5 rounded-xl border border-white/20 transition-all duration-700 shadow-lg group-hover:scale-105"
+              :class="stat.iconBg">
+              <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="stat.iconPath"></path>
               </svg>
             </div>
-            <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Comments</span>
-          </div>
-          <p class="text-4xl font-black text-agri-forest">{{ metrics.total_comments || 0 }}</p>
-          <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">Community Interactions</p>
-        </div>
-
-        <div class="bg-red-50 border border-red-100 rounded-3xl p-6 hover:border-red-200 transition-all">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-7h1"></path>
-              </svg>
+            <div>
+              <p class="text-2xl font-black tracking-tight group-hover:scale-[1.05] transition-transform duration-500 origin-left"
+                :class="stat.textColor">
+                {{ stat.value }}
+              </p>
+              <h4 class="text-[9px] font-bold uppercase tracking-wider mt-1" :class="stat.labelColor">{{ stat.label }}
+              </h4>
             </div>
-            <span class="text-xs font-black text-red-400 uppercase tracking-widest">Reports</span>
           </div>
-          <p class="text-4xl font-black text-red-600">{{ metrics.total_reports || 0 }}</p>
-          <p class="text-[10px] font-bold text-red-500 uppercase tracking-widest mt-2">Moderation Requests</p>
-        </div>
-
-        <div class="bg-green-50 border border-green-100 rounded-3xl p-6 hover:border-green-200 transition-all">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-12 h-12 rounded-2xl bg-green-500 flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <span class="text-xs font-black text-green-400 uppercase tracking-widest">Resolved</span>
-          </div>
-          <p class="text-4xl font-black text-green-600">{{ metrics.resolved_reports || 0 }}</p>
-          <p class="text-[10px] font-bold text-green-500 uppercase tracking-widest mt-2">Actions Completed</p>
         </div>
       </div>
 
@@ -236,7 +204,7 @@
                           class="text-xs font-bold text-gray-900 leading-none mb-1 group-hover:text-agri-forest transition-colors">{{
                             user.name }}</span>
                         <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ user.email
-                        }}</span>
+                          }}</span>
                       </div>
                     </div>
                   </td>
@@ -346,7 +314,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler
@@ -374,6 +342,53 @@ const filters = ref({
   start_date: '',
   end_date: ''
 })
+
+const cardStats = computed(() => [
+  {
+    label: 'Total Posts',
+    value: metrics.value.total_posts || 0,
+    iconPath: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z',
+    bgClass: 'from-agri-forest/10 to-green-600/5',
+    borderClass: 'border-agri-forest/20',
+    glowClass: 'bg-agri-forest/10',
+    iconBg: 'bg-agri-forest',
+    textColor: 'text-agri-forest',
+    labelColor: 'text-agri-forest/70'
+  },
+  {
+    label: 'Comments',
+    value: metrics.value.total_comments || 0,
+    iconPath: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
+    bgClass: 'from-yellow-400/10 to-yellow-500/5',
+    borderClass: 'border-yellow-200/30',
+    glowClass: 'bg-yellow-500/10',
+    iconBg: 'bg-yellow-500',
+    textColor: 'text-yellow-700',
+    labelColor: 'text-yellow-600/70'
+  },
+  {
+    label: 'Reports',
+    value: metrics.value.total_reports || 0,
+    iconPath: 'M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-7h1',
+    bgClass: 'from-red-400/10 to-red-500/5',
+    borderClass: 'border-red-200/30',
+    glowClass: 'bg-red-500/10',
+    iconBg: 'bg-red-500',
+    textColor: 'text-red-700',
+    labelColor: 'text-red-600/70'
+  },
+  {
+    label: 'Resolved',
+    value: metrics.value.resolved_reports || 0,
+    iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+    bgClass: 'from-blue-400/10 to-blue-500/5',
+    borderClass: 'border-blue-200/30',
+    glowClass: 'bg-blue-500/10',
+    iconBg: 'bg-blue-500',
+    textColor: 'text-blue-700',
+    labelColor: 'text-blue-600/70'
+  }
+])
 
 const resetFilters = () => {
   filters.value = {

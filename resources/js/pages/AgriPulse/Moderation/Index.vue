@@ -87,7 +87,8 @@
             leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0"
             leave-to-class="opacity-0 -translate-y-4">
             <component :is="activeComponent" :key="activeSection" @view-report="handleViewReport"
-              :selected-report-id="selectedReportId" @view-logs="activeSection = 'logs'" />
+              :selected-report-id="selectedReportId" :global-stats="dashboardStats"
+              @view-logs="activeSection = 'logs'" />
           </transition>
         </main>
       </div>
@@ -104,6 +105,19 @@ const router = useRouter()
 const activeSection = ref(route.query.section || 'overview')
 const selectedReportId = ref(null)
 const isCollapsed = ref(false)
+const dashboardStats = ref({})
+const loadingStats = ref(true)
+
+const fetchDashboardStats = async () => {
+  try {
+    const response = await axios.get('/api/agripulse/moderation/dashboard')
+    dashboardStats.value = response.data.stats
+  } catch (error) {
+    console.error('Failed to fetch dashboard stats:', error)
+  } finally {
+    loadingStats.value = false
+  }
+}
 
 const handleViewReport = (reportId) => {
   selectedReportId.value = reportId
@@ -115,6 +129,7 @@ watch(activeSection, (newSection) => {
 })
 
 onMounted(() => {
+  fetchDashboardStats()
   if (route.query.section) {
     activeSection.value = route.query.section
   }

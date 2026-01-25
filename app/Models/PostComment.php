@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class PostComment extends Model
 {
-    use HasFactory;
+    use HasFactory, \Illuminate\Database\Eloquent\SoftDeletes;
 
     protected $fillable = [
         'post_id',
         'user_id',
         'parent_id',
         'content',
+        'status',
     ];
 
     /**
@@ -47,5 +48,13 @@ class PostComment extends Model
     {
         return $this->hasMany(PostComment::class, 'parent_id')
             ->with(['user', 'replies']); // Load nested replies recursively
+    }
+
+    /**
+     * Scope a query to only include published comments.
+     */
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published')->orWhereNull('status');
     }
 }
