@@ -115,7 +115,7 @@
                 </div>
                 <div class="min-w-0">
                   <p class="text-xs font-bold text-gray-900 truncate max-w-[150px]">Report: {{ task.reason }}</p>
-                  <p class="text-[10px] text-gray-500">{{ formatTime(task.created_at) }} • {{ task.user?.name ||
+                  <p class="text-[10px] text-gray-500">{{ formatTime(task.created_at) }} • {{ task.reporter?.name ||
                     'Unknown' }}</p>
                 </div>
               </div>
