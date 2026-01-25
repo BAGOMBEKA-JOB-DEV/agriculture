@@ -250,6 +250,8 @@ Route::middleware('auth:sanctum')->group(function () {
             ->middleware('permission:agripulse.moderate.users');
         Route::post('/users/{id}/suspend', [AgriPulseModerationController::class, 'suspendUser'])
             ->middleware('permission:agripulse.moderate.users');
+        Route::post('/users/{id}/activate', [AgriPulseModerationController::class, 'activateUser'])
+            ->middleware('permission:agripulse.moderate.users');
 
         // Activity Logs
         Route::get('/logs', [AgriPulseModerationController::class, 'getLogs'])

@@ -527,6 +527,8 @@ import Modal from '@/components/Modal.vue'
 
 dayjs.extend(relativeTime)
 
+const emit = defineEmits(['refresh-stats'])
+
 const props = defineProps({
   selectedReportId: {
     type: [Number, String],
@@ -678,6 +680,7 @@ const handleBulkAction = async (note) => {
     selectedIds.value = []
     modal.value.open = false
     fetchReports()
+    emit('refresh-stats')
   } catch (error) {
     if (window.notify) window.notify.error('Bulk Action Failed', 'Could not process selected items.')
   } finally {
@@ -781,6 +784,7 @@ const executeResolve = async () => {
       window.notify.success('Success', `Report marked as ${action}ed`)
     }
     fetchReports()
+    emit('refresh-stats')
   } catch (error) {
     console.error(error)
     if (window.notify) {

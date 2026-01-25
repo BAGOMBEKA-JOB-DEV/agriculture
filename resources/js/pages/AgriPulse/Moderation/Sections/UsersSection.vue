@@ -162,7 +162,7 @@
                       </svg>
                       Warn user
                     </button>
-                    <button @click="openActionModal(user, 'suspension')"
+                    <button v-if="!user.agripulse_banned_at" @click="openActionModal(user, 'suspension')"
                       class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-xs font-bold text-red-600 hover:bg-red-50 transition-colors">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -170,6 +170,15 @@
                         </path>
                       </svg>
                       Suspend user
+                    </button>
+                    <button v-if="user.agripulse_banned_at" @click="openActionModal(user, 'activate')"
+                      class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-xs font-bold text-green-600 hover:bg-green-50 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                        </path>
+                      </svg>
+                      Restore user
                     </button>
                   </div>
                 </div>
@@ -364,7 +373,7 @@
                         </div>
                       </div>
                       <span class="text-[9px] font-bold text-gray-400 uppercase">{{ dayjs(post.created_at).fromNow()
-                        }}</span>
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -465,7 +474,7 @@
                     <tr v-for="report in history.reports" :key="report.id">
                       <td class="px-6 py-4">
                         <span class="text-[10px] font-black uppercase tracking-tight text-red-500">{{ report.reason
-                          }}</span>
+                        }}</span>
                       </td>
                       <td class="px-6 py-4 text-xs text-gray-500 italic max-w-sm truncate">{{ report.post?.content ||
                         'Non-textual content' }}</td>
@@ -489,9 +498,13 @@
               class="h-12 px-6 bg-orange-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-orange-700 transition-colors">
               Warn User
             </button>
-            <button @click="openActionModal(selectedUser, 'suspension')"
+            <button v-if="!selectedUser.agripulse_banned_at" @click="openActionModal(selectedUser, 'suspension')"
               class="h-12 px-6 bg-red-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-colors">
               Suspend User
+            </button>
+            <button v-if="selectedUser.agripulse_banned_at" @click="openActionModal(selectedUser, 'activate')"
+              class="h-12 px-6 bg-green-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-green-700 transition-colors">
+              Restore User
             </button>
           </div>
         </main>
@@ -559,28 +572,28 @@
             </div>
 
             <div class="relative z-10 flex items-center space-x-3">
-              <!-- Verify Action -->
-              <button v-if="availableBulkActions.includes('verify')" @click="openBulkActionModal('verify')"
-                :disabled="isProcessing"
-                class="group/btn flex items-center space-x-3 px-6 py-4 bg-white/5 hover:bg-agri-forest text-white border border-white/10 hover:border-agri-forest rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-agri-forest/40">
-                <div
-                  class="w-8 h-8 rounded-xl bg-white/10 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
-                  <svg class="w-4 h-4 text-agri-lush group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <span class="text-[10px] font-bold uppercase tracking-widest">Verify</span>
-              </button>
-
-              <!-- Suspend Action -->
-              <button v-if="availableBulkActions.includes('suspend')" @click="openBulkActionModal('suspend')"
+              <!-- Warn Action -->
+              <button v-if="availableBulkActions.includes('warning')" @click="openBulkActionModal('warning')"
                 :disabled="isProcessing"
                 class="group/btn flex items-center space-x-3 px-6 py-4 bg-white/5 hover:bg-orange-600 text-white border border-white/10 hover:border-orange-600 rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-orange-600/40">
                 <div
                   class="w-8 h-8 rounded-xl bg-white/10 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
                   <svg class="w-4 h-4 text-orange-400 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Warn</span>
+              </button>
+
+              <!-- Suspend Action -->
+              <button v-if="availableBulkActions.includes('suspend')" @click="openBulkActionModal('suspend')"
+                :disabled="isProcessing"
+                class="group/btn flex items-center space-x-3 px-6 py-4 bg-white/5 hover:bg-red-600 text-white border border-white/10 hover:border-red-600 rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-red-600/40">
+                <div
+                  class="w-8 h-8 rounded-xl bg-white/10 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 text-red-400 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                       d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
@@ -733,17 +746,23 @@ const availableBulkActions = computed(() => {
   // - If any suspended -> activate
   // - If any pending -> verify
 
-  if (selectedItems.some(u => u.status === 'active' || !u.status)) {
+  if (selectedItems.some(u => u.status === 'active' || !u.status || !u.agripulse_banned_at)) {
     actions.push('suspend')
   }
 
-  if (selectedItems.some(u => u.status === 'suspended')) {
+  if (selectedItems.some(u => u.agripulse_banned_at)) {
     actions.push('activate') // Restore
   }
 
   // Assuming 'pending' status or similar for verify
-  if (selectedItems.some(u => !u.email_verified_at)) {
-    actions.push('verify')
+  // Verify removed per request
+  // if (selectedItems.some(u => !u.email_verified_at)) {
+  //   actions.push('verify')
+  // }
+
+  // Add warn if any
+  if (selectedItems.some(u => !u.agripulse_banned_at)) {
+    actions.push('warning')
   }
 
   return actions
@@ -751,7 +770,8 @@ const availableBulkActions = computed(() => {
 
 const openBulkActionModal = (action) => {
   const configs = {
-    verify: { title: 'Bulk Verify', message: `Verify ${selectedIds.value.length} selected users?`, type: 'success' },
+    // verify: { title: 'Bulk Verify', message: `Verify ${selectedIds.value.length} selected users?`, type: 'success' },
+    warning: { title: 'Bulk Warning', message: `Issue warning to ${selectedIds.value.length} selected users?`, type: 'primary' },
     suspend: { title: 'Bulk Suspend', message: `Suspend ${selectedIds.value.length} selected users?`, type: 'danger' },
     activate: { title: 'Bulk Restore', message: `Restore access for ${selectedIds.value.length} selected users?`, type: 'success' }
   }
@@ -818,6 +838,8 @@ const modal = ref({
   loading: false
 })
 
+
+
 const recentActivity = computed(() => {
   const posts = (profileData.value.recent_posts || []).map(p => ({ ...p, type: 'post' }))
   const comments = (profileData.value.recent_comments || []).map(c => ({ ...c, type: 'comment' }))
@@ -881,7 +903,8 @@ const openActionModal = (user, action) => {
     warning: { title: 'Issue Warning', message: `Issue a formal warning to ${user.name}?`, type: 'primary' },
     warn: { title: 'Issue Warning', message: `Issue a formal warning to ${user.name}?`, type: 'primary' }, // alias
     suspension: { title: 'Suspend User', message: `Suspend access for ${user.name}?`, type: 'danger' },
-    suspend: { title: 'Suspend User', message: `Suspend access for ${user.name}?`, type: 'danger' } // alias
+    suspend: { title: 'Suspend User', message: `Suspend access for ${user.name}?`, type: 'danger' }, // alias
+    activate: { title: 'Restore User', message: `Restore access for ${user.name}?`, type: 'success' }
   }
 
   const config = configs[action] || { title: 'Action', message: '', type: 'primary' }

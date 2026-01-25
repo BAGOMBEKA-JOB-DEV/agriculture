@@ -37,9 +37,7 @@ class AgriPulseModerationController extends Controller
                 'total_reposts' => Post::where('type', 'repost')->count(),
                 'flagged_posts' => Post::where('status', 'flagged')->count(),
                 'deleted_posts' => Post::onlyTrashed()->count(),
-                'suspended_users' => User::where(function($q) {
-                    $q->has('posts')->orHas('postComments');
-                })->where('status', 'suspended')->count(),
+                'suspended_users' => User::whereNotNull('agripulse_banned_at')->count(),
                 'total_users' => User::whereHas('posts')->orWhereHas('postComments')->count(),
                 'total_logs' => AgriPulseModerationLog::count(),
                 'logs_today' => AgriPulseModerationLog::whereDate('created_at', now()->today())->count(),
@@ -421,7 +419,8 @@ class AgriPulseModerationController extends Controller
     {
         $user = User::findOrFail($userId);
         
-        $user->update(['status' => 'suspended']);
+        
+        $user->update(['agripulse_banned_at' => now()]);
 
         $action = AgriPulseUserModerationAction::create([
             'user_id' => $userId,
@@ -437,6 +436,22 @@ class AgriPulseModerationController extends Controller
         ]);
 
         return response()->json(['message' => 'User suspended successfully', 'action' => $action]);
+    }
+
+    /**
+     * Restore (activate) a suspended user.
+     */
+    public function activateUser($userId)
+    {
+        $user = User::findOrFail($userId);
+        
+        $user->update([
+            'agripulse_banned_at' => null
+        ]);
+
+        $this->logModerationAction('activate_user', $user);
+
+        return response()->json(['message' => 'User account restored successfully', 'user' => $user]);
     }
 
     /**
@@ -799,7 +814,7 @@ class AgriPulseModerationController extends Controller
                             $this->logModerationAction('verify_user', $user, ['bulk' => true]);
                         }
                         if ($action === 'suspend') {
-                            $user->update(['status' => 'suspended', 'suspended_at' => now()]);
+                            $user->update(['agripulse_banned_at' => now()]);
                             // Also create a moderation action record for consistency
                             AgriPulseUserModerationAction::create([
                                 'user_id' => $user->id,
@@ -811,7 +826,7 @@ class AgriPulseModerationController extends Controller
                             $this->logModerationAction('suspend_user', $user, ['bulk' => true, 'reason' => $reason ?? 'Bulk suspension']);
                         }
                         if ($action === 'activate') {
-                            $user->update(['status' => 'active', 'suspended_at' => null]);
+                            $user->update(['agripulse_banned_at' => null]);
                             $this->logModerationAction('activate_user', $user, ['bulk' => true]);
                         }
                         $processedCount++;

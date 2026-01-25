@@ -240,7 +240,7 @@
                                             class="w-10 h-10 rounded-xl object-cover bg-white border border-blue-100">
                                         <div>
                                             <p class="text-sm font-bold text-gray-900">{{ selectedLog.subject.user.name
-                                            }}
+                                                }}
                                             </p>
                                             <p class="text-[10px] text-gray-500 uppercase tracking-widest">{{
                                                 selectedLog.subject.user.email }}</p>
@@ -275,7 +275,7 @@
                                                 At</span>
                                             <span class="text-xs font-bold text-gray-900">{{
                                                 dayjs(selectedLog.subject.created_at).format('MMM D, YYYY h:mm A')
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                         <div class="p-4 flex flex-col gap-1" v-if="selectedLog.metadata.report_reason">
                                             <span
@@ -288,7 +288,7 @@
                                                 class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Subject
                                                 ID</span>
                                             <span class="text-xs font-mono text-gray-500">#{{ selectedLog.subject_id
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -404,6 +404,8 @@ import axios from 'axios'
 import dayjs from 'dayjs'
 import Modal from '@/components/Modal.vue'
 
+const emit = defineEmits(['refresh-stats'])
+
 const props = defineProps({
     globalStats: {
         type: Object,
@@ -515,6 +517,7 @@ const handleBulkAction = async () => {
         selectedIds.value = []
         modal.value.open = false
         fetchLogs()
+        emit('refresh-stats')
     } catch (error) {
         if (window.notify) window.notify.error('Bulk Action Failed', 'Could not delete logs.')
     } finally {

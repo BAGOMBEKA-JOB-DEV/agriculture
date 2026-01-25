@@ -41,6 +41,7 @@ class User extends Authenticatable
         'two_factor_recovery_codes',
         'two_factor_confirmed_at',
         'two_factor_type',
+        'agripulse_banned_at',
     ];
 
     /**
@@ -66,6 +67,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'notification_preferences' => 'array',
             'two_factor_confirmed_at' => 'datetime',
+            'agripulse_banned_at' => 'datetime',
         ];
     }
 
