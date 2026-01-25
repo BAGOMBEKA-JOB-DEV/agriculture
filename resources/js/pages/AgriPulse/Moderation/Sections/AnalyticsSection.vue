@@ -282,7 +282,7 @@
                           class="text-xs font-bold text-gray-900 leading-none mb-1 group-hover:text-agri-forest transition-colors">{{
                             user.name }}</span>
                         <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ user.email
-                        }}</span>
+                          }}</span>
                       </div>
                     </div>
                   </td>
@@ -320,8 +320,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
+import { useRouter, useRoute } from 'vue-router'
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler
 } from 'chart.js'
@@ -329,13 +330,20 @@ import { Line, Bar } from 'vue-chartjs'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler)
 
-const activeTab = ref('overview')
+const router = useRouter()
+const route = useRoute()
+
+const activeTab = ref(route.query.tab || 'overview')
 const tabs = [
   { id: 'overview', label: 'Overview' },
   { id: 'safety', label: 'Safety & Reports' },
   { id: 'engagement', label: 'Engagement' },
   { id: 'risk', label: 'Risk Analysis' },
 ]
+
+watch(activeTab, (newTab) => {
+  router.replace({ query: { ...route.query, tab: newTab } })
+})
 
 const postChartData = ref(null)
 const reportChartData = ref(null)

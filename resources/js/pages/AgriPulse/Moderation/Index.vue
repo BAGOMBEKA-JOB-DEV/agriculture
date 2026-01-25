@@ -125,7 +125,14 @@ const handleViewReport = (reportId) => {
 }
 
 watch(activeSection, (newSection) => {
-  router.replace({ query: { ...route.query, section: newSection } })
+  const query = { ...route.query, section: newSection }
+
+  // Clean up analytics-specific params
+  if (newSection !== 'analytics') {
+    delete query.tab
+  }
+
+  router.replace({ query })
 })
 
 onMounted(() => {
