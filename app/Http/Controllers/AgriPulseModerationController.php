@@ -454,6 +454,27 @@ class AgriPulseModerationController extends Controller
         
         $this->logModerationAction('restore_comment', $comment);
 
+        // Notify Author
+        $contentSnippet = \Illuminate\Support\Str::limit($comment->content, 50);
+        $parentPost = $comment->post;
+        $parentSnippet = $parentPost ? \Illuminate\Support\Str::limit($parentPost->content, 50) : 'Unknown Post';
+
+        $this->dispatchModerationNotification(
+            $comment->user,
+            'Comment Restored',
+            "Good news! Your comment \"{$contentSnippet}\" has been restored after review. It is now visible to the community again. Thank you for your patience.",
+            'success',
+            null,
+            null,
+            [
+                'comment_content' => $comment->content,
+                'parent_post_content' => $parentPost->content ?? '',
+                'parent_post_author' => $parentPost->user->name ?? 'Unknown',
+                'parent_post_snippet' => $parentSnippet,
+                'restored_at' => now()->toIso8601String()
+            ]
+        );
+
         return response()->json(['message' => 'Comment restored successfully', 'comment' => $comment]);
     }
 
@@ -914,15 +935,93 @@ class AgriPulseModerationController extends Controller
                         if ($action === 'hide') {
                             $post->update(['status' => 'hidden']);
                             $this->logModerationAction('hide_post', $post, ['bulk' => true, 'reason' => $reason]);
+                            
+                            // Notify Author
+                            $contentSnippet = \Illuminate\Support\Str::limit($post->content, 50);
+                            $this->dispatchModerationNotification(
+                                $post->user,
+                                'Your Post Was Hidden',
+                                "We wanted to let you know that your post from {$post->created_at->format('M d, Y')} containing \"{$contentSnippet}\" has been temporarily hidden. This action was taken to allow our moderation team to review it against our community guidelines regarding safe and appropriate content. You will be notified once a final decision is made.",
+                                'high',
+                                "/agripulse/post/{$post->id}",
+                                $post->image_url ?? null,
+                                [
+                                    'post_content' => $post->content,
+                                    'post_date' => $post->created_at->toIso8601String(),
+                                    'hidden_at' => now()->toIso8601String(),
+                                    'metrics' => [
+                                        'reactions' => $post->reactions()->count(),
+                                        'comments' => $post->comments()->count(),
+                                        'reports' => $post->reports()->count(),
+                                    ],
+                                    'author' => [
+                                        'name' => $post->user->name,
+                                        'total_posts' => $post->user->posts()->count(),
+                                        'joined_at' => $post->user->created_at->toIso8601String(),
+                                    ]
+                                ]
+                            );
                         }
                         if ($action === 'delete') {
                             $post->delete();
                             $this->logModerationAction('delete_post', $post, ['bulk' => true, 'reason' => $reason]);
+
+                            // Notify Author
+                            $contentSnippet = \Illuminate\Support\Str::limit($post->content, 50);
+                            $this->dispatchModerationNotification(
+                                $post->user,
+                                'Your Post Was Removed',
+                                "We regret to inform you that your post from {$post->created_at->format('M d, Y')} containing \"{$contentSnippet}\" has been permanently removed from AgriPulse. This decision was made because the content was found to be in violation of our Terms of Service or Community Standards. Please review our guidelines to avoid future infractions.",
+                                'critical',
+                                "/agripulse/post/{$post->id}",
+                                $post->image_url ?? null,
+                                [
+                                    'post_content' => $post->content,
+                                    'post_date' => $post->created_at->toIso8601String(),
+                                    'removed_at' => now()->toIso8601String(),
+                                    'metrics' => [
+                                        'reactions' => $post->reactions()->count(),
+                                        'comments' => $post->comments()->count(),
+                                        'reports' => $post->reports()->count(),
+                                    ],
+                                    'author' => [
+                                        'name' => $post->user->name,
+                                        'total_posts' => $post->user->posts()->count(),
+                                        'joined_at' => $post->user->created_at->toIso8601String(),
+                                    ]
+                                ]
+                            );
                         }
                         if ($action === 'restore') {
                             if ($post->trashed()) $post->restore();
                             $post->update(['status' => 'published']);
                             $this->logModerationAction('restore_post', $post, ['bulk' => true, 'reason' => $reason]);
+
+                            // Notify Author
+                            $contentSnippet = \Illuminate\Support\Str::limit($post->content, 50);
+                            $this->dispatchModerationNotification(
+                                $post->user,
+                                'Post Restored',
+                                "Great news! After a thorough review, we have confirmed that your post from {$post->created_at->format('M d, Y')} containing \"{$contentSnippet}\" complies with our community guidelines. It is now fully visible again on the feed. Thank you for your patience during this process.",
+                                'success',
+                                "/agripulse/post/{$post->id}",
+                                $post->image_url ?? null,
+                                [
+                                    'post_content' => $post->content,
+                                    'post_date' => $post->created_at->toIso8601String(),
+                                    'restored_at' => now()->toIso8601String(),
+                                    'metrics' => [
+                                        'reactions' => $post->reactions()->count(),
+                                        'comments' => $post->comments()->count(),
+                                        'reports' => $post->reports()->count(),
+                                    ],
+                                    'author' => [
+                                        'name' => $post->user->name,
+                                        'total_posts' => $post->user->posts()->count(),
+                                        'joined_at' => $post->user->created_at->toIso8601String(),
+                                    ]
+                                ]
+                            );
                         }
                         if ($action === 'flag') {
                             $post->update(['status' => 'flagged']);
@@ -938,15 +1037,78 @@ class AgriPulseModerationController extends Controller
                         if ($action === 'hide') {
                             $comment->update(['status' => 'hidden']);
                             $this->logModerationAction('hide_comment', $comment, ['bulk' => true, 'reason' => $reason]);
+
+                            // Notify Author
+                            $contentSnippet = \Illuminate\Support\Str::limit($comment->content, 50);
+                            $parentPost = $comment->post;
+                            $parentSnippet = $parentPost ? \Illuminate\Support\Str::limit($parentPost->content, 50) : 'Unknown Post';
+
+                            $this->dispatchModerationNotification(
+                                $comment->user,
+                                'Comment Hidden',
+                                "Your comment \"{$contentSnippet}\" has been temporarily hidden while our moderation team reviews it for potential policy violations. You will be notified if any further action is required.",
+                                'high',
+                                null,
+                                null,
+                                [
+                                    'comment_content' => $comment->content,
+                                    'parent_post_content' => $parentPost->content ?? '',
+                                    'parent_post_author' => $parentPost->user->name ?? 'Unknown',
+                                    'parent_post_snippet' => $parentSnippet,
+                                    'hidden_at' => now()->toIso8601String()
+                                ]
+                            );
                         }
                         if ($action === 'delete') {
                             $comment->delete();
                             $this->logModerationAction('delete_comment', $comment, ['bulk' => true, 'reason' => $reason]);
+
+                            // Notify Author
+                            $contentSnippet = \Illuminate\Support\Str::limit($comment->content, 50);
+                            $parentPost = $comment->post; // Assuming relationship
+                            $parentSnippet = $parentPost ? \Illuminate\Support\Str::limit($parentPost->content, 50) : 'Unknown Post';
+                            
+                            $this->dispatchModerationNotification(
+                                $comment->user,
+                                'Comment Removed',
+                                "Your comment \"{$contentSnippet}\" posted on a discussion has been removed because it violated our community guidelines. We ask that you ensure all future contributions remain respectful and relevant to the conversation.",
+                                'critical',
+                                null,
+                                null,
+                                [
+                                    'comment_content' => $comment->content,
+                                    'parent_post_content' => $parentPost->content ?? '',
+                                    'parent_post_author' => $parentPost->user->name ?? 'Unknown',
+                                    'parent_post_snippet' => $parentSnippet,
+                                    'removed_at' => now()->toIso8601String()
+                                ]
+                            );
                         }
                         if ($action === 'restore') {
                             if ($comment->trashed()) $comment->restore();
                             $comment->update(['status' => 'published']);
                             $this->logModerationAction('restore_comment', $comment, ['bulk' => true, 'reason' => $reason]);
+
+                            // Notify Author
+                            $contentSnippet = \Illuminate\Support\Str::limit($comment->content, 50);
+                            $parentPost = $comment->post;
+                            $parentSnippet = $parentPost ? \Illuminate\Support\Str::limit($parentPost->content, 50) : 'Unknown Post';
+
+                            $this->dispatchModerationNotification(
+                                $comment->user,
+                                'Comment Restored',
+                                "Good news! Your comment \"{$contentSnippet}\" has been restored after review. It is now visible to the community again. Thank you for your patience.",
+                                'success',
+                                null,
+                                null,
+                                [
+                                    'comment_content' => $comment->content,
+                                    'parent_post_content' => $parentPost->content ?? '',
+                                    'parent_post_author' => $parentPost->user->name ?? 'Unknown',
+                                    'parent_post_snippet' => $parentSnippet,
+                                    'restored_at' => now()->toIso8601String()
+                                ]
+                            );
                         }
                         $processedCount++;
                     }
@@ -963,6 +1125,31 @@ class AgriPulseModerationController extends Controller
                                 'resolution_note' => $note ?? 'Bulk resolution'
                             ]);
                             $this->logModerationAction('resolve_report', $report, ['bulk' => true, 'note' => $note ?? 'Bulk resolution']);
+
+                            // Notify Reporter
+                            $subject = $report->post_id ? "Post #{$report->post_id}" : "User #{$report->reporter_id}";
+                            $this->dispatchModerationNotification(
+                                $report->reporter,
+                                'Report Resolved',
+                                "We have completed our review of the report you submitted on {$report->created_at->format('M d, Y')} regarding \"{$subject}\". We have taken the appropriate enforcement actions in accordance with our policies. Thank you for being a vigilant member of our community and helping keep AgriPulse safe for everyone.",
+                                'success',
+                                $report->post_id ? "/agripulse/post/{$report->post_id}" : null,
+                                $report->post?->image_url ?? null,
+                                [
+                                    'post_content' => $report->post?->content,
+                                    'post_date' => $report->post?->created_at?->toIso8601String(),
+                                    'resolved_at' => now()->toIso8601String(),
+                                    'metrics' => $report->post ? [
+                                        'reactions' => $report->post->reactions()->count(),
+                                        'comments' => $report->post->comments()->count(),
+                                        'reports' => $report->post->reports()->count(),
+                                    ] : null,
+                                    'reporter' => [
+                                        'name' => $report->reporter->name,
+                                        'joined_at' => $report->reporter->created_at->toIso8601String(),
+                                    ]
+                                ]
+                            );
                         }
                         if ($action === 'dismiss') {
                             $report->update([
@@ -972,6 +1159,15 @@ class AgriPulseModerationController extends Controller
                                 'resolution_note' => $note ?? 'Bulk dismissal'
                             ]);
                             $this->logModerationAction('dismiss_report', $report, ['bulk' => true, 'note' => $note ?? 'Bulk dismissal']);
+
+                            // Notify Reporter
+                            $subject = $report->post_id ? "Post #{$report->post_id}" : "User #{$report->reporter_id}";
+                            $this->dispatchModerationNotification(
+                                $report->reporter,
+                                'Report Update',
+                                "Thank you for reporting \"{$subject}\". After a careful review, we have determined that this content does not violate our community guidelines at this time. However, your feedback is invaluable in keeping our platform safe.",
+                                'normal'
+                            );
                         }
                         $processedCount++;
                     }
@@ -983,6 +1179,14 @@ class AgriPulseModerationController extends Controller
                         if ($action === 'verify') {
                             $user->update(['email_verified_at' => now(), 'status' => 'active']);
                             $this->logModerationAction('verify_user', $user, ['bulk' => true]);
+
+                            // Notify User
+                            $this->dispatchModerationNotification(
+                                $user,
+                                'Account Verified',
+                                "Your account has been successfully verified. You now have full access to all AgriPulse features. Welcome to our community!",
+                                'success'
+                            );
                         }
                         if ($action === 'suspend') {
                             $user->update(['agripulse_banned_at' => now()]);
@@ -995,10 +1199,26 @@ class AgriPulseModerationController extends Controller
                                 'expires_at' => null
                             ]);
                             $this->logModerationAction('suspend_user', $user, ['bulk' => true, 'reason' => $reason ?? 'Bulk suspension']);
+
+                            // Notify User
+                            $this->dispatchModerationNotification(
+                                $user,
+                                'AgriPulse Access Suspended',
+                                "Your access to AgriPulse has been suspended. Reason: " . ($reason ?? 'Compliance review') . ".",
+                                'critical'
+                            );
                         }
                         if ($action === 'activate') {
                             $user->update(['agripulse_banned_at' => null]);
                             $this->logModerationAction('activate_user', $user, ['bulk' => true]);
+
+                             // Notify User
+                            $this->dispatchModerationNotification(
+                                $user,
+                                'Access Restored',
+                                'Your access to AgriPulse has been fully restored. Welcome back!',
+                                'success'
+                            );
                         }
                         $processedCount++;
                     }
