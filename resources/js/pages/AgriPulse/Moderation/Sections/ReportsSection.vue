@@ -75,6 +75,11 @@
         <table class="w-full text-left border-collapse min-w-[1000px]">
           <thead>
             <tr class="bg-white border-b border-gray-50 sticky top-0 z-10">
+              <th class="px-8 py-4 w-16">
+                <input type="checkbox" :checked="reports.length > 0 && selectedIds.length === reports.length"
+                  @change="toggleSelectAll"
+                  class="w-4 h-4 rounded border-gray-300 text-agri-forest focus:ring-agri-forest cursor-pointer">
+              </th>
               <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] w-24">ID</th>
               <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Reason</th>
               <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Message</th>
@@ -86,17 +91,21 @@
           </thead>
           <tbody class="divide-y divide-gray-50">
             <tr v-if="loading" v-for="i in 10" :key="i" class="animate-pulse">
-              <td colspan="6" class="px-8 py-6">
+              <td colspan="7" class="px-8 py-6">
                 <div class="h-4 bg-gray-100 rounded-full w-full"></div>
               </td>
             </tr>
             <tr v-else-if="reports.length === 0">
-              <td colspan="6" class="px-8 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+              <td colspan="7" class="px-8 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
                 No
                 reports found matching your criteria</td>
             </tr>
             <tr v-else v-for="report in reports" :key="report.id" @click="viewDetails(report)"
               class="group hover:bg-gray-50/50 transition-colors cursor-pointer">
+              <td class="px-8 py-5" @click.stop>
+                <input type="checkbox" v-model="selectedIds" :value="report.id"
+                  class="w-4 h-4 rounded border-gray-300 text-agri-forest focus:ring-agri-forest cursor-pointer">
+              </td>
               <td class="px-8 py-5">
                 <span class="font-mono text-[10px] text-gray-400 font-bold">#{{ report.id }}</span>
               </td>
@@ -287,7 +296,8 @@
                 <div class="space-y-4">
                   <div>
                     <span class="text-xs font-medium text-gray-500">Primary Reason</span>
-                    <p class="text-sm font-bold text-gray-900 mt-1 capitalize">{{ selectedReport.reason.replace('_', ' ') }}</p>
+                    <p class="text-sm font-bold text-gray-900 mt-1 capitalize">{{ selectedReport.reason.replace('_', '')
+                    }}</p>
                   </div>
                   <div class="p-4 bg-red-50 rounded-xl border border-red-100">
                     <span class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-2 block">Reporter's
@@ -411,6 +421,88 @@
         </main>
       </div>
 
+
+
+      <!-- Sovereign Action Bar -->
+      <Transition enter-active-class="transition duration-700 cubic-bezier(0.16, 1, 0.3, 1)"
+        enter-from-class="translate-y-full opacity-0 scale-95" enter-to-class="translate-y-0 opacity-100 scale-100"
+        leave-active-class="transition duration-500 cubic-bezier(0.7, 0, 0.84, 0)"
+        leave-from-class="translate-y-0 opacity-100 scale-100" leave-to-class="translate-y-full opacity-0 scale-95">
+        <div v-if="selectedIds.length > 0"
+          class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[80] w-full max-w-5xl px-6">
+          <div
+            class="bg-gray-900/95 backdrop-blur-3xl px-8 py-5 rounded-[3rem] border border-white/20 shadow-[0_50px_100px_rgba(0,0,0,0.6)] flex items-center justify-between relative overflow-hidden group">
+
+            <!-- Animated Mesh Glows -->
+            <div
+              class="absolute -top-24 -right-24 w-64 h-64 bg-agri-forest/20 rounded-full blur-[80px] group-hover:bg-agri-forest/30 transition-all duration-1000">
+            </div>
+            <div
+              class="absolute -bottom-24 -left-24 w-64 h-64 bg-agri-earth/20 rounded-full blur-[80px] group-hover:bg-agri-earth/30 transition-all duration-1000">
+            </div>
+
+            <div class="relative z-10 flex items-center space-x-8">
+              <div class="flex items-center space-x-3">
+                <div class="flex -space-x-4">
+                  <div v-for="i in Math.min(selectedIds.length, 3)" :key="i"
+                    class="w-10 h-10 rounded-full bg-agri-forest border-2 border-gray-900 flex items-center justify-center text-[10px] font-bold text-white shadow-xl">
+                    {{ selectedIds.length }}
+                  </div>
+                </div>
+                <div class="h-10 w-px bg-white/10 mx-2"></div>
+                <div>
+                  <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Batch Actions</p>
+                  <h4 class="text-xl font-bold text-white tracking-tight leading-none">
+                    {{ selectedIds.length }} Report<span v-if="selectedIds.length > 1">s</span>
+                    <span class="text-agri-lush animate-pulse ml-2 px-3 py-1 bg-agri-lush/10 rounded-lg">Selected</span>
+                  </h4>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative z-10 flex items-center space-x-3">
+              <!-- Resolve Action -->
+              <button v-if="availableBulkActions.includes('resolve')" @click="openBulkActionModal('resolve')"
+                :disabled="isProcessing"
+                class="group/btn flex items-center space-x-3 px-6 py-4 bg-white/5 hover:bg-agri-forest text-white border border-white/10 hover:border-agri-forest rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-agri-forest/40">
+                <div
+                  class="w-8 h-8 rounded-xl bg-white/10 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 text-agri-lush group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Resolve</span>
+              </button>
+
+              <!-- Dismiss Action -->
+              <button v-if="availableBulkActions.includes('dismiss')" @click="openBulkActionModal('dismiss')"
+                :disabled="isProcessing"
+                class="group/btn flex items-center space-x-3 px-6 py-4 bg-white/5 hover:bg-gray-600 text-white border border-white/10 hover:border-gray-600 rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-gray-600/40">
+                <div
+                  class="w-8 h-8 rounded-xl bg-white/10 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 text-gray-400 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Dismiss</span>
+              </button>
+
+              <div class="h-10 w-px bg-white/10 mx-2"></div>
+
+              <button @click="selectedIds = []"
+                class="w-14 h-14 flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-[1.25rem] border border-white/10 transition-all duration-500 group-hover:rotate-90">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Resolve Modal -->
       <Modal :is-open="modal.open" :title="modal.action === 'resolve' ? 'Resolve report' : 'Dismiss report'"
         :type="modal.action === 'resolve' ? 'success' : 'primary'" confirm-text="Confirm" @confirm="executeResolve"
@@ -524,6 +616,74 @@ const loading = ref(true)
 const reports = ref([])
 const status = ref('pending')
 const search = ref('')
+const selectedIds = ref([])
+const isProcessing = ref(false)
+
+
+
+const toggleSelectAll = () => {
+  if (selectedIds.value.length === reports.value.length) {
+    selectedIds.value = []
+  } else {
+    selectedIds.value = reports.value.map(r => r.id)
+  }
+}
+
+const availableBulkActions = computed(() => {
+  if (selectedIds.value.length === 0) return []
+
+  // Find selected objects
+  const selectedItems = reports.value.filter(r => selectedIds.value.includes(r.id))
+
+  // Logic: 
+  // If ANY selected items are pending, verify/dismiss is valid (usually)
+  // Or we might check if ALL are pending.
+  // Let's assume actions are valid for all.
+
+  const actions = []
+  const hasPending = selectedItems.some(r => r.status === 'pending')
+
+  if (hasPending) {
+    actions.push('resolve')
+    actions.push('dismiss')
+  }
+
+  return actions
+})
+
+const openBulkActionModal = (action) => {
+  modal.value = {
+    open: true,
+    action: action,
+    target: null, // Indicates bulk
+    isBulk: true,
+    note: '',
+    loading: false
+  }
+}
+
+const handleBulkAction = async (note) => {
+  modal.value.loading = true
+  const action = modal.value.action
+
+  try {
+    await axios.post('/api/agripulse/moderation/bulk-action', {
+      ids: selectedIds.value,
+      action: action,
+      type: 'report',
+      note: note
+    })
+
+    if (window.notify) window.notify.success('Bulk Action Complete', `${selectedIds.value.length} reports processed.`)
+    selectedIds.value = []
+    modal.value.open = false
+    fetchReports()
+  } catch (error) {
+    if (window.notify) window.notify.error('Bulk Action Failed', 'Could not process selected items.')
+  } finally {
+    modal.value.loading = false
+  }
+}
 const openMenuId = ref(null)
 const selectedReport = ref(null)
 const pagination = ref({})
@@ -532,6 +692,7 @@ const modal = ref({
   open: false,
   action: '',
   target: null,
+  isBulk: false,
   note: '',
   loading: false
 })
@@ -602,7 +763,11 @@ const initResolve = (report, action) => {
 
 const executeResolve = async () => {
   modal.value.loading = true
-  const { target, action, note } = modal.value
+  const { target, action, note, isBulk } = modal.value
+
+  if (isBulk) {
+    return handleBulkAction(note)
+  }
 
   try {
     await axios.post(`/api/agripulse/moderation/reports/${target.id}/${action}`, { note })

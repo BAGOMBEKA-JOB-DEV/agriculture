@@ -78,6 +78,11 @@
                 <table class="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr class="bg-white border-b border-gray-50 sticky top-0 z-10">
+                            <th class="px-8 py-4 w-16">
+                                <input type="checkbox" :checked="logs.length > 0 && selectedIds.length === logs.length"
+                                    @change="toggleSelectAll"
+                                    class="w-4 h-4 rounded border-gray-300 text-agri-forest focus:ring-agri-forest cursor-pointer">
+                            </th>
                             <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
                                 Moderator
                             </th>
@@ -104,6 +109,10 @@
                         </tr>
                         <tr v-else v-for="log in logs" :key="log.id" @click="selectedLog = log"
                             class="group hover:bg-gray-50/50 transition-colors cursor-pointer">
+                            <td class="px-8 py-5" @click.stop>
+                                <input type="checkbox" v-model="selectedIds" :value="log.id"
+                                    class="w-4 h-4 rounded border-gray-300 text-agri-forest focus:ring-agri-forest cursor-pointer">
+                            </td>
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-3">
                                     <img :src="log.moderator?.avatar_url" :alt="log.moderator?.name"
@@ -312,6 +321,80 @@
                 </main>
             </div>
         </div>
+
+        <!-- Confirm Modal -->
+        <Modal :is-open="modal.open" :title="modal.title" :type="modal.type" confirm-text="Confirm"
+            @confirm="handleBulkAction" @cancel="modal.open = false" :loading="modal.loading">
+            <p class="text-sm text-gray-600 mb-4">{{ modal.message }}</p>
+        </Modal>
+
+        <!-- Sovereign Action Bar -->
+        <Transition enter-active-class="transition duration-700 cubic-bezier(0.16, 1, 0.3, 1)"
+            enter-from-class="translate-y-full opacity-0 scale-95" enter-to-class="translate-y-0 opacity-100 scale-100"
+            leave-active-class="transition duration-500 cubic-bezier(0.7, 0, 0.84, 0)"
+            leave-from-class="translate-y-0 opacity-100 scale-100" leave-to-class="translate-y-full opacity-0 scale-95">
+            <div v-if="selectedIds.length > 0"
+                class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[80] w-full max-w-5xl px-6">
+                <div
+                    class="bg-gray-900/95 backdrop-blur-3xl px-8 py-5 rounded-[3rem] border border-white/20 shadow-[0_50px_100px_rgba(0,0,0,0.6)] flex items-center justify-between relative overflow-hidden group">
+
+                    <!-- Animated Mesh Glows -->
+                    <div
+                        class="absolute -top-24 -right-24 w-64 h-64 bg-agri-forest/20 rounded-full blur-[80px] group-hover:bg-agri-forest/30 transition-all duration-1000">
+                    </div>
+                    <div
+                        class="absolute -bottom-24 -left-24 w-64 h-64 bg-agri-earth/20 rounded-full blur-[80px] group-hover:bg-agri-earth/30 transition-all duration-1000">
+                    </div>
+
+                    <div class="relative z-10 flex items-center space-x-8">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex -space-x-4">
+                                <div v-for="i in Math.min(selectedIds.length, 3)" :key="i"
+                                    class="w-10 h-10 rounded-full bg-agri-forest border-2 border-gray-900 flex items-center justify-center text-[10px] font-bold text-white shadow-xl">
+                                    {{ selectedIds.length }}
+                                </div>
+                            </div>
+                            <div class="h-10 w-px bg-white/10 mx-2"></div>
+                            <div>
+                                <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Batch
+                                    Actions</p>
+                                <h4 class="text-xl font-bold text-white tracking-tight leading-none">
+                                    {{ selectedIds.length }} Log<span v-if="selectedIds.length > 1">s</span>
+                                    <span
+                                        class="text-agri-lush animate-pulse ml-2 px-3 py-1 bg-agri-lush/10 rounded-lg">Selected</span>
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 flex items-center space-x-3">
+                        <!-- Delete Action -->
+                        <button @click="openBulkActionModal('delete')" :disabled="isProcessing"
+                            class="group/btn flex items-center space-x-3 px-6 py-4 bg-red-500/10 hover:bg-red-600 text-white border border-red-500/20 hover:border-red-600 rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-red-600/40">
+                            <div
+                                class="w-8 h-8 rounded-xl bg-red-500/20 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 text-red-400 group-hover/btn:text-white" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-widest">Delete</span>
+                        </button>
+
+                        <div class="h-10 w-px bg-white/10 mx-2"></div>
+
+                        <button @click="selectedIds = []"
+                            class="w-14 h-14 flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-[1.25rem] border border-white/10 transition-all duration-500 group-hover:rotate-90">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </div>
 </template>
 
@@ -319,6 +402,7 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import dayjs from 'dayjs'
+import Modal from '@/components/Modal.vue'
 
 const props = defineProps({
     globalStats: {
@@ -378,8 +462,65 @@ const loading = ref(true)
 const logs = ref([])
 const filterAction = ref('')
 const search = ref('')
+const selectedIds = ref([])
+const isProcessing = ref(false)
 const pagination = ref({})
 const selectedLog = ref(null)
+
+const modal = ref({
+    open: false,
+    title: '',
+    message: '',
+    type: 'primary',
+    action: null,
+    loading: false
+})
+
+const toggleSelectAll = () => {
+    if (selectedIds.value.length === logs.value.length) {
+        selectedIds.value = []
+    } else {
+        selectedIds.value = logs.value.map(l => l.id)
+    }
+}
+
+const availableBulkActions = computed(() => {
+    if (selectedIds.value.length === 0) return []
+    return ['delete']
+})
+
+const openBulkActionModal = (action) => {
+    if (action === 'delete') {
+        modal.value = {
+            open: true,
+            title: 'Bulk Delete Logs',
+            message: `Are you sure you want to permanently delete ${selectedIds.value.length} activity logs? This action cannot be undone.`,
+            type: 'danger',
+            action: 'delete',
+            loading: false
+        }
+    }
+}
+
+const handleBulkAction = async () => {
+    modal.value.loading = true
+    try {
+        await axios.post('/api/agripulse/moderation/bulk-action', {
+            ids: selectedIds.value,
+            action: 'delete',
+            type: 'log'
+        })
+
+        if (window.notify) window.notify.success('Bulk Action Complete', `${selectedIds.value.length} logs deleted.`)
+        selectedIds.value = []
+        modal.value.open = false
+        fetchLogs()
+    } catch (error) {
+        if (window.notify) window.notify.error('Bulk Action Failed', 'Could not delete logs.')
+    } finally {
+        modal.value.loading = false
+    }
+}
 
 const debounce = (fn, delay) => {
     let timeoutId;

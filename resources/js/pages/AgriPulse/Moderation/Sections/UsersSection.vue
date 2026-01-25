@@ -65,6 +65,11 @@
         <table class="w-full text-left border-collapse min-w-[1000px]">
           <thead>
             <tr class="bg-white border-b border-gray-50 sticky top-0 z-10">
+              <th class="px-8 py-4 w-16">
+                <input type="checkbox" :checked="users.length > 0 && selectedIds.length === users.length"
+                  @change="toggleSelectAll"
+                  class="w-4 h-4 rounded border-gray-300 text-agri-forest focus:ring-agri-forest cursor-pointer">
+              </th>
               <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] w-24">ID</th>
               <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">User</th>
               <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Posts
@@ -82,12 +87,16 @@
           </thead>
           <tbody class="divide-y divide-gray-50">
             <tr v-if="loading" v-for="i in 10" :key="i" class="animate-pulse">
-              <td colspan="7" class="px-8 py-6">
+              <td colspan="8" class="px-8 py-6">
                 <div class="h-4 bg-gray-100 rounded-full w-full"></div>
               </td>
             </tr>
             <tr v-else v-for="user in users" :key="user.id" @click="viewDetails(user)"
               class="group hover:bg-gray-50/50 transition-colors cursor-pointer">
+              <td class="px-8 py-5" @click.stop>
+                <input type="checkbox" v-model="selectedIds" :value="user.id"
+                  class="w-4 h-4 rounded border-gray-300 text-agri-forest focus:ring-agri-forest cursor-pointer">
+              </td>
               <td class="px-8 py-5">
                 <span class="font-mono text-[10px] text-gray-400 font-bold">#{{ user.id }}</span>
               </td>
@@ -355,7 +364,7 @@
                         </div>
                       </div>
                       <span class="text-[9px] font-bold text-gray-400 uppercase">{{ dayjs(post.created_at).fromNow()
-                      }}</span>
+                        }}</span>
                     </div>
                   </div>
                 </div>
@@ -456,7 +465,7 @@
                     <tr v-for="report in history.reports" :key="report.id">
                       <td class="px-6 py-4">
                         <span class="text-[10px] font-black uppercase tracking-tight text-red-500">{{ report.reason
-                        }}</span>
+                          }}</span>
                       </td>
                       <td class="px-6 py-4 text-xs text-gray-500 italic max-w-sm truncate">{{ report.post?.content ||
                         'Non-textual content' }}</td>
@@ -489,10 +498,10 @@
       </div>
 
       <!-- Governance Modal -->
-      <Modal :is-open="modal.open" :title="`Protocol: ${modal.type}`"
-        :type="modal.type === 'suspension' ? 'danger' : 'primary'" confirm-text="Execute"
-        @confirm="submitModerationAction" @cancel="modal.open = false" :loading="modal.loading">
+      <Modal :is-open="modal.open" :title="modal.title" :type="modal.action === 'suspend' ? 'danger' : 'primary'"
+        confirm-text="Execute" @confirm="executeAction" @cancel="modal.open = false" :loading="modal.loading">
         <div class="space-y-6">
+          <p class="text-sm text-gray-600" v-if="modal.message">{{ modal.message }}</p>
           <div>
             <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Reason for
               action</label>
@@ -501,7 +510,7 @@
               placeholder="Describe why you are taking this action..."></textarea>
           </div>
 
-          <div v-if="modal.type === 'suspension'">
+          <div v-if="modal.action === 'suspend' || modal.action === 'suspension'">
             <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Expires at
               (Optional)</label>
             <input v-model="modal.expires_at" type="datetime-local"
@@ -509,6 +518,104 @@
           </div>
         </div>
       </Modal>
+
+
+
+      <!-- Sovereign Action Bar -->
+      <Transition enter-active-class="transition duration-700 cubic-bezier(0.16, 1, 0.3, 1)"
+        enter-from-class="translate-y-full opacity-0 scale-95" enter-to-class="translate-y-0 opacity-100 scale-100"
+        leave-active-class="transition duration-500 cubic-bezier(0.7, 0, 0.84, 0)"
+        leave-from-class="translate-y-0 opacity-100 scale-100" leave-to-class="translate-y-full opacity-0 scale-95">
+        <div v-if="selectedIds.length > 0"
+          class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[80] w-full max-w-5xl px-6">
+          <div
+            class="bg-gray-900/95 backdrop-blur-3xl px-8 py-5 rounded-[3rem] border border-white/20 shadow-[0_50px_100px_rgba(0,0,0,0.6)] flex items-center justify-between relative overflow-hidden group">
+
+            <!-- Animated Mesh Glows -->
+            <div
+              class="absolute -top-24 -right-24 w-64 h-64 bg-agri-forest/20 rounded-full blur-[80px] group-hover:bg-agri-forest/30 transition-all duration-1000">
+            </div>
+            <div
+              class="absolute -bottom-24 -left-24 w-64 h-64 bg-agri-earth/20 rounded-full blur-[80px] group-hover:bg-agri-earth/30 transition-all duration-1000">
+            </div>
+
+            <div class="relative z-10 flex items-center space-x-8">
+              <div class="flex items-center space-x-3">
+                <div class="flex -space-x-4">
+                  <div v-for="i in Math.min(selectedIds.length, 3)" :key="i"
+                    class="w-10 h-10 rounded-full bg-agri-forest border-2 border-gray-900 flex items-center justify-center text-[10px] font-bold text-white shadow-xl">
+                    {{ selectedIds.length }}
+                  </div>
+                </div>
+                <div class="h-10 w-px bg-white/10 mx-2"></div>
+                <div>
+                  <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Batch Actions</p>
+                  <h4 class="text-xl font-bold text-white tracking-tight leading-none">
+                    {{ selectedIds.length }} User<span v-if="selectedIds.length > 1">s</span>
+                    <span class="text-agri-lush animate-pulse ml-2 px-3 py-1 bg-agri-lush/10 rounded-lg">Selected</span>
+                  </h4>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative z-10 flex items-center space-x-3">
+              <!-- Verify Action -->
+              <button v-if="availableBulkActions.includes('verify')" @click="openBulkActionModal('verify')"
+                :disabled="isProcessing"
+                class="group/btn flex items-center space-x-3 px-6 py-4 bg-white/5 hover:bg-agri-forest text-white border border-white/10 hover:border-agri-forest rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-agri-forest/40">
+                <div
+                  class="w-8 h-8 rounded-xl bg-white/10 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 text-agri-lush group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Verify</span>
+              </button>
+
+              <!-- Suspend Action -->
+              <button v-if="availableBulkActions.includes('suspend')" @click="openBulkActionModal('suspend')"
+                :disabled="isProcessing"
+                class="group/btn flex items-center space-x-3 px-6 py-4 bg-white/5 hover:bg-orange-600 text-white border border-white/10 hover:border-orange-600 rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-orange-600/40">
+                <div
+                  class="w-8 h-8 rounded-xl bg-white/10 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 text-orange-400 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Suspend</span>
+              </button>
+
+              <!-- Restore Action -->
+              <button v-if="availableBulkActions.includes('activate')" @click="openBulkActionModal('activate')"
+                :disabled="isProcessing"
+                class="group/btn flex items-center space-x-3 px-6 py-4 bg-white/5 hover:bg-green-600 text-white border border-white/10 hover:border-green-600 rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-green-600/40">
+                <div
+                  class="w-8 h-8 rounded-xl bg-white/10 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 text-green-400 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Restore</span>
+              </button>
+
+              <div class="h-10 w-px bg-white/10 mx-2"></div>
+
+              <button @click="selectedIds = []"
+                class="w-14 h-14 flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-[1.25rem] border border-white/10 transition-all duration-500 group-hover:rotate-90">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -603,6 +710,89 @@ const debounce = (fn, delay) => {
 const loading = ref(true)
 const users = ref([])
 const search = ref('')
+const selectedIds = ref([])
+const isProcessing = ref(false)
+
+
+const toggleSelectAll = () => {
+  if (selectedIds.value.length === users.value.length) {
+    selectedIds.value = []
+  } else {
+    selectedIds.value = users.value.map(u => u.id)
+  }
+}
+
+const availableBulkActions = computed(() => {
+  if (selectedIds.value.length === 0) return []
+  const selectedItems = users.value.filter(u => selectedIds.value.includes(u.id))
+
+  const actions = []
+
+  // If mixed, we might limit actions, but usually:
+  // - If any active -> suspend
+  // - If any suspended -> activate
+  // - If any pending -> verify
+
+  if (selectedItems.some(u => u.status === 'active' || !u.status)) {
+    actions.push('suspend')
+  }
+
+  if (selectedItems.some(u => u.status === 'suspended')) {
+    actions.push('activate') // Restore
+  }
+
+  // Assuming 'pending' status or similar for verify
+  if (selectedItems.some(u => !u.email_verified_at)) {
+    actions.push('verify')
+  }
+
+  return actions
+})
+
+const openBulkActionModal = (action) => {
+  const configs = {
+    verify: { title: 'Bulk Verify', message: `Verify ${selectedIds.value.length} selected users?`, type: 'success' },
+    suspend: { title: 'Bulk Suspend', message: `Suspend ${selectedIds.value.length} selected users?`, type: 'danger' },
+    activate: { title: 'Bulk Restore', message: `Restore access for ${selectedIds.value.length} selected users?`, type: 'success' }
+  }
+
+  if (!configs[action]) return
+
+  modal.value = {
+    open: true,
+    ...configs[action],
+    action: action,
+    target: null,
+    isBulk: true,
+    reason: '',
+    expires_at: '',
+    loading: false
+  }
+}
+
+const handleBulkAction = async (reason) => {
+  modal.value.loading = true
+  const action = modal.value.action
+
+  try {
+    await axios.post('/api/agripulse/moderation/bulk-action', {
+      ids: selectedIds.value,
+      action: action,
+      type: 'user',
+      reason: reason
+    })
+
+    if (window.notify) window.notify.success('Bulk Action Complete', `${selectedIds.value.length} users processed.`)
+    selectedIds.value = []
+    modal.value.open = false
+    fetchUsers()
+    emit('refresh-stats')
+  } catch (error) {
+    if (window.notify) window.notify.error('Bulk Action Failed', 'Could not process selected items.')
+  } finally {
+    modal.value.loading = false
+  }
+}
 const pagination = ref({})
 const openMenuId = ref(null)
 const selectedUser = ref(null)
@@ -618,7 +808,11 @@ const profileData = ref({
 
 const modal = ref({
   open: false,
-  type: 'warning',
+  title: '',
+  message: '',
+  action: '', // Replaces 'type'
+  target: null,
+  isBulk: false,
   reason: '',
   expires_at: '',
   loading: false
@@ -681,45 +875,72 @@ const fetchUserHistory = async (userId) => {
   }
 }
 
-const openActionModal = (user, type) => {
-  modal.value = { open: true, type, reason: '', expires_at: '', loading: false, targetUser: user }
+const openActionModal = (user, action) => {
+  // Map actions to title/type
+  const configs = {
+    warning: { title: 'Issue Warning', message: `Issue a formal warning to ${user.name}?`, type: 'primary' },
+    warn: { title: 'Issue Warning', message: `Issue a formal warning to ${user.name}?`, type: 'primary' }, // alias
+    suspension: { title: 'Suspend User', message: `Suspend access for ${user.name}?`, type: 'danger' },
+    suspend: { title: 'Suspend User', message: `Suspend access for ${user.name}?`, type: 'danger' } // alias
+  }
+
+  const config = configs[action] || { title: 'Action', message: '', type: 'primary' }
+
+  modal.value = {
+    open: true,
+    ...config,
+    action: action,
+    target: user,
+    isBulk: false,
+    reason: '',
+    expires_at: '',
+    loading: false
+  }
   openMenuId.value = null
 }
 
-const submitModerationAction = async () => {
-  if (!modal.value.reason) return alert('Please provide a reason.')
-
+const executeAction = async () => {
   modal.value.loading = true
+  const { target, action, reason, expires_at, isBulk } = modal.value
+
+  if (isBulk) {
+    return handleBulkAction(reason)
+  }
+
   try {
-    await axios.post(`/api/agripulse/moderation/users/${modal.value.targetUser.id}/${modal.value.type}`, {
-      reason: modal.value.reason,
-      expires_at: modal.value.expires_at
-    })
+    // Determine endpoint based on action
+    let url = ''
+    let data = { reason }
+
+    // Normalize action names
+    const act = (action === 'warning') ? 'warn' : (action === 'suspension') ? 'suspend' : action;
+
+    url = `/api/agripulse/moderation/users/${target.id}/${act}`
+
+    if (act === 'suspend' && expires_at) {
+      data.expires_at = expires_at
+    }
+
+    if (url) {
+      await axios.post(url, data)
+      if (window.notify) window.notify.success('Action Successful', `${action} applied successfully.`)
+    }
+
     modal.value.open = false
-
-    if (window.notify) {
-      window.notify.success('Action Executed', `${modal.value.type} protocol successfully applied to user.`)
-    }
-
-    if (selectedUser.value && selectedUser.value.id === modal.value.targetUser.id) {
-      await fetchUserHistory(selectedUser.value.id)
-    }
-
     fetchUsers()
 
-    // Notify parent to refresh stats
+    // Refresh history if same user selected
+    if (selectedUser.value && selectedUser.value.id === target.id) {
+      await fetchUserHistory(target.id)
+    }
+
     emit('refresh-stats')
   } catch (error) {
-    if (window.notify) {
-      window.notify.error('Execution Failed', 'Moderation signal was not accepted.')
-    } else {
-      alert('Action failed.')
-    }
+    if (window.notify) window.notify.error('Action Failed', 'Could not complete request.')
   } finally {
     modal.value.loading = false
   }
 }
-
 onMounted(() => fetchUsers())
 </script>
 

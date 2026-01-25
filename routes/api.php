@@ -258,5 +258,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Analytics
         Route::get('/analytics', [AgriPulseModerationController::class, 'getAnalytics'])
             ->middleware('permission:agripulse.moderate.analytics');
+
+        // Bulk Actions
+        Route::post('/bulk-action', [AgriPulseModerationController::class, 'bulkAction'])
+            ->middleware('permission:agripulse.moderate.posts');
     });
 });

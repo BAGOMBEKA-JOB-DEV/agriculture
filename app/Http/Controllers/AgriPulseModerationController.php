@@ -698,4 +698,138 @@ class AgriPulseModerationController extends Controller
             'metadata' => $metadata,
         ]);
     }
+    /**
+     * Handle bulk actions for moderation resources.
+     */
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'action' => 'required|string',
+            'type' => 'required|string|in:post,comment,report,user,log',
+            'reason' => 'nullable|string',
+            'note' => 'nullable|string'
+        ]);
+
+        $ids = $request->input('ids');
+        $action = $request->input('action');
+        $type = $request->input('type');
+        $reason = $request->input('reason');
+        $note = $request->input('note');
+
+        DB::beginTransaction();
+        try {
+            $processedCount = 0;
+
+            switch ($type) {
+                case 'post':
+                    $posts = Post::whereIn('id', $ids)->get();
+                    foreach ($posts as $post) {
+                        if ($action === 'hide') {
+                            $post->update(['status' => 'hidden']);
+                            $this->logModerationAction('hide_post', $post, ['bulk' => true, 'reason' => $reason]);
+                        }
+                        if ($action === 'delete') {
+                            $post->delete();
+                            $this->logModerationAction('delete_post', $post, ['bulk' => true, 'reason' => $reason]);
+                        }
+                        if ($action === 'restore') {
+                            if ($post->trashed()) $post->restore();
+                            $post->update(['status' => 'published']);
+                            $this->logModerationAction('restore_post', $post, ['bulk' => true, 'reason' => $reason]);
+                        }
+                        if ($action === 'flag') {
+                            $post->update(['status' => 'flagged']);
+                            $this->logModerationAction('flag_post', $post, ['bulk' => true, 'reason' => $reason]);
+                        }
+                        $processedCount++;
+                    }
+                    break;
+
+                case 'comment':
+                    $comments = PostComment::whereIn('id', $ids)->get();
+                    foreach ($comments as $comment) {
+                        if ($action === 'hide') {
+                            $comment->update(['status' => 'hidden']);
+                            $this->logModerationAction('hide_comment', $comment, ['bulk' => true, 'reason' => $reason]);
+                        }
+                        if ($action === 'delete') {
+                            $comment->delete();
+                            $this->logModerationAction('delete_comment', $comment, ['bulk' => true, 'reason' => $reason]);
+                        }
+                        if ($action === 'restore') {
+                            if ($comment->trashed()) $comment->restore();
+                            $comment->update(['status' => 'published']);
+                            $this->logModerationAction('restore_comment', $comment, ['bulk' => true, 'reason' => $reason]);
+                        }
+                        $processedCount++;
+                    }
+                    break;
+
+                case 'report':
+                    $reports = AgriPulsePostReport::whereIn('id', $ids)->get();
+                    foreach ($reports as $report) {
+                        if ($action === 'resolve') {
+                            $report->update([
+                                'status' => 'resolved',
+                                'resolved_by' => auth()->id(),
+                                'resolved_at' => now(),
+                                'resolution_note' => $note ?? 'Bulk resolution'
+                            ]);
+                            $this->logModerationAction('resolve_report', $report, ['bulk' => true, 'note' => $note ?? 'Bulk resolution']);
+                        }
+                        if ($action === 'dismiss') {
+                            $report->update([
+                                'status' => 'dismissed',
+                                'resolved_by' => auth()->id(),
+                                'resolved_at' => now(),
+                                'resolution_note' => $note ?? 'Bulk dismissal'
+                            ]);
+                            $this->logModerationAction('dismiss_report', $report, ['bulk' => true, 'note' => $note ?? 'Bulk dismissal']);
+                        }
+                        $processedCount++;
+                    }
+                    break;
+                
+                case 'user':
+                    $users = User::whereIn('id', $ids)->get();
+                    foreach ($users as $user) {
+                        if ($action === 'verify') {
+                            $user->update(['email_verified_at' => now(), 'status' => 'active']);
+                            $this->logModerationAction('verify_user', $user, ['bulk' => true]);
+                        }
+                        if ($action === 'suspend') {
+                            $user->update(['status' => 'suspended', 'suspended_at' => now()]);
+                            // Also create a moderation action record for consistency
+                            AgriPulseUserModerationAction::create([
+                                'user_id' => $user->id,
+                                'moderator_id' => auth()->id(),
+                                'action_type' => 'suspension',
+                                'reason' => $reason ?? 'Bulk suspension',
+                                'expires_at' => null
+                            ]);
+                            $this->logModerationAction('suspend_user', $user, ['bulk' => true, 'reason' => $reason ?? 'Bulk suspension']);
+                        }
+                        if ($action === 'activate') {
+                            $user->update(['status' => 'active', 'suspended_at' => null]);
+                            $this->logModerationAction('activate_user', $user, ['bulk' => true]);
+                        }
+                        $processedCount++;
+                    }
+                    break;
+
+                case 'log':
+                    if ($action === 'delete') {
+                        $processedCount = AgriPulseModerationLog::whereIn('id', $ids)->delete();
+                    }
+                    break;
+            }
+
+            DB::commit();
+            return response()->json(['message' => "Bulk action completed. processed $processedCount items."]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Bulk action failed', 'error' => $e->getMessage()], 500);
+        }
+    }
 }
