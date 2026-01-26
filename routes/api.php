@@ -47,6 +47,11 @@ Route::get('/super-admin/users/export/download/{filename}', [\App\Http\Controlle
     ->name('super-admin.download-export')
     ->middleware('signed');
 
+// AgriPulse Export Downloads (secured with signed URLs)
+Route::get('/agripulse/moderation/exports/download/{filename}', [AgriPulseModerationController::class, 'downloadExport'])
+    ->name('exports.download')
+    ->middleware('signed');
+
 Route::middleware('auth:sanctum')->group(function () {
     // Products
     Route::apiResource('products', ProductController::class)->except(['index', 'show']);
@@ -265,5 +270,17 @@ Route::middleware('auth:sanctum')->group(function () {
         // Bulk Actions
         Route::post('/bulk-action', [AgriPulseModerationController::class, 'bulkAction'])
             ->middleware('permission:agripulse.moderate.posts');
+
+        // Exports
+        Route::post('/export/posts', [AgriPulseModerationController::class, 'exportPosts'])
+            ->middleware('permission:agripulse.moderate.posts');
+        Route::post('/export/comments', [AgriPulseModerationController::class, 'exportComments'])
+            ->middleware('permission:agripulse.moderate.comments');
+        Route::post('/export/reports', [AgriPulseModerationController::class, 'exportReports'])
+            ->middleware('permission:agripulse.moderate.reports');
+        Route::post('/export/users', [AgriPulseModerationController::class, 'exportUsers'])
+            ->middleware('permission:agripulse.moderate.users');
+        Route::post('/export/logs', [AgriPulseModerationController::class, 'exportLogs'])
+            ->middleware('permission:agripulse.moderate.users');
     });
 });

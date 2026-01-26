@@ -1255,4 +1255,138 @@ class AgriPulseModerationController extends Controller
             'content_details' => $contentDetails
         ]);
     }
+
+    /**
+     * Export posts (all or selected).
+     */
+    public function exportPosts(Request $request)
+    {
+        $request->validate([
+            'format' => 'required|in:pdf,excel,word,csv',
+            'ids' => 'nullable|array',
+            'filters' => 'nullable|array'
+        ]);
+
+        \App\Jobs\AgriPulse\ExportModerationData::dispatch(
+            auth()->user(),
+            'posts',
+            $request->format,
+            $request->ids,
+            $request->filters ?? []
+        );
+
+        return response()->json([
+            'message' => 'Export started. You will be notified when ready for download.'
+        ]);
+    }
+
+    /**
+     * Export comments (all or selected).
+     */
+    public function exportComments(Request $request)
+    {
+        $request->validate([
+            'format' => 'required|in:pdf,excel,word,csv',
+            'ids' => 'nullable|array',
+            'filters' => 'nullable|array'
+        ]);
+
+        \App\Jobs\AgriPulse\ExportModerationData::dispatch(
+            auth()->user(),
+            'comments',
+            $request->format,
+            $request->ids,
+            $request->filters ?? []
+        );
+
+        return response()->json([
+            'message' => 'Export started. You will be notified when ready for download.'
+        ]);
+    }
+
+    /**
+     * Export reports (all or selected).
+     */
+    public function exportReports(Request $request)
+    {
+        $request->validate([
+            'format' => 'required|in:pdf,excel,word,csv',
+            'ids' => 'nullable|array',
+            'filters' => 'nullable|array'
+        ]);
+
+        \App\Jobs\AgriPulse\ExportModerationData::dispatch(
+            auth()->user(),
+            'reports',
+            $request->format,
+            $request->ids,
+            $request->filters ?? []
+        );
+
+        return response()->json([
+            'message' => 'Export started. You will be notified when ready for download.'
+        ]);
+    }
+
+    /**
+     * Export users (all or selected).
+     */
+    public function exportUsers(Request $request)
+    {
+        $request->validate([
+            'format' => 'required|in:pdf,excel,word,csv',
+            'ids' => 'nullable|array',
+            'filters' => 'nullable|array'
+        ]);
+
+        \App\Jobs\AgriPulse\ExportModerationData::dispatch(
+            auth()->user(),
+            'users',
+            $request->format,
+            $request->ids,
+            $request->filters ?? []
+        );
+
+        return response()->json([
+            'message' => 'Export started. You will be notified when ready for download.'
+        ]);
+    }
+
+    /**
+     * Export activity logs (all or selected).
+     */
+    public function exportLogs(Request $request)
+    {
+        $request->validate([
+            'format' => 'required|in:pdf,excel,word,csv',
+            'ids' => 'nullable|array',
+            'filters' => 'nullable|array'
+        ]);
+
+        \App\Jobs\AgriPulse\ExportModerationData::dispatch(
+            auth()->user(),
+            'logs',
+            $request->format,
+            $request->ids,
+            $request->filters ?? []
+        );
+
+        return response()->json([
+            'message' => 'Export started. You will be notified when ready for download.'
+        ]);
+    }
+
+    /**
+     * Download exported file (signed route).
+     */
+    public function downloadExport(Request $request, string $filename)
+    {
+        $filepath = storage_path("app/private/exports/agripulse/{$filename}");
+
+        if (!file_exists($filepath)) {
+            abort(404, 'Export file not found or has expired.');
+        }
+
+        return response()->download($filepath)->deleteFileAfterSend(false);
+    }
 }

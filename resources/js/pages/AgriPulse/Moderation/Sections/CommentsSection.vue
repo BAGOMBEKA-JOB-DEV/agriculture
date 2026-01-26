@@ -57,6 +57,15 @@
               </path>
             </svg>
           </button>
+          <button @click="showExportModal = true; exportMode = 'all'"
+            class="px-4 py-2.5 bg-agri-forest text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-agri-lush transition-all shadow-md hover:shadow-lg flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+            Export
+          </button>
         </div>
       </div>
 
@@ -481,6 +490,20 @@
                 <span class="text-[10px] font-bold uppercase tracking-widest">Delete</span>
               </button>
 
+              <!-- Export Action -->
+              <button @click="showExportModal = true; exportMode = 'selected'" :disabled="isProcessing"
+                class="group/btn flex items-center space-x-3 px-6 py-4 bg-agri-forest/10 hover:bg-agri-forest text-white border border-agri-forest/20 hover:border-agri-forest rounded-2xl transition-all duration-500 disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-agri-forest/40">
+                <div
+                  class="w-8 h-8 rounded-xl bg-agri-forest/20 group-hover/btn:bg-white/20 flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 text-agri-forest group-hover/btn:text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Export</span>
+              </button>
+
               <div class="h-10 w-px bg-white/10 mx-2"></div>
 
               <button @click="selectedIds = []"
@@ -493,6 +516,54 @@
           </div>
         </div>
       </Transition>
+
+      <!-- Export Modal -->
+      <Modal :isOpen="showExportModal" @cancel="showExportModal = false"
+        :title="'Export ' + (exportMode === 'selected' ? 'Selected' : 'All') + ' Comments'">
+        <div class="p-6 space-y-6">
+          <div class="text-center space-y-2">
+            <div class="w-16 h-16 bg-agri-forest/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-agri-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Select Export Format</h3>
+            <p class="text-sm text-gray-500">
+              {{ exportMode === 'selected' ? 'Exporting ' + selectedIds.length + ' selected records.' : 'Exporting all records based on active filters.' }}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <button v-for="format in exportFormats" :key="format.value" @click="handleExport(format.value)"
+              :disabled="isProcessing"
+              class="group p-4 border-2 border-gray-100 rounded-2xl hover:border-agri-forest hover:bg-agri-forest/5 transition-all text-left space-y-2 disabled:opacity-50">
+              <div
+                class="w-10 h-10 bg-gray-50 group-hover:bg-agri-forest/10 rounded-xl flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5 text-gray-400 group-hover:text-agri-forest" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="format.icon" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-black text-gray-900 leading-tight">{{ format.label }}</p>
+                <p class="text-[10px] text-gray-500 font-medium">{{ format.description }}</p>
+              </div>
+            </button>
+          </div>
+
+          <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-[11px] text-blue-700 font-medium leading-relaxed">
+              Exports are processed asynchronously. You will receive a notification with a download link once your file
+              is ready.
+            </p>
+          </div>
+        </div>
+      </Modal>
 
       <!-- Action Modal -->
       <Modal :is-open="modal.open" :title="modal.title" :type="modal.type" confirm-text="Confirm"
@@ -607,6 +678,38 @@ const comments = ref([])
 const search = ref('')
 const selectedIds = ref([])
 const isProcessing = ref(false)
+const showExportModal = ref(false)
+const exportMode = ref('all') // 'all' or 'selected'
+const exportFormats = [
+  { value: 'pdf', label: 'PDF', description: 'Enterprise Document', icon: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
+  { value: 'excel', label: 'Excel', description: 'Data Spreadsheet', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+  { value: 'word', label: 'Word', description: 'Rich Document', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+  { value: 'csv', label: 'CSV', description: 'Raw Data File', icon: 'M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2' }
+]
+
+const handleExport = async (format) => {
+  try {
+    isProcessing.value = true
+    await axios.post('/api/agripulse/moderation/export/comments', {
+      format,
+      ids: exportMode.value === 'selected' ? selectedIds.value : null,
+      filters: { search: search.value }
+    })
+
+    if (window.notify) {
+      window.notify.success('Export Started', 'We\'ll notify you when your export is ready to download.')
+    }
+
+    showExportModal.value = false
+  } catch (error) {
+    console.error('Export failed:', error)
+    if (window.notify) {
+      window.notify.error('Export Failed', 'Could not start export. Please try again.')
+    }
+  } finally {
+    isProcessing.value = false
+  }
+}
 
 const toggleSelectAll = () => {
   if (selectedIds.value.length === comments.value.length) {
