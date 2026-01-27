@@ -47,6 +47,17 @@ class RBACSeeder extends Seeder
             'view_vendors' => 'View Vendor Directory',
             'view_traders' => 'View Trader Directory',
             'view_buyers' => 'View Buyer Directory',
+
+            // AgriPulse Social Feed
+            'access_agripulse' => 'Access AgriPulse Social Feed',
+            'create_post' => 'Create AgriPulse Posts',
+            
+            // AgriPulse Moderation (Granular)
+            'agripulse.moderate.posts' => 'Moderate AgriPulse Posts',
+            'agripulse.moderate.comments' => 'Moderate AgriPulse Comments',
+            'agripulse.moderate.users' => 'Manage AgriPulse User Warnings',
+            'agripulse.moderate.reports' => 'Review AgriPulse Content Reports',
+            'agripulse.moderate.analytics' => 'View AgriPulse Moderation Analytics',
         ];
 
         foreach ($permissions as $slug => $description) {
@@ -64,6 +75,9 @@ class RBACSeeder extends Seeder
                 'manage_users', 'moderate_products', 'broadcast_notifications', 'manage_categories', 'manage_roles',
                 'view_reports_sales', 'view_reports_products', 'view_reports_users', 'view_reports_financial', 'view_reports_market', 'view_reports_trade_requests', 'view_reports_compliance', 'view_reports_system',
                 'view_vendors', 'view_traders', 'view_buyers',
+                'access_agripulse', 'create_post',
+                // AgriPulse Moderation
+                'agripulse.moderate.posts', 'agripulse.moderate.comments', 'agripulse.moderate.users', 'agripulse.moderate.reports', 'agripulse.moderate.analytics',
             ],
             'admin' => [
                 'access_admin', 'access_vendor',
@@ -71,16 +85,20 @@ class RBACSeeder extends Seeder
                 'moderate_products', 'manage_users',
                 'view_reports_sales', 'view_reports_products', 'view_reports_users', 'view_reports_compliance',
                 'view_vendors', 'view_traders', 'view_buyers',
-            ],
+                'access_agripulse', 'create_post',
+                // AgriPulse Moderation (limited)
+                'agripulse.moderate.posts', 'agripulse.moderate.comments', 'agripulse.moderate.reports',
+            ], 
             'vendor' => [
                 'access_vendor',
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions', 'manage_warehouse',
                 'view_reports_sales', 'view_reports_products',
                 'view_traders', 'view_vendors', 'view_buyers',  // Vendors can see potential trading partners
+                'access_agripulse', 'create_post',
             ],
             'user' => [
                 'view_dashboard', 'view_marketplace_products', 'view_rfqs', 'access_conversations', 'access_inbox', 'view_subscriptions',
-                'view_vendors', // Regular users (buyers/traders) primarily need to see vendors
+                'view_vendors', 'access_agripulse', 'create_post',
             ],
             // Legacy fallbacks
             'buyer' => ['view_marketplace_products', 'view_rfqs', 'view_vendors', 'view_traders'],

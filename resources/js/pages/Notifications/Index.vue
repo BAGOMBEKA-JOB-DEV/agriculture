@@ -57,28 +57,104 @@
                     class="bg-white p-6 rounded-2xl border transition-all cursor-pointer group hover:shadow-lg hover:shadow-agri-forest/5 hover:border-agri-forest/30"
                     :class="notification.read_at ? 'border-gray-100 opacity-75' : 'border-l-4 border-l-agri-forest border-y-gray-100 border-r-gray-100'">
                     <div class="flex items-start justify-between">
-                        <div class="flex items-start space-x-4">
-                            <div class="mt-1">
+                        <div class="flex items-start space-x-4 w-full">
+                            <!-- Icon based on priority -->
+                            <div class="mt-1 flex-shrink-0">
                                 <span v-if="notification.data.priority === 'critical'"
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                    Critical
+                                    class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-red-100 text-red-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                        </path>
+                                    </svg>
                                 </span>
                                 <span v-else-if="notification.data.priority === 'high'"
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                    High
+                                    class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-orange-100 text-orange-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                        </path>
+                                    </svg>
+                                </span>
+                                <span v-else-if="notification.data.priority === 'success'"
+                                    class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-100 text-green-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>
                                 </span>
                                 <span v-else
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    Info
+                                    class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
                                 </span>
                             </div>
-                            <div>
+
+                            <div class="flex-1 min-w-0">
                                 <h3
-                                    class="text-lg font-bold text-gray-900 group-hover:text-agri-forest transition-colors">
+                                    class="text-lg font-bold text-gray-900 group-hover:text-agri-forest transition-colors flex items-center gap-2">
                                     {{ notification.data.subject }}
+                                    <span
+                                        v-if="notification.data.content_details?.hidden_at || notification.data.content_details?.removed_at"
+                                        class="text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-md bg-gray-100 text-gray-500">
+                                        {{ notification.data.content_details.hidden_at ? 'Hidden' : 'Removed' }}
+                                    </span>
                                 </h3>
-                                <p class="text-gray-500 mt-1 line-clamp-2 text-sm"
-                                    v-html="parseMessage(notification.data.message)"></p>
+                                <div class="text-gray-600 mt-1 text-sm leading-relaxed"
+                                    v-html="parseMessage(notification.data.message)"></div>
+
+                                <!-- Rich Content: Context Card -->
+                                <div v-if="notification.data.content_details && Object.keys(notification.data.content_details).length"
+                                    class="mt-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
+
+                                    <!-- Comment specific view -->
+                                    <div v-if="notification.data.content_details.comment_content">
+                                        <div class="flex items-start gap-3 mb-3 pb-3 border-b border-gray-200/60">
+                                            <div class="w-1 bg-gray-300 rounded-full self-stretch"></div>
+                                            <div>
+                                                <p
+                                                    class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                                    Your Comment</p>
+                                                <p class="text-sm italic text-gray-700 font-medium">"{{
+                                                    notification.data.content_details.comment_content }}"</p>
+                                            </div>
+                                        </div>
+                                        <div v-if="notification.data.content_details.parent_post_snippet"
+                                            class="text-xs text-gray-500 flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                            </svg>
+                                            <span>On post by <strong class="text-gray-900">{{
+                                                    notification.data.content_details.parent_post_author
+                                                    }}</strong>:</span>
+                                            <span class="italic max-w-md truncate">"{{
+                                                notification.data.content_details.parent_post_snippet }}"</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Post specific view (if snippet provided) -->
+                                    <div v-else-if="notification.data.content_details.post_content">
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                            Post Content</p>
+                                        <p class="text-sm text-gray-700 line-clamp-3">"{{
+                                            notification.data.content_details.post_content }}"</p>
+                                        <p class="text-[10px] text-gray-400 mt-2">Posted on {{
+                                            formatTime(notification.data.content_details.post_date) }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Image attachment -->
+                                <div v-if="notification.data.image_url" class="mt-4">
+                                    <img :src="notification.data.image_url"
+                                        class="w-full max-w-md h-48 object-cover rounded-xl border border-gray-100 shadow-sm"
+                                        alt="Attached content">
+                                </div>
+
+
                             </div>
                         </div>
                         <div class="flex flex-col items-end space-y-2">

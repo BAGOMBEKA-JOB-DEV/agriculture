@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use App\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -40,6 +41,7 @@ class User extends Authenticatable
         'two_factor_recovery_codes',
         'two_factor_confirmed_at',
         'two_factor_type',
+        'agripulse_banned_at',
     ];
 
     /**
@@ -65,6 +67,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'notification_preferences' => 'array',
             'two_factor_confirmed_at' => 'datetime',
+            'agripulse_banned_at' => 'datetime',
         ];
     }
 
@@ -98,6 +101,51 @@ class User extends Authenticatable
     public function activeSubscription()
     {
         return $this->subscriptions()->where('status', 'active')->where('ends_at', '>', now())->first();
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function postReactions(): HasMany
+    {
+        return $this->hasMany(PostReaction::class);
+    }
+
+    public function postComments(): HasMany
+    {
+        return $this->hasMany(PostComment::class);
+    }
+
+    public function savedPosts(): HasMany
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
+    public function profileViewsGiven(): HasMany
+    {
+        return $this->hasMany(ProfileView::class, 'viewer_id');
+    }
+
+    public function profileViewsReceived(): HasMany
+    {
+        return $this->hasMany(ProfileView::class, 'viewed_user_id');
+    }
+
+    public function moderationActions(): HasMany
+    {
+        return $this->hasMany(AgriPulseUserModerationAction::class);
+    }
+
+    public function performedModerationLogs(): HasMany
+    {
+        return $this->hasMany(AgriPulseModerationLog::class, 'moderator_id');
+    }
+
+    public function receivedReports(): HasManyThrough
+    {
+        return $this->hasManyThrough(AgriPulsePostReport::class, Post::class);
     }
 
     public function getPermissionsListAttribute()
