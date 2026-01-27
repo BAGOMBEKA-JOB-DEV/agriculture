@@ -17,7 +17,7 @@ class ModerationExportService
     {
         // Convert collection to array format dynamically
         $data = $this->formatDataDynamically($collection);
-        
+
         $metadata = [
             'type' => ucfirst($type),
             'total_records' => $collection->count(),
@@ -42,7 +42,7 @@ class ModerationExportService
         return $collection->map(function ($item) {
             // Get all attributes
             $data = $item->toArray();
-            
+
             // Format the data for display
             return $this->formatRow($data);
         })->toArray();
@@ -79,8 +79,13 @@ class ModerationExportService
                         $formatted = array_merge($formatted, $nested);
                     }
                 } else {
-                    // For simple arrays, join values
-                    $formatted[$header] = implode(', ', array_filter($value));
+                    // For simple arrays, join values safely
+                    $formatted[$header] = implode(', ', array_map(function ($val) {
+                        if (is_array($val)) {
+                            return $val['name'] ?? $val['label'] ?? $val['id'] ?? json_encode($val);
+                        }
+                        return (string) $val;
+                    }, array_filter($value)));
                 }
             } elseif ($this->isDateString($value)) {
                 // Format dates
@@ -99,7 +104,8 @@ class ModerationExportService
 
         // Remove internal Laravel fields that aren't useful for exports
         $formatted = collect($formatted)->except([
-'pivot', 'laravel_through_key'
+            'pivot',
+            'laravel_through_key'
         ])->toArray();
 
         return $formatted;
@@ -112,9 +118,26 @@ class ModerationExportService
     {
         // Remove common suffixes that create redundancy
         $key = preg_replace('/_id$/', '', $key);
-        
+
         // Convert snake_case to Title Case
-        return str_replace('_', ' ', ucwords(str_replace('_', ' ', $key)));
+        return $this->sanitizeForXml(str_replace('_', ' ', ucwords(str_replace('_', ' ', $key))));
+    }
+
+    /**
+     * Sanitize string for XML/OOXML compatibility.
+     * Removes control characters that are invalid in XML but might exist in data.
+     */
+    private function sanitizeForXml(?string $value): string
+    {
+        if (is_null($value)) {
+            return '';
+        }
+
+        // Remove control characters (0-31) except tab (9), newline (10), carriage return (13)
+        // These are invalid in XML and can corrupt the OOXML (.docx) file
+        $sanitized = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $value);
+
+        return (string) $sanitized;
     }
 
     /**
@@ -125,11 +148,11 @@ class ModerationExportService
         if (!is_array($array)) {
             return false;
         }
-        
+
         if (empty($array)) {
             return false;
         }
-        
+
         return array_keys($array) !== range(0, count($array) - 1);
     }
 
@@ -204,8 +227,7 @@ class ModerationExportService
      */
     private function createExcel(array $data, array $metadata, string $filepath): string
     {
-        $export = new class($data, $metadata) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle, \Maatwebsite\Excel\Concerns\WithStyles
-        {
+        $export = new class ($data, $metadata) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle, \Maatwebsite\Excel\Concerns\WithStyles {
             private $data;
             private $metadata;
 
@@ -262,46 +284,69 @@ class ModerationExportService
      */
     private function createWord(array $data, array $metadata, string $filepath): string
     {
-        $phpWord = new PhpWord();
-        $section = $phpWord->addSection(['orientation' => 'landscape']);
-
-        // Add title
-        $section->addTitle($metadata['type'] . ' Export', 1);
-        $section->addText('Exported: ' . $metadata['exported_at']);
-        $section->addText('Total Records: ' . $metadata['total_records']);
-        $section->addTextBreak(1);
-
-        // Add table
-        if (!empty($data)) {
-            $headers = array_keys($data[0]);
-            $columnWidth = 1500; // Dynamic width distribution
-            
-            $table = $section->addTable([
-                'borderSize' => 6,
-                'borderColor' => '999999',
-                'width' => count($headers) * $columnWidth
+        try {
+            \Log::info('Starting Word export', [
+                'filepath' => $filepath,
+                'record_count' => count($data),
+                'metadata' => $metadata
             ]);
 
-            // Header row
-            $table->addRow();
-            foreach ($headers as $header) {
-                $table->addCell($columnWidth, ['bgColor' => '174938'])
-                    ->addText($header, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
-            }
+            $phpWord = new PhpWord();
+            $section = $phpWord->addSection(['orientation' => 'landscape']);
 
-            // Data rows
-            foreach ($data as $row) {
+            // Add title
+            $section->addTitle($this->sanitizeForXml($metadata['type'] . ' Export'), 1);
+            $section->addText($this->sanitizeForXml('Exported: ' . $metadata['exported_at']));
+            $section->addText($this->sanitizeForXml('Total Records: ' . $metadata['total_records']));
+            $section->addTextBreak(1);
+
+            // Add table
+            if (!empty($data)) {
+                $headers = array_keys($data[0]);
+                $columnWidth = 1500; // Dynamic width distribution
+
+                $table = $section->addTable([
+                    'borderSize' => 6,
+                    'borderColor' => '999999',
+                    'width' => count($headers) * $columnWidth
+                ]);
+
+                // Header row
                 $table->addRow();
-                foreach ($row as $value) {
-                    $table->addCell($columnWidth)->addText((string)$value, ['size' => 9]);
+                foreach ($headers as $header) {
+                    $table->addCell($columnWidth, ['bgColor' => '174938'])
+                        ->addText($this->sanitizeForXml($header), ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
+                }
+
+                // Data rows
+                foreach ($data as $row) {
+                    $table->addRow();
+                    foreach ($row as $value) {
+                        $text = is_array($value) ? json_encode($value) : (string) $value;
+                        $table->addCell($columnWidth)->addText($this->sanitizeForXml($text), ['size' => 9]);
+                    }
                 }
             }
+
+            \Log::info('Creating Word writer');
+            $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
+
+            \Log::info('Saving Word file to', ['path' => $filepath]);
+            $objWriter->save($filepath);
+
+            \Log::info('Word export completed successfully', ['filepath' => $filepath]);
+
+            return $filepath;
+        } catch (\Exception $e) {
+            \Log::error('Word export failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'filepath' => $filepath,
+                'data_count' => count($data)
+            ]);
+
+            throw new \Exception("Word export failed: " . $e->getMessage(), 0, $e);
         }
-
-        $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
-        $objWriter->save($filepath);
-
-        return $filepath;
     }
 
     /**
