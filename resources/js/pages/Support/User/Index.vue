@@ -183,53 +183,55 @@
                 <!-- Right Column: Knowledge Base & Help (4 cols) -->
                 <div class="lg:col-span-4 space-y-8">
 
-                    <!-- Bento Grid Categories -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-lg font-bold text-gray-900 tracking-tight">Browse Help</h2>
+                    <!-- Premium Bento Grid Categories -->
+                    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-agri-forest/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                        <div class="flex items-center justify-between mb-8 relative z-10">
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Browse Help</h2>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-4 relative z-10">
                             <div v-for="category in kbCategories" :key="category.id"
                                 @click="$router.push(`/support/kb/categories/${category.id}`)"
-                                class="p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-[#155724]/30 hover:shadow-md transition-all cursor-pointer group text-center">
+                                class="p-6 rounded-2xl border border-gray-100 bg-gray-50/30 hover:bg-white hover:border-agri-forest/30 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group text-center">
                                 <div
-                                    class="w-10 h-10 mx-auto rounded-lg bg-white shadow-sm flex items-center justify-center mb-3 text-[#155724] group-hover:scale-110 transition-transform">
-                                    <svg class="w-5 h-5 text-[#155724]" fill="none" stroke="currentColor"
+                                    class="w-12 h-12 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center mb-4 text-agri-forest group-hover:scale-110 group-hover:bg-agri-forest group-hover:text-white transition-all duration-300">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            :d="getIconPath(category.icon || 'svg-book')"></path>
+                                            :d="getIconPath(category.icon || 'default')"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-xs font-bold text-gray-900 mb-0.5">{{ category.name }}</h3>
-                                <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">{{
+                                <h3 class="text-xs font-black text-gray-900 mb-1 leading-tight">{{ category.name }}</h3>
+                                <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest opacity-60">{{
                                     category.articles_count }} Articles</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Featured Articles List -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Top Articles</h3>
-                        <div class="space-y-4">
+                    <!-- Top Articles Refined -->
+                    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Trending Knowledge</h3>
+                            <div class="h-px flex-1 bg-gray-100 ml-4"></div>
+                        </div>
+                        <div class="space-y-6">
                             <div v-for="article in featuredArticles" :key="article.id"
                                 @click="$router.push(`/support/kb/articles/${article.id}`)"
                                 class="group cursor-pointer">
                                 <h4
-                                    class="text-sm font-bold text-gray-900 group-hover:text-[#155724] transition-colors line-clamp-1 mb-1">
+                                    class="text-sm font-black text-gray-900 group-hover:text-agri-forest transition-colors line-clamp-1 mb-1.5">
                                     {{ article.title }}</h4>
-                                <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-2">{{ article.excerpt }}
-                                </p>
-                                <div class="flex items-center text-[10px] text-gray-400 font-medium">
-                                    <span>{{ article.category?.name }}</span>
-                                    <span class="mx-1">•</span>
+                                <div class="flex items-center text-[10px] font-bold text-gray-400">
+                                    <span class="text-agri-forest/60">{{ article.category?.name }}</span>
+                                    <span class="mx-2 opacity-30">•</span>
                                     <span>{{ formatTime(article.updated_at) }}</span>
                                 </div>
                             </div>
                         </div>
-                        <button
-                            class="w-full mt-6 py-2.5 border border-gray-100 text-xs font-bold text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
-                            Visit Knowledge Base
-                        </button>
+                        <router-link to="/support/kb"
+                            class="w-full mt-8 py-3.5 flex items-center justify-center border-2 border-agri-forest/10 text-[10px] font-black uppercase tracking-widest text-agri-forest rounded-xl hover:bg-agri-forest hover:text-white hover:border-agri-forest transition-all duration-300">
+                            Consult Full Library
+                        </router-link>
                     </div>
 
                     <!-- Help CTA -->
@@ -337,12 +339,13 @@ const isLoading = ref(true)
 
 // Icon Mapping for consistent rendering without external components
 const iconPaths = {
-    'svg-book': 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-    'svg-users': 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-    'svg-credit-card': 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
-    'svg-box': 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-    'svg-settings': 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
-    'default': 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+    'book-open': 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+    'users': 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+    'credit-card': 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+    'cpu': 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z',
+    'box': 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+    'settings': 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
+    'default': 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
 }
 
 const getIconPath = (iconName) => {

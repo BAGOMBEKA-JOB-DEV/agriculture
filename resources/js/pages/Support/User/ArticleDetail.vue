@@ -28,12 +28,16 @@
                 <div class="prose prose-agri max-w-none text-gray-600 leading-relaxed font-medium" v-html="article?.content"></div>
                 
                 <div class="mt-16 pt-12 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div>
+                    <div v-if="!voted">
                         <h4 class="text-sm font-black text-gray-900 mb-2 uppercase tracking-wide">Was this helpful?</h4>
                         <div class="flex items-center space-x-3">
-                            <button class="px-6 py-2 bg-gray-50 hover:bg-green-50 hover:text-green-600 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-green-100">Yes, thanks!</button>
-                            <button class="px-6 py-2 bg-gray-50 hover:bg-red-50 hover:text-red-600 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-red-100">Not really</button>
+                            <button @click="vote('yes')" class="px-6 py-2 bg-gray-50 hover:bg-green-50 hover:text-green-600 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-green-100">Yes, thanks!</button>
+                            <button @click="vote('no')" class="px-6 py-2 bg-gray-50 hover:bg-red-50 hover:text-red-600 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-red-100">Not really</button>
                         </div>
+                    </div>
+                    <div v-else class="flex items-center text-green-600 font-bold text-sm bg-green-50 px-6 py-3 rounded-2xl border border-green-100">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        Thank you for your feedback!
                     </div>
                     
                     <div class="text-center md:text-right">
@@ -54,6 +58,7 @@ import axios from 'axios'
 const route = useRoute()
 const article = ref(null)
 const loading = ref(true)
+const voted = ref(false)
 
 const categoryPath = computed(() => {
     return article.value?.category_id ? `/support/kb/categories/${article.value.category_id}` : '/support'
@@ -61,20 +66,27 @@ const categoryPath = computed(() => {
 
 const fetchArticle = async () => {
     try {
-        // Based on SupportController, articles are fetched via index with search or category,
-        // but let's assume there is a direct endpoint or we find it in the featured list/featured fetch
-        // For efficiency, we just fetch it. If there is no dedicated GET /api/support/kb/articles/{id},
-        // we might need to adjust. Checking Controller... index is the only one for KB.
-        // I will use search filter as a workaround if direct show doesn't exist.
-        const response = await axios.get(`/api/support/kb/articles?search=${route.params.id}`)
-        // Usually, articles should have a show endpoint. If not, we pivot.
-        // Let's assume the controller can handle it or we fetch the list and find.
+        const response = await axios.get('/api/support/kb/articles', {
+            params: { search: route.params.id }
+        })
         article.value = response.data.data?.find(a => a.id == route.params.id) || response.data.data?.[0]
+        
+        // Track view
+        if (article.value) {
+            axios.post(`/api/support/kb/articles/${article.value.id}/view`).catch(() => {}) 
+        }
     } catch (error) {
         console.error('Failed to fetch article:', error)
     } finally {
         loading.value = false
     }
+}
+
+const vote = async (type) => {
+    try {
+        await axios.post(`/api/support/kb/articles/${article.value.id}/helpful`, { type })
+        voted.value = true
+    } catch (e) {}
 }
 
 const formatDate = (date) => {
@@ -88,6 +100,8 @@ onMounted(fetchArticle)
 <style scoped>
 .text-agri-forest { color: #155724; }
 .bg-agri-sand { background-color: #f8f9fa; }
-.prose-agri :deep(h2) { font-weight: 900; color: #111827; margin-top: 2rem; }
-.prose-agri :deep(p) { margin-bottom: 1.5rem; }
+.prose-agri :deep(h2) { font-weight: 900; color: #111827; margin-top: 2.5rem; margin-bottom: 1rem; }
+.prose-agri :deep(p) { margin-bottom: 1.5rem; line-height: 1.8; }
+.prose-agri :deep(ul) { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+.prose-agri :deep(li) { margin-bottom: 0.5rem; }
 </style>

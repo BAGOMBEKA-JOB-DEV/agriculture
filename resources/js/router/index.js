@@ -544,6 +544,18 @@ const routes = [
     }
   },
   {
+    path: '/support/kb',
+    name: 'KBIndex',
+    component: () => import('../pages/Support/User/KbIndex.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Support Center', path: '/support' },
+        { label: 'Full Library' }
+      ]
+    }
+  },
+  {
     path: '/support/kb/articles/:id',
     name: 'KBArticleDetail',
     component: () => import('../pages/Support/User/ArticleDetail.vue'),
@@ -600,6 +612,19 @@ const routes = [
       breadcrumb: [
         { label: 'Ticket Queue', path: '/support/admin/tickets' },
         { label: 'Ticket Detail' }
+      ]
+    }
+  },
+  {
+    path: '/support/admin/kb',
+    name: 'KBManagement',
+    component: () => import('../pages/Support/Admin/KbManagement.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'support.tickets.view_all',
+      breadcrumb: [
+        { label: 'Agent Portal', path: '/support/admin' },
+        { label: 'Knowledge Base' }
       ]
     }
   },

@@ -131,6 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Public/Knowledge Base
         Route::get('/kb/categories', [\App\Http\Controllers\Api\Support\SupportController::class, 'kbCategories']);
         Route::get('/kb/articles', [\App\Http\Controllers\Api\Support\SupportController::class, 'kbArticles']);
+        Route::post('/kb/articles/{id}/helpful', [\App\Http\Controllers\Api\Support\SupportController::class, 'voteHelpful']);
 
         // Authenticated User Tickets
         Route::get('/tickets', [\App\Http\Controllers\Api\Support\SupportController::class, 'index']);
