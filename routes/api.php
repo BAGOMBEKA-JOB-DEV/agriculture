@@ -13,7 +13,7 @@ use App\Http\Controllers\AgriPulseModerationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/categories', function() {
+Route::get('/categories', function () {
     return (new CategoryController())->index();
 });
 
@@ -84,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('reports')->group(function () {
         Route::get('/vendor', [\App\Http\Controllers\ReportingController::class, 'vendorStats']);
         Route::get('/buyer', [\App\Http\Controllers\ReportingController::class, 'buyerStats']);
-        
+
         Route::middleware('permission:access_admin')->group(function () {
             Route::get('/admin', [\App\Http\Controllers\ReportingController::class, 'adminStats']);
         });
@@ -99,7 +99,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'show']);
         Route::put('/admin/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'update']);
     });
-    
+
     // Product Moderation (requires moderate_products permission)
     Route::middleware('permission:moderate_products')->group(function () {
         Route::get('/admin/stats', [\App\Http\Controllers\AdminController::class, 'stats']);
@@ -107,7 +107,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/products/{id}/approve', [\App\Http\Controllers\AdminController::class, 'approveProduct']);
         Route::post('/admin/products/{id}/reject', [\App\Http\Controllers\AdminController::class, 'rejectProduct']);
     });
-    
+
     // User Management (requires manage_users permission)
     Route::middleware('permission:manage_users')->group(function () {
         Route::get('/admin/roles', [\App\Http\Controllers\Admin\UserController::class, 'getRoles']);
@@ -115,18 +115,55 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store']);
         Route::post('/admin/users/bulk-action', [\App\Http\Controllers\Admin\UserController::class, 'bulkAction']);
         Route::post('/admin/users/invite', [\App\Http\Controllers\Admin\UserController::class, 'invite']);
-        
+
         Route::get('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'show']);
         Route::put('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'update']);
         Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy']);
-        
+
         Route::post('/admin/users/{id}/suspend', [\App\Http\Controllers\Admin\UserController::class, 'suspend']);
         Route::post('/admin/users/{id}/activate', [\App\Http\Controllers\Admin\UserController::class, 'activate']);
         Route::post('/admin/users/{id}/impersonate', [\App\Http\Controllers\Admin\UserController::class, 'impersonate']);
-        Route::post('/admin/users/{id}/reset-password', [\App\Http\Controllers\Admin\UserController::class, 'resetPassword']);
         Route::post('/admin/users/{id}/verify', [\App\Http\Controllers\Admin\UserController::class, 'verifyUser']);
     });
-    
+
+    // Support Ecosystem
+    Route::prefix('support')->group(function () {
+        // Public/Knowledge Base
+        Route::get('/kb/categories', [\App\Http\Controllers\Api\Support\SupportController::class, 'kbCategories']);
+        Route::get('/kb/articles', [\App\Http\Controllers\Api\Support\SupportController::class, 'kbArticles']);
+        Route::post('/kb/articles/{id}/helpful', [\App\Http\Controllers\Api\Support\SupportController::class, 'voteHelpful']);
+
+        // Authenticated User Tickets
+        Route::get('/tickets', [\App\Http\Controllers\Api\Support\SupportController::class, 'index']);
+        Route::post('/tickets', [\App\Http\Controllers\Api\Support\SupportController::class, 'store']);
+        Route::get('/tickets/{id}', [\App\Http\Controllers\Api\Support\SupportController::class, 'show']);
+        Route::post('/tickets/{id}/messages', [\App\Http\Controllers\Api\Support\SupportController::class, 'sendMessage']);
+        Route::post('/tickets/{id}/close', [\App\Http\Controllers\Api\Support\SupportController::class, 'close']);
+
+        // Support Staff Command Center
+        Route::middleware('permission:support.tickets.view_all')->prefix('admin')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Api\Support\SupportAdminController::class, 'getDashboardStats']);
+            Route::get('/tickets', [\App\Http\Controllers\Api\Support\SupportAdminController::class, 'listTickets']);
+            Route::get('/tickets/{id}', [\App\Http\Controllers\Api\Support\SupportAdminController::class, 'showTicket']);
+            Route::post('/tickets/{id}/assign', [\App\Http\Controllers\Api\Support\SupportAdminController::class, 'assign']);
+            Route::post('/tickets/{id}/status', [\App\Http\Controllers\Api\Support\SupportAdminController::class, 'updateStatus']);
+            Route::post('/tickets/{id}/messages', [\App\Http\Controllers\Api\Support\SupportAdminController::class, 'sendMessage']);
+
+            // KB Management
+            Route::post('/kb/articles', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'storeArticle']);
+            Route::put('/kb/articles/{id}', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'updateArticle']);
+            Route::delete('/kb/articles/{id}', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'destroyArticle']);
+            Route::post('/kb/categories', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'storeCategory']);
+            Route::delete('/kb/categories/{id}', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'destroyCategory']);
+
+            // Reporting & CSAT Management
+            Route::get('/reports/performance', [\App\Http\Controllers\Api\Support\SupportReportController::class, 'getPerformanceReport']);
+        });
+
+        // Customer CSAT Submission
+        Route::post('/tickets/{id}/survey', [\App\Http\Controllers\Api\Support\SupportCsaTController::class, 'submit']);
+    });
+
     // Super Admin Governance (requires access_super_admin permission)
     Route::middleware('permission:access_super_admin')->prefix('super-admin')->group(function () {
         Route::get('/stats', [\App\Http\Controllers\SuperAdminController::class, 'stats']);
@@ -146,7 +183,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users/{id}/activity-log', [\App\Http\Controllers\SuperAdminController::class, 'activityLog']);
         Route::delete('/users/{id}', [\App\Http\Controllers\SuperAdminController::class, 'deleteUser']);
     });
-    
+
     // Category Management (requires manage_categories permission)
     Route::middleware('permission:manage_categories')->group(function () {
         Route::apiResource('super-admin/categories', CategoryController::class)->except(['index']);
@@ -182,20 +219,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/posts/{id}/react', [\App\Http\Controllers\AgriPulseController::class, 'react']);
         Route::post('/posts/{id}/repost', [\App\Http\Controllers\AgriPulseController::class, 'store'])->middleware('permission:create_post');
         Route::delete('/posts/{id}', [\App\Http\Controllers\AgriPulseController::class, 'destroy']);
-        
+
         // Comments
         Route::get('/posts/{id}/comments', [\App\Http\Controllers\AgriPulseController::class, 'getComments']);
         Route::post('/posts/{id}/comments', [\App\Http\Controllers\AgriPulseController::class, 'storeComment']);
         Route::delete('/comments/{id}', [\App\Http\Controllers\AgriPulseController::class, 'destroyComment']);
-        
+
         // Saved Posts
         Route::post('/posts/{id}/save', [\App\Http\Controllers\AgriPulseController::class, 'savePost']);
         Route::get('/saved-posts', [\App\Http\Controllers\AgriPulseController::class, 'getSavedPosts']);
-        
+
         // View Tracking
         Route::post('/posts/{id}/view', [\App\Http\Controllers\AgriPulseController::class, 'trackPostView']);
         Route::post('/users/{id}/view', [\App\Http\Controllers\AgriPulseController::class, 'trackProfileView']);
-        
+
         // User Stats & Profile
         Route::get('/my-stats', [\App\Http\Controllers\AgriPulseController::class, 'getMyStats']);
         Route::get('/super-admin-posts', [\App\Http\Controllers\AgriPulseController::class, 'getSuperAdminPosts']);
@@ -262,7 +299,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Activity Logs
         Route::get('/logs', [AgriPulseModerationController::class, 'getLogs'])
             ->middleware('permission:agripulse.moderate.users');
-            
+
         // Analytics
         Route::get('/analytics', [AgriPulseModerationController::class, 'getAnalytics'])
             ->middleware('permission:agripulse.moderate.analytics');
