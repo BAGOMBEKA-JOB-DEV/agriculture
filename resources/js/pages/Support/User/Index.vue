@@ -211,7 +211,7 @@
                     <!-- Top Articles Refined -->
                     <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                         <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Trending Knowledge</h3>
+                            <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Popular Articles</h3>
                             <div class="h-px flex-1 bg-gray-100 ml-4"></div>
                         </div>
                         <div class="space-y-6">
@@ -230,7 +230,7 @@
                         </div>
                         <router-link to="/support/kb"
                             class="w-full mt-8 py-3.5 flex items-center justify-center border-2 border-agri-forest/10 text-[10px] font-black uppercase tracking-widest text-agri-forest rounded-xl hover:bg-agri-forest hover:text-white hover:border-agri-forest transition-all duration-300">
-                            Consult Full Library
+                            View All Articles
                         </router-link>
                     </div>
 

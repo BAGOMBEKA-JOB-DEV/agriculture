@@ -154,6 +154,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/kb/articles/{id}', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'updateArticle']);
             Route::delete('/kb/articles/{id}', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'destroyArticle']);
             Route::post('/kb/categories', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'storeCategory']);
+            Route::delete('/kb/categories/{id}', [\App\Http\Controllers\Api\Support\SupportKbAdminController::class, 'destroyCategory']);
 
             // Reporting & CSAT Management
             Route::get('/reports/performance', [\App\Http\Controllers\Api\Support\SupportReportController::class, 'getPerformanceReport']);

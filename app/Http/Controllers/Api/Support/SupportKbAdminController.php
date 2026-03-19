@@ -25,15 +25,15 @@ class SupportKbAdminController extends Controller
         ]);
 
         $article = SupportKbArticle::create([
-            'title' => $request->title,
-            'slug' => Str::slug($request->title) . '-' . Str::random(5),
-            'content' => $request->content,
-            'excerpt' => Str::limit(strip_tags($request->content), 150),
-            'category_id' => $request->category_id,
+            'title' => $request->input('title'),
+            'slug' => Str::slug($request->input('title')) . '-' . Str::random(5),
+            'content' => $request->input('content'),
+            'excerpt' => Str::limit(strip_tags($request->input('content')), 150),
+            'category_id' => $request->input('category_id'),
             'author_id' => auth()->id(),
-            'is_public' => $request->is_public ?? true,
-            'is_published' => $request->is_published ?? false,
-            'published_at' => ($request->is_published ?? false) ? now() : null,
+            'is_public' => $request->boolean('is_public', true),
+            'is_published' => $request->boolean('is_published', false),
+            'published_at' => $request->boolean('is_published') ? now() : null,
         ]);
 
         return response()->json($article, 201);
@@ -59,12 +59,20 @@ class SupportKbAdminController extends Controller
             'change_note' => $request->change_note ?? 'Update',
         ]);
 
-        $article->update($request->only(['title', 'content', 'category_id', 'is_public', 'is_published']));
-        $article->increment('version');
-
-        if ($request->is_published && !$article->published_at) {
-            $article->update(['published_at' => now()]);
+        $article->update($request->only(['title', 'content', 'category_id']));
+        
+        if ($request->has('is_public')) {
+            $article->update(['is_public' => $request->boolean('is_public')]);
         }
+        
+        if ($request->has('is_published')) {
+            $article->update(['is_published' => $request->boolean('is_published')]);
+            if ($request->boolean('is_published') && !$article->published_at) {
+                $article->update(['published_at' => now()]);
+            }
+        }
+
+        $article->increment('version');
 
         return response()->json($article);
     }
@@ -90,5 +98,11 @@ class SupportKbAdminController extends Controller
         ]);
 
         return response()->json($category, 201);
+    }
+
+    public function destroyCategory($id)
+    {
+        SupportKbCategory::findOrFail($id)->delete();
+        return response()->json(null, 204);
     }
 }

@@ -7,7 +7,7 @@
                     <span class="opacity-30">/</span>
                     <span class="text-[10px] font-black uppercase tracking-widest text-agri-forest">Knowledge Base</span>
                 </div>
-                <h1 class="text-4xl font-black text-gray-900 tracking-tight mb-4">Full Knowledge Library</h1>
+                <h1 class="text-4xl font-black text-gray-900 tracking-tight mb-4">All Articles</h1>
                 <p class="text-gray-500 font-medium">Explore our comprehensive guides and resources for everything agriculture.</p>
             </div>
         </div>

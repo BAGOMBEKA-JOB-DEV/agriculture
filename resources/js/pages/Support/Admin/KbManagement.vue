@@ -11,8 +11,8 @@
                         </svg>
                         <span class="font-bold text-agri-forest">Knowledge Base</span>
                     </div>
-                    <h1 class="text-3xl font-extrabold text-agri-forest tracking-tight">KB Management</h1>
-                    <p class="mt-1 text-sm text-gray-500 font-medium">Create and refine educational content for your users.</p>
+                    <h1 class="text-3xl font-extrabold text-agri-forest tracking-tight">Manage Articles</h1>
+                    <p class="mt-1 text-sm text-gray-500 font-medium">Create and edit help articles for your users.</p>
                 </div>
                 <div class="flex items-center space-x-3">
                     <button @click="openCategoryModal"
@@ -51,7 +51,7 @@
             <!-- Articles List -->
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                    <h3 class="font-bold text-gray-900 tracking-tight">Articles Repository</h3>
+                    <h3 class="font-bold text-gray-900 tracking-tight">Article List</h3>
                     <div class="relative w-64">
                         <input v-model="searchQuery" type="text" placeholder="Filter articles..."
                             class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-agri-forest outline-none transition-all">
@@ -125,7 +125,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                             </svg>
                                         </button>
-                                        <button @click="deleteArticle(article.id)"
+                                        <button @click="confirmDeleteArticle(article)"
                                             class="w-8 h-8 rounded-lg border border-red-50 flex items-center justify-center text-red-300 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -155,7 +155,7 @@
             <div class="absolute inset-0 bg-agri-forest/80 backdrop-blur-sm transition-opacity" @click="showArticleModal = false"></div>
             <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl relative z-10 overflow-hidden transform transition-all h-[90vh] flex flex-col">
                 <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
-                    <h3 class="text-xl font-extrabold text-agri-forest tracking-tight">{{ editingArticle.id ? 'Refine Article' : 'Draft New Knowledge' }}</h3>
+                    <h3 class="text-xl font-extrabold text-agri-forest tracking-tight">{{ editingArticle.id ? 'Edit Article' : 'New Article' }}</h3>
                     <button @click="showArticleModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -165,18 +165,18 @@
                 
                 <div class="flex-1 overflow-y-auto p-8 space-y-6">
                     <div>
-                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Article Headline</label>
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Title</label>
                         <input v-model="editingArticle.title" type="text"
                             class="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 text-lg font-bold focus:ring-4 focus:ring-agri-forest/10 focus:bg-white outline-none transition-all placeholder-gray-300"
-                            placeholder="e.g., Understanding Subscription Tiers">
+                            placeholder="e.g., How to use the app">
                     </div>
 
                     <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Subject Category</label>
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Category</label>
                             <select v-model="editingArticle.category_id"
                                 class="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-semibold focus:ring-4 focus:ring-agri-forest/10 focus:bg-white outline-none transition-all appearance-none">
-                                <option value="" disabled>Select a workspace</option>
+                                <option value="" disabled>Select category</option>
                                 <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                             </select>
                         </div>
@@ -229,7 +229,7 @@
             <div class="absolute inset-0 bg-agri-forest/80 backdrop-blur-sm transition-opacity" @click="showCategoryModal = false"></div>
             <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl relative z-10 overflow-hidden transform transition-all">
                 <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
-                    <h3 class="text-lg font-bold text-agri-forest tracking-tight">Category Ecosystem</h3>
+                    <h3 class="text-lg font-bold text-agri-forest tracking-tight">Manage Categories</h3>
                     <button @click="showCategoryModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -250,7 +250,7 @@
                                     <p class="text-[10px] text-gray-400 font-medium">{{ cat.articles_count || 0 }} Articles</p>
                                 </div>
                             </div>
-                            <button class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 p-2 transition-all">
+                            <button @click="confirmDeleteCategory(cat)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 p-2 transition-all">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
@@ -259,7 +259,7 @@
                     </div>
 
                     <div class="bg-agri-forest/5 p-6 rounded-3xl border border-agri-forest/10">
-                        <h4 class="text-[10px] font-black text-agri-forest uppercase tracking-widest mb-4">Add Taxonomy Node</h4>
+                        <h4 class="text-[10px] font-black text-agri-forest uppercase tracking-widest mb-4">Add Category</h4>
                         <div class="space-y-4">
                             <input v-model="newCategory.name" type="text" placeholder="Category Name"
                                 class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-agri-forest outline-none transition-all">
@@ -267,24 +267,50 @@
                                 class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-agri-forest outline-none transition-all resize-none"></textarea>
                             <button @click="createCategory" :disabled="!newCategory.name"
                                 class="w-full py-3 bg-agri-forest text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-agri-lush transition-all disabled:opacity-50">
-                                Instantiate Node
+                                Save Category
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Reusable Delete Modal -->
+        <Modal 
+            :is-open="showDeleteModal" 
+            :title="deleteModalTitle" 
+            :message="deleteModalMessage" 
+            confirm-text="Delete" 
+            type="danger" 
+            :loading="isDeleting"
+            @confirm="handleDelete" 
+            @cancel="showDeleteModal = false"
+        />
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import Modal from '../../../components/Modal.vue'
 
 const articles = ref([])
 const categories = ref([])
 const searchQuery = ref('')
 const isLoading = ref(false)
+
+// Delete Modal State
+const showDeleteModal = ref(false)
+const isDeleting = ref(false)
+const itemToDelete = ref(null)
+const deleteType = ref('article') // 'article' or 'category'
+const deleteModalTitle = computed(() => deleteType.value === 'article' ? 'Delete Article' : 'Delete Category')
+const deleteModalMessage = computed(() => {
+    if (deleteType.value === 'article') {
+        return `Are you sure you want to delete "${itemToDelete.value?.title}"? This action cannot be undone.`
+    }
+    return `Are you sure you want to delete "${itemToDelete.value?.name}"? All articles in this category will be uncategorized.`
+})
 
 // Article Modal State
 const showArticleModal = ref(false)
@@ -358,23 +384,49 @@ const saveArticle = async () => {
     try {
         if (editingArticle.value.id) {
             await axios.put(`/api/support/admin/kb/articles/${editingArticle.value.id}`, editingArticle.value)
+            if (window.notify) window.notify.success('Article Updated', 'The article has been successfully modified.')
         } else {
             await axios.post('/api/support/admin/kb/articles', editingArticle.value)
+            if (window.notify) window.notify.success('Article Created', 'Your new article is now live.')
         }
         await fetchKbData()
         showArticleModal.value = false
     } catch (error) {
         console.error('Failed to save article:', error)
+        if (window.notify) window.notify.error('Oops!', 'Could not save the article. Please check all fields.')
     }
 }
 
-const deleteArticle = async (id) => {
-    if (!confirm('Are you sure you want to delete this knowledge asset?')) return
+const confirmDeleteArticle = (article) => {
+    itemToDelete.value = article
+    deleteType.value = 'article'
+    showDeleteModal.value = true
+}
+
+const confirmDeleteCategory = (category) => {
+    itemToDelete.value = category
+    deleteType.value = 'category'
+    showDeleteModal.value = true
+}
+
+const handleDelete = async () => {
+    isDeleting.value = true
     try {
-        await axios.delete(`/api/support/admin/kb/articles/${id}`)
-        articles.value = articles.value.filter(a => a.id !== id)
+        if (deleteType.value === 'article') {
+            await axios.delete(`/api/support/admin/kb/articles/${itemToDelete.value.id}`)
+            if (window.notify) window.notify.success('Article Removed', 'The knowledge asset was deleted.')
+        } else {
+            await axios.delete(`/api/support/admin/kb/categories/${itemToDelete.value.id}`)
+            if (window.notify) window.notify.success('Category Removed', 'The category was deleted.')
+        }
+        await fetchKbData()
+        showDeleteModal.value = false
     } catch (error) {
-        console.error('Failed to delete article:', error)
+        console.error('Failed to delete:', error)
+        if (window.notify) window.notify.error('Error', 'Action failed. Please try again.')
+    } finally {
+        isDeleting.value = false
+        itemToDelete.value = null
     }
 }
 
@@ -385,10 +437,12 @@ const openCategoryModal = () => {
 const createCategory = async () => {
     try {
         await axios.post('/api/support/admin/kb/categories', newCategory.value)
+        if (window.notify) window.notify.success('Category Added', `"${newCategory.value.name}" is now available.`)
         newCategory.value = { name: '', description: '', is_public: true }
         await fetchKbData()
     } catch (error) {
         console.error('Failed to create category:', error)
+        if (window.notify) window.notify.error('Failed', 'Could not create category.')
     }
 }
 
@@ -413,6 +467,14 @@ onMounted(fetchKbData)
 .line-clamp-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
