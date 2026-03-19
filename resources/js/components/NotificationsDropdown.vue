@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="js">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
@@ -116,6 +116,8 @@ const props = defineProps({
     default: 0
   }
 })
+
+const hasNewNotifications = computed(() => props.unreadNotificationCount > 0)
 
 const emit = defineEmits(['close', 'refresh'])
 
