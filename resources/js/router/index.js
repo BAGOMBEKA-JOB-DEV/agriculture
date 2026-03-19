@@ -509,6 +509,100 @@ const routes = [
     },
     props: true
   },
+  // Support Ecosystem Routes
+  {
+    path: '/support',
+    name: 'SupportCenter',
+    component: () => import('../pages/Support/User/Index.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: { label: 'Support Center' }
+    }
+  },
+  {
+    path: '/support/tickets/:id',
+    name: 'UserTicketDetail',
+    component: () => import('../pages/Support/User/TicketDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Support Center', path: '/support' },
+        { label: 'Ticket Detail' }
+      ]
+    }
+  },
+  {
+    path: '/support/tickets',
+    name: 'UserTicketList',
+    component: () => import('../pages/Support/User/TicketList.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Support Center', path: '/support' },
+        { label: 'My Tickets' }
+      ]
+    }
+  },
+  {
+    path: '/support/kb/articles/:id',
+    name: 'KBArticleDetail',
+    component: () => import('../pages/Support/User/ArticleDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Support Center', path: '/support' },
+        { label: 'Article' }
+      ]
+    }
+  },
+  {
+    path: '/support/kb/categories/:id',
+    name: 'KBCategoryArticles',
+    component: () => import('../pages/Support/User/KbCategory.vue'),
+    meta: {
+      requiresAuth: true,
+      breadcrumb: [
+        { label: 'Support Center', path: '/support' },
+        { label: 'Category' }
+      ]
+    }
+  },
+  {
+    path: '/support/admin',
+    name: 'AgentPortal',
+    component: () => import('../pages/Support/Admin/Dashboard.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'support.tickets.view_all',
+      breadcrumb: { label: 'Agent Portal' }
+    }
+  },
+  {
+    path: '/support/admin/tickets',
+    name: 'AgentTickets',
+    component: () => import('../pages/Support/Admin/TicketList.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'support.tickets.view_all',
+      breadcrumb: [
+        { label: 'Agent Portal', path: '/support/admin' },
+        { label: 'Ticket Queue' }
+      ]
+    }
+  },
+  {
+    path: '/support/admin/tickets/:id',
+    name: 'AgentTicketDetail',
+    component: () => import('../pages/Support/Admin/TicketDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      permission: 'support.tickets.view_all',
+      breadcrumb: [
+        { label: 'Ticket Queue', path: '/support/admin/tickets' },
+        { label: 'Ticket Detail' }
+      ]
+    }
+  },
 ];
 
 const router = createRouter({
