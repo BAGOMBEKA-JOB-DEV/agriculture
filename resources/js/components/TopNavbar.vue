@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-white/90 backdrop-blur-md border-b border-gray-100/50 sticky top-0 shrink-0 z-50 transition-all duration-300">
+  <nav class="ml-0 lg:-ml-5 bg-white/90 backdrop-blur-md border-b border-gray-100/50 sticky top-0 shrink-0 z-50 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
       <div v-if="!showMobileSearch" class="flex items-center justify-between">
         <!-- Left side - Search bar (Desktop) -->
